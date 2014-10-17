@@ -1,0 +1,21 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Eclipse in the Sky Workspace Actor
+Bundle-SymbolicName: no.hal.eclipsky.services.workspace;singleton:=true
+Bundle-Version: 0.1.0.qualifier
+Require-Bundle: org.eclipse.core.runtime,
+ org.eclipse.core.resources;bundle-version="3.9.0",
+ org.eclipse.debug.core;bundle-version="3.9.0",
+ org.eclipse.jdt.core;bundle-version="3.9.50",
+ org.scala-lang.scala-library;bundle-version="2.10.4",
+ com.typesafe.akka.actor;bundle-version="2.3.3",
+ com.typesafe.akka.remote;bundle-version="2.3.3",
+ com.typesafe.akka.osgi;bundle-version="2.3.3",
+ com.google.protobuf;bundle-version="2.5.0",
+ org.eclipse.jdt.launching;bundle-version="3.7.100",
+ org.eclipse.jdt.junit.core;bundle-version="3.7.300"
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-ActivationPolicy: lazy
+Bundle-Activator: no.hal.eclipsky.services.workspace.impl.Activator
+Bundle-ClassPath: .
+Export-Package: no.hal.eclipsky.services.workspace
