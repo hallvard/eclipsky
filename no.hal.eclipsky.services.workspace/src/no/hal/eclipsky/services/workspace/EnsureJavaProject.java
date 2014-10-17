@@ -9,6 +9,10 @@ public class EnsureJavaProject implements Serializable {
 	public final String name;
 	public final String[] natures;
 	
+	public EnsureJavaProject(String name) {
+		this(name, null);
+	}
+
 	public EnsureJavaProject(String name, String[] additionalNatures) {
 		this.name = name;
 		this.natures = additionalNatures;
