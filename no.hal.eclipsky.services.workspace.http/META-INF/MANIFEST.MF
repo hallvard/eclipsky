@@ -1,0 +1,20 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Eclipse in the Sky Workspace Actor
+Bundle-SymbolicName: no.hal.eclipsky.services.workspace.http;singleton:=true
+Bundle-Version: 0.1.0.qualifier
+Require-Bundle: org.eclipse.core.runtime,
+ org.eclipse.osgi.services;bundle-version="3.4.0",
+ org.eclipse.equinox.ds;bundle-version="1.4.200",
+ org.eclipse.equinox.util;bundle-version="1.0.500",
+ org.eclipse.equinox.http.servlet;bundle-version="1.1.500",
+ org.eclipse.equinox.http.jetty;bundle-version="3.0.200",
+ org.apache.commons.logging;bundle-version="1.1.1",
+ org.eclipse.jetty.http;bundle-version="8.1.14",
+ no.hal.eclipsky.services.workspace;bundle-version="0.1.0"
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-ActivationPolicy: lazy
+Bundle-ClassPath: .
+Service-Component: OSGI-INF/component.xml
+Import-Package: javax.servlet;version="2.6.0",
+ javax.servlet.http;version="2.6.0"

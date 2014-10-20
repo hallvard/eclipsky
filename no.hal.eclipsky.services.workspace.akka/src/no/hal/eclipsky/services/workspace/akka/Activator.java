@@ -1,10 +1,7 @@
-package no.hal.eclipsky.services.workspace.impl;
-
-import no.hal.eclipsky.services.workspace.actor.WorkspaceActor;
+package no.hal.eclipsky.services.workspace.akka;
 
 import org.osgi.framework.BundleContext;
 
-import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
 import akka.actor.Props;
 import akka.osgi.ActorSystemActivator;
@@ -40,7 +37,7 @@ public class Activator extends ActorSystemActivator {
 	public void configure(BundleContext context, ActorSystem system) {
 		registerService(context, system);
 		actorSystem = system;
-		ActorRef workspaceActor = getActorSystem().actorOf(Props.create(WorkspaceActor.class), "workspaceActor");
+		getActorSystem().actorOf(Props.create(WorkspaceActor.class), "workspaceActor");
 	}
 	
 	public ActorSystem getActorSystem() {

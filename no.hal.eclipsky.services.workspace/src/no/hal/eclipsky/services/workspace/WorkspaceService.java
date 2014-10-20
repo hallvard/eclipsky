@@ -1,8 +1,8 @@
 package no.hal.eclipsky.services.workspace;
 
-import org.eclipse.core.runtime.CoreException;
-
 public interface WorkspaceService {
-	public void ensureProject(EnsureJavaProject message) throws CoreException;
-	public ProjectList getProjectList(ListProjects message);
+	public void ensureProject(String name, String type);
+	public String[] getProjectList(String namePattern, String type);
+	public String getSourceFile(String projectName, String packageName, String resourceName);
+	public byte[] getResource(String projectName, String packageName, String resourceName);
 }

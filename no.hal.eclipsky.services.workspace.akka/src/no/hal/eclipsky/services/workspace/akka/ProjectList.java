@@ -1,4 +1,4 @@
-package no.hal.eclipsky.services.workspace;
+package no.hal.eclipsky.services.workspace.akka;
 
 import java.io.Serializable;
 
