@@ -13,7 +13,6 @@ public class ProjectResourceServlet extends WorkspaceServiceServlet {
 
 	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		String responseFormat = getResponseFormat(request, null);
 		String projectName = request.getParameter("projectName");
 		String packageName = request.getParameter("packageName");
 		String resourceName = request.getParameter("resourceName");

@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.StringBufferInputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -132,10 +133,10 @@ public class WorkspaceServiceImpl implements WorkspaceService {
 	@Override
 	public String getSourceFile(String projectName, String packageName, String resourceName) {
 		IFile file = getFile(projectName, packageName, resourceName, true, "src", "resources");
-		return (file != null ? getFileContentString(file) : null);
+		return (file != null ? getFileStringContent(file).toString() : null);
 	}
 
-	protected String getFileContentString(IFile file) {
+	protected CharSequence getFileStringContent(IFile file) {
 		StringBuilder buffer = new StringBuilder();
 		try {
 			BufferedReader reader = new BufferedReader(new InputStreamReader(file.getContents()));
@@ -150,9 +151,24 @@ public class WorkspaceServiceImpl implements WorkspaceService {
 		return buffer.toString();
 	}
 
+	@Override
+	public void updateSourceFile(String projectName, String packageName, String resourceName, String stringContent) {
+		IFile file = getFile(projectName, packageName, resourceName, true, "src", "resources");
+		setFileStringContent(file, stringContent);
+	}
+
+	@SuppressWarnings("deprecation")
+	protected void setFileStringContent(IFile file, CharSequence content) {
+		try {
+			file.setContents(new StringBufferInputStream(content.toString()), true, true, null);
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+	
 	private byte[] byteBuffer = new byte[2048];
 	
-	protected byte[] getFileContentBytes(IFile file) {
+	protected byte[] getFileBytesContent(IFile file) {
 		ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 		try {
 			InputStream input = file.getContents();
@@ -168,6 +184,6 @@ public class WorkspaceServiceImpl implements WorkspaceService {
 	@Override
 	public byte[] getResource(String projectName, String packageName, String resourceName) {
 		IFile file = getFile(projectName, packageName, resourceName, true, "src", "resources");
-		return (file != null ? getFileContentBytes(file) : null);
+		return (file != null ? getFileBytesContent(file) : null);
 	}
 }

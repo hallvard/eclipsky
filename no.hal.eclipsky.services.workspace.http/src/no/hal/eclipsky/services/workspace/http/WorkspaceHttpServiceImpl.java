@@ -47,6 +47,8 @@ public class WorkspaceHttpServiceImpl {
 				System.out.println("WorkspaceHttpServiceImpl.handleWorkspaceHttpService: registering");
 				registerServlet(new ProjectListServlet(), "/projects");
 				registerServlet(new ProjectResourceServlet(), "/resource");
+				registerServlet(new SourceFileEditorServlet(), "/editor");
+				httpService.registerResources("/ace", "/web/ace-builds/src-noconflict", null);
 			} catch (Exception e) {
 			}
 		} else if (httpServiceAliases != null && (workspaceService == null || httpService == null)) {
@@ -54,6 +56,7 @@ public class WorkspaceHttpServiceImpl {
 				System.out.println("WorkspaceHttpServiceImpl.handleWorkspaceHttpService: unregistering");
 				for (String alias : httpServiceAliases) {
 					httpService.unregister(alias);
+					httpService.unregister("/ace");
 				}
 			} catch (Exception e) {
 			}
