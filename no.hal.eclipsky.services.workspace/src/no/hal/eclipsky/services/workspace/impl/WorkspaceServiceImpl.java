@@ -11,12 +11,18 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.regex.Pattern;
 
+import no.hal.eclipsky.services.Status;
+import no.hal.eclipsky.services.workspace.SourceFileMarker;
 import no.hal.eclipsky.services.workspace.WorkspaceService;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IResourceChangeEvent;
+import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
@@ -28,12 +34,8 @@ import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.junit.JUnitCore;
 import org.eclipse.jdt.launching.JavaRuntime;
 
-public class WorkspaceServiceImpl implements WorkspaceService {
+public class WorkspaceServiceImpl implements WorkspaceService, IResourceChangeListener {
 
-	public WorkspaceServiceImpl() {
-		System.out.println("WorkspaceServiceImpl: constructed");
-	}
-	
 	public void ensureProject(String name, String type) {
 		try {
 			ensureProjectInteral(name, type);
@@ -152,11 +154,65 @@ public class WorkspaceServiceImpl implements WorkspaceService {
 	}
 
 	@Override
-	public void updateSourceFile(String projectName, String packageName, String resourceName, String stringContent) {
+	public SourceFileMarker[] getSourceFileMarkers(String projectName, String packageName, String resourceName, boolean build) {
 		IFile file = getFile(projectName, packageName, resourceName, true, "src", "resources");
+		if (build) {
+		}
+		return createSourceFileMarkers(file);
+	}
+	
+	@Override
+	public SourceFileMarker[] updateSourceFile(String projectName, String packageName, String resourceName, String stringContent, Boolean markers) {
+		IFile file = getFile(projectName, packageName, resourceName, true, "src", "resources");
+		if (Boolean.TRUE.equals(markers)) {
+			markerResources.add(file);
+		}
 		setFileStringContent(file, stringContent);
+		if (markers == null) {
+			return null;
+		} else {
+			if (markers) {
+				try {
+					file.wait();
+				} catch (InterruptedException e) {
+				}
+			}
+			return createSourceFileMarkers(file);
+		}
 	}
 
+	protected SourceFileMarker[] createSourceFileMarkers(IFile file) {
+		IMarker[] problems = null;
+		try {
+			problems = file.findMarkers(IMarker.PROBLEM, true, IResource.DEPTH_INFINITE);
+		} catch (CoreException e) {
+		}
+		SourceFileMarker[] sourceFileMarkers = new SourceFileMarker[problems != null ? problems.length : 0];
+		for (int i = 0; i < sourceFileMarkers.length; i++) {
+			sourceFileMarkers[i] = createSourceFileMarker(problems[i]);
+		}
+		return sourceFileMarkers;
+	}
+	
+	private SourceFileMarker createSourceFileMarker(IMarker marker) {
+		String message = marker.getAttribute(IMarker.MESSAGE, null);
+		int lineNumber = marker.getAttribute(IMarker.LINE_NUMBER, -1);
+		int start = marker.getAttribute(IMarker.CHAR_START, -1), end = marker.getAttribute(IMarker.CHAR_END, -1);
+		int markerSeverity = marker.getAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
+		return new SourceFileMarker(createSeverity(markerSeverity), message, lineNumber, start, end);
+	}
+	
+	private Status.Severity createSeverity(int severity) {
+		switch (severity) {
+		case IMarker.SEVERITY_WARNING:
+			return Status.Severity.Warning;
+		case IMarker.SEVERITY_INFO:
+			return Status.Severity.Info;
+		default:
+			return Status.Severity.Error;
+		}
+	}
+	
 	@SuppressWarnings("deprecation")
 	protected void setFileStringContent(IFile file, CharSequence content) {
 		try {
@@ -185,5 +241,17 @@ public class WorkspaceServiceImpl implements WorkspaceService {
 	public byte[] getResource(String projectName, String packageName, String resourceName) {
 		IFile file = getFile(projectName, packageName, resourceName, true, "src", "resources");
 		return (file != null ? getFileBytesContent(file) : null);
+	}
+
+	//
+
+	private Collection<IResource> markerResources = new ArrayList<IResource>();
+	
+	@Override
+	public void resourceChanged(IResourceChangeEvent event) {
+		IResource resource = event.getResource();
+		if (markerResources.contains(resource)) {
+			resource.notifyAll();
+		}
 	}
 }

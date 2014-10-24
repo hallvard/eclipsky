@@ -1,5 +1,7 @@
 package no.hal.eclipsky.services.workspace.http;
 
+import java.io.PrintWriter;
+
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 
@@ -35,19 +37,12 @@ public abstract class WorkspaceServiceServlet extends HttpServlet {
 	protected String getResponseFormat(HttpServletRequest request) {
 		return getResponseFormat(request, "html");
 	}
-
-	protected static CharSequence htmlEscape(String s) {
-		StringBuilder buffer = new StringBuilder(s.length() + 20);
-		for (int i = 0; i < s.length(); ++i) {
-			char c = s.charAt(i);
-			switch (c) {
-			case '<': buffer.append("&lt;"); break;
-			case '>': buffer.append("&gt;"); break;
-			case '&': buffer.append("&amp;"); break;
-			case '"': buffer.append("&quot;"); break;
-			default: buffer.append(c);
-			}
+	
+	protected ResponseFormatter getResponseFormatter(String responseFormat, PrintWriter writer) {
+		switch (responseFormat) {
+		case "xml": return new XmlResponseFormatter(writer);
+		case "json": return new JsonResponseFormatter(writer);
 		}
-		return buffer;
+		return null;
 	}
 }

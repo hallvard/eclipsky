@@ -16,15 +16,10 @@ public class WorkspaceHttpServiceImpl {
 	private WorkspaceService workspaceService;
 	private HttpService httpService;
 	
-	public WorkspaceHttpServiceImpl() {
-		System.out.println("WorkspaceHttpServiceImpl: constructed");
-	}
-
 	private Collection<String> httpServiceAliases = null;
 	
 	public synchronized void setWorkspaceService(WorkspaceService workspaceService) {
 		this.workspaceService = workspaceService;
-		System.out.println("WorkspaceHttpServiceImpl.setWorkspaceService: " + workspaceService);
 		handleWorkspaceHttpService();
 	}
 	public synchronized void unsetWorkspaceService() {
@@ -33,7 +28,6 @@ public class WorkspaceHttpServiceImpl {
 
 	public synchronized void setHttpService(HttpService httpService) {
 		this.httpService = httpService;
-		System.out.println("WorkspaceHttpServiceImpl.setHttpService: " + httpService);
 		handleWorkspaceHttpService();
 	}
 	public synchronized void unsetHttpService() {
@@ -44,16 +38,15 @@ public class WorkspaceHttpServiceImpl {
 		if (httpServiceAliases == null && workspaceService != null && httpService != null) {
 			httpServiceAliases = new ArrayList<String>();
 			try {
-				System.out.println("WorkspaceHttpServiceImpl.handleWorkspaceHttpService: registering");
 				registerServlet(new ProjectListServlet(), "/projects");
 				registerServlet(new ProjectResourceServlet(), "/resource");
 				registerServlet(new SourceFileEditorServlet(), "/editor");
+				registerServlet(new SourceFileMarkersServlet(), "/markers");
 				httpService.registerResources("/ace", "/web/ace-builds/src-noconflict", null);
 			} catch (Exception e) {
 			}
-		} else if (httpServiceAliases != null && (workspaceService == null || httpService == null)) {
+		} else if (httpServiceAliases != null && workspaceService == null) {
 			try {
-				System.out.println("WorkspaceHttpServiceImpl.handleWorkspaceHttpService: unregistering");
 				for (String alias : httpServiceAliases) {
 					httpService.unregister(alias);
 					httpService.unregister("/ace");
