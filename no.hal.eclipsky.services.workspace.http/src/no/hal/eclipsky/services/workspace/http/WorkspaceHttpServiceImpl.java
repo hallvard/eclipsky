@@ -43,6 +43,7 @@ public class WorkspaceHttpServiceImpl {
 				registerServlet(new SourceFileEditorServlet(), "/editor");
 				registerServlet(new SourceFileMarkersServlet(), "/markers");
 				httpService.registerResources("/ace", "/web/ace-builds/src-noconflict", null);
+				httpService.registerResources("/editor", "/web/editor", null);
 			} catch (Exception e) {
 			}
 		} else if (httpServiceAliases != null && workspaceService == null) {
