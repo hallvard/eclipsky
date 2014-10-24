@@ -62,25 +62,9 @@ public class SourceFileEditorServlet extends SourceFileMarkersServlet {
 			writer.print(XmlResponseFormatter.escapeHtml(stringContent));
 			writer.println("</div>\n" +
 		"\t\t\t<script src=\"/ace/ace.js\" type=\"text/javascript\" charset=\"utf-8\"></script>\n" +
-		"\t\t<script>\n" +
-		    "\t\tvar editor = ace.edit(\"editor\");\n" +
-		    "\t\teditor.setTheme(\"ace/theme/monokai\");\n" +
-		    
-			"\t\teditor.commands.addCommand({ name: 'save', bindKey: {win: 'Ctrl-S', mac: 'Command-S'}, readOnly: false, \n" +
-			"\t\texec: function(editor) {\n" +
-				"\t\t\tvar xmlHttp = new XMLHttpRequest();\n" +
-				"\t\t\tvar url = window.location;\n" +
-				"\t\t\t// var parameters = url.search.substring(1) + \"&content=\" + editor.getValue();\n" +
-				"\t\t\tvar urlString = url.href;\n" +
-				"\t\t\tvar requestUrl = urlString; // .substring(0, urlString.indexOf('?'));\n" +
-				"\t\t\tvar ok = true; // window.confirm(requestUrl);\n" +
-				"\t\t\tif (ok == true) {\n" +
-				"\t\t\txmlHttp.open(\"POST\", requestUrl, true);\n" +
-				"\t\t\t}\n" +
-				"\t\t\txmlHttp.send(editor.getValue());\n" +
-				"\t\t\t}\n" +
-			"\t\t});\n"); 
-			writer.println("\t\teditor.getSession().setMode(\"ace/mode/" + getEditorMode(resourceName) + "\");\n");
+		"\t\t\t<script src=\"/js/editor.js\" type=\"text/javascript\" charset=\"utf-8\"></script>\n" +
+		"\t\t<script>\n");
+			writer.println("\t\tedit(\"editor\", \"" + getEditorMode(resourceName) + "\", window.location);\n");
 			writer.println("\t\t</script>\n" +
 		"\t</body>\n" +
 		"</html>\n");
@@ -96,6 +80,8 @@ public class SourceFileEditorServlet extends SourceFileMarkersServlet {
 		default: return ext;
 		}
 	}
+
+	private PrintWriter debugWriter = null; // new PrintWriter(System.out);
 
 	protected void updateSourceFile(HttpServletRequest request, HttpServletResponse response, Boolean exists, Boolean markers) throws ServletException, IOException {
 		String projectName = request.getParameter("projectName");
@@ -115,7 +101,10 @@ public class SourceFileEditorServlet extends SourceFileMarkersServlet {
 			String responseFormat = getResponseFormat(request);
 			response.setContentType("text/" + ("html".equals(responseFormat) ? "html" : "plain"));
 			SourceFileMarker[] sourceFileMarkers = getWorkspaceService().updateSourceFile(projectName, packageName, resourceName, stringContent, exists, markers);
-			writeResponse(responseFormat, new PrintWriter(System.out), sourceFileMarkers);
+			if (debugWriter != null) {
+				writeResponse(responseFormat, debugWriter, sourceFileMarkers);
+				debugWriter.flush();
+			}
 			writeResponse(responseFormat, response.getWriter(), sourceFileMarkers);
 		}
 	}

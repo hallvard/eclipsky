@@ -23,7 +23,6 @@ public class SourceFileMarkersServlet extends WorkspaceServiceServlet {
 		} else {
 			String responseFormat = getResponseFormat(request);
 			response.setContentType("text/" + ("html".equals(responseFormat) ? "html" : "plain"));
-			writeResponse(responseFormat, new PrintWriter(System.out), sourceFileMarkers);
 			writeResponse(responseFormat, response.getWriter(), sourceFileMarkers);
 		}
 	}

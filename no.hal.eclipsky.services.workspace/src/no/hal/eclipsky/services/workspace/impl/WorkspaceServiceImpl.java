@@ -9,6 +9,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
 import java.util.regex.Pattern;
 
 import no.hal.eclipsky.services.Status;
@@ -23,6 +27,8 @@ import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
+import org.eclipse.core.resources.IResourceDelta;
+import org.eclipse.core.resources.IResourceDeltaVisitor;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
@@ -34,7 +40,7 @@ import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.junit.JUnitCore;
 import org.eclipse.jdt.launching.JavaRuntime;
 
-public class WorkspaceServiceImpl implements WorkspaceService, IResourceChangeListener {
+public class WorkspaceServiceImpl implements WorkspaceService, IResourceChangeListener, IResourceDeltaVisitor {
 
 	public void ensureProject(String name, String type) {
 		try {
@@ -47,12 +53,12 @@ public class WorkspaceServiceImpl implements WorkspaceService, IResourceChangeLi
 	private void ensureProjectInteral(String name, String... natures) throws CoreException {
 		IWorkspaceRoot root = getWorkspaceRoot();
 		IProject project = root.getProject(name);
-		
+
 		if (! project.exists()) {
 			// inspired by https://sdqweb.ipd.kit.edu/wiki/JDT_Tutorial:_Creating_Eclipse_Java_Projects_Programmatically
 			project.create(null);
 			project.open(null);
-			
+
 			// Because we need a java project, we have to set the Java nature to the created project:
 			IProjectDescription description = project.getDescription();
 			Collection<String> natureList = new ArrayList<String>(natures != null ? Arrays.asList(natures) : Collections.emptyList());
@@ -84,11 +90,11 @@ public class WorkspaceServiceImpl implements WorkspaceService, IResourceChangeLi
 			javaProject.setRawClasspath(buildPath, binFolder.getFullPath(), null);
 		}
 	}
-	
+
 	protected IWorkspaceRoot getWorkspaceRoot() {
 		return ResourcesPlugin.getWorkspace().getRoot();
 	}
-	
+
 	public String[] getProjectList(String namePattern, String type) {
 		IProject[] projects = getWorkspaceRoot().getProjects(IProject.NONE);
 		Collection<String> projectNames = new ArrayList<String>();
@@ -115,7 +121,7 @@ public class WorkspaceServiceImpl implements WorkspaceService, IResourceChangeLi
 	protected IProject getProject(String projectName) {
 		return getWorkspaceRoot().getProject(projectName);
 	}
-	
+
 	protected IFile getFile(String projectName, String packageName, String name, Boolean exists, String...  folders) {
 		IProject project = getProject(projectName);
 		for (int i = 0; i < folders.length; i++) {
@@ -131,7 +137,7 @@ public class WorkspaceServiceImpl implements WorkspaceService, IResourceChangeLi
 		}
 		return null;
 	}
-	
+
 	@Override
 	public String getSourceFile(String projectName, String packageName, String resourceName) {
 		IFile file = getFile(projectName, packageName, resourceName, true, "src", "resources");
@@ -160,31 +166,33 @@ public class WorkspaceServiceImpl implements WorkspaceService, IResourceChangeLi
 		}
 		return createSourceFileMarkers(file);
 	}
-	
+
 	@Override
 	public SourceFileMarker[] updateSourceFile(String projectName, String packageName, String resourceName, String stringContent, Boolean exists, Boolean markers) {
 		IFile file = getFile(projectName, packageName, resourceName, exists, "src", "resources");
+		Future<SourceFileMarker[]> future = null;
 		if (Boolean.TRUE.equals(markers)) {
-			markerResources.add(file);
+			future = ensureResourceFuture(file);
 		}
 		setFileStringContent(file, stringContent);
 		if (markers == null) {
 			return null;
 		} else {
-			if (markers) {
+			if (future != null) {
 				try {
-					file.wait();
-				} catch (InterruptedException e) {
+					SourceFileMarker[] sourceFileMarkers = future.get();
+					return sourceFileMarkers;
+				} catch (Exception e) {
 				}
 			}
 			return createSourceFileMarkers(file);
 		}
 	}
 
-	protected SourceFileMarker[] createSourceFileMarkers(IFile file) {
+	protected SourceFileMarker[] createSourceFileMarkers(IResource resource) {
 		IMarker[] problems = null;
 		try {
-			problems = file.findMarkers(IMarker.PROBLEM, true, IResource.DEPTH_INFINITE);
+			problems = resource.findMarkers(IMarker.PROBLEM, true, IResource.DEPTH_INFINITE);
 		} catch (CoreException e) {
 		}
 		SourceFileMarker[] sourceFileMarkers = new SourceFileMarker[problems != null ? problems.length : 0];
@@ -193,7 +201,7 @@ public class WorkspaceServiceImpl implements WorkspaceService, IResourceChangeLi
 		}
 		return sourceFileMarkers;
 	}
-	
+
 	private SourceFileMarker createSourceFileMarker(IMarker marker) {
 		String message = marker.getAttribute(IMarker.MESSAGE, null);
 		int lineNumber = marker.getAttribute(IMarker.LINE_NUMBER, -1);
@@ -201,7 +209,7 @@ public class WorkspaceServiceImpl implements WorkspaceService, IResourceChangeLi
 		int markerSeverity = marker.getAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
 		return new SourceFileMarker(createSeverity(markerSeverity), message, lineNumber, start, end);
 	}
-	
+
 	private Status.Severity createSeverity(int severity) {
 		switch (severity) {
 		case IMarker.SEVERITY_WARNING:
@@ -212,7 +220,7 @@ public class WorkspaceServiceImpl implements WorkspaceService, IResourceChangeLi
 			return Status.Severity.Error;
 		}
 	}
-	
+
 	@SuppressWarnings("deprecation")
 	protected void setFileStringContent(IFile file, CharSequence content) {
 		try {
@@ -221,9 +229,9 @@ public class WorkspaceServiceImpl implements WorkspaceService, IResourceChangeLi
 			throw new RuntimeException(e);
 		}
 	}
-	
+
 	private byte[] byteBuffer = new byte[2048];
-	
+
 	protected byte[] getFileBytesContent(IFile file) {
 		ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 		try {
@@ -236,7 +244,7 @@ public class WorkspaceServiceImpl implements WorkspaceService, IResourceChangeLi
 		}
 		return buffer.toByteArray();
 	}
-	
+
 	@Override
 	public byte[] getResource(String projectName, String packageName, String resourceName) {
 		IFile file = getFile(projectName, packageName, resourceName, true, "src", "resources");
@@ -245,13 +253,55 @@ public class WorkspaceServiceImpl implements WorkspaceService, IResourceChangeLi
 
 	//
 
-	private Collection<IResource> markerResources = new ArrayList<IResource>();
+	private Map<IResource, CompletableFuture<SourceFileMarker[]>> resourceMarkers;
 	
+	private Future<SourceFileMarker[]> ensureResourceFuture(IFile file) {
+		if (resourceMarkers == null) {
+			resourceMarkers = new HashMap<IResource, CompletableFuture<SourceFileMarker[]>>();
+			ResourcesPlugin.getWorkspace().addResourceChangeListener(this, IResourceChangeEvent.POST_BUILD);
+		}
+		CompletableFuture<SourceFileMarker[]> future = resourceMarkers.get(file);
+		if (future == null) {
+			future = new CompletableFuture<SourceFileMarker[]>();
+			resourceMarkers.put(file, future);
+		}
+		return future;
+	}
+
 	@Override
 	public void resourceChanged(IResourceChangeEvent event) {
 		IResource resource = event.getResource();
-		if (markerResources.contains(resource)) {
-			resource.notifyAll();
+		if (! handleChangedResource(resource)) {
+			IResourceDelta delta = event.getDelta();
+			if (delta != null) {
+				try {
+					delta.accept(this);
+				} catch (CoreException e) {
+				}
+			}
 		}
+	}
+
+	@Override
+	public boolean visit(IResourceDelta delta) throws CoreException {
+		IResource resource = delta.getResource();
+		if (handleChangedResource(resource)) {
+		}
+		return true;
+	}
+
+	protected boolean handleChangedResource(IResource resource) {
+		if (resourceMarkers != null && resourceMarkers.containsKey(resource)) {
+			CompletableFuture<SourceFileMarker[]> future = resourceMarkers.get(resource);
+			resourceMarkers.remove(resource);
+			if (resourceMarkers.isEmpty()) {
+				resourceMarkers = null;
+				ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
+			}
+			if (future.complete(createSourceFileMarkers(resource))) {
+			}
+			return true;
+		}
+		return false;
 	}
 }

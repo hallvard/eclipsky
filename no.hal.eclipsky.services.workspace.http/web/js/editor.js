@@ -1,7 +1,94 @@
+function edit(editorId, mode, url) {
+    ace.require("ace/ext/language_tools"); // Required for auto completion
+	var editor = ace.edit(editorId);
+	editor.setTheme("ace/theme/monokai");
+	editor.commands.addCommand({
+		name: 'save', readOnly: false, bindKey: { win: 'Ctrl-S', mac: 'Command-S' },
+		exec: save
+	});
+	editor.getSession().setMode("ace/mode/" + mode);
+	editor.serviceUrl = window.location;
+	registerChangeHandler(editor);
+	return editor;
+}
+
+var defaultSaveDelay = 500;
+var saveDelay = defaultSaveDelay;
+var saveTimer = null;
+
+function registerChangeHandler(editor) {
+    editor.on('change', function() { handleChanged(editor, saveDelay); });
+}
+
+function handleChanged(editor, delay) {
+	// console.log("handleChange: " + delay);
+	if (delay > 0) {
+		if (saveTimer != null) {
+			// console.log("clearTimeout: ");
+			clearTimeout(saveTimer);
+		}
+		// console.log("setTimeout: " + saveDelay);
+		saveTimer = setTimeout(function () { handleChanged(editor, 0); }, saveDelay);
+	} else {
+		saveTimer = null;
+		save(editor);
+    }
+}
+
+function save(editor) {
+	var xmlHttp = new XMLHttpRequest();
+	var saveUrl = editor.serviceUrl.href + "&format=json";
+	xmlHttp.open("POST", saveUrl, true);
+	var startTime = new Date();
+	xmlHttp.onreadystatechange = function () {
+		if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
+			var saveDuration = new Date() - startTime;
+			if (saveDuration * 10 > defaultSaveDelay) {
+				saveDelay = saveDuration * 10;
+			} else {
+				saveDelay = defaultSaveDelay;
+			}
+			// console.log("saveDelay: " + saveDelay);
+			if (saveTimer == null) {
+				// console.log("updating markers");
+				updateMarkers(editor, xmlHttp.responseText);
+			}
+		}
+	}
+	// console.log("saving");
+	xmlHttp.send(editor.getValue());
+}
+
+function updateMarkers(editor, problems) {
+	if (typeof problems == "string") {
+		problems = JSON.parse(problems);
+	}
+	var annotations = problems.map(function(problem) {
+    	return new Annotation(convertProblemSeverity(problem.severity), problem.message, problem.lineNumber - 1);
+    });
+    editor.getSession().setAnnotations(annotations);
+}
+
+function Annotation(type, message, lineNumber) {
+    this.type = type; // "error", "warning", "info"
+    this.text = message;
+    this.row = lineNumber;
+}
+
+function convertProblemSeverity(type) {
+	switch (type) {
+	case 'Warning': return 'warning';
+	case 'Info':	return 'info';
+    default: 		return 'error';
+    }
+}
+			
+    /*
 $(document).ready(function () {
     ace.require("ace/ext/language_tools"); // Required for auto completion
 
     var editors = initEditors();
+
     var webSocket = openNewWebSocket();
     initCollapsibleHeaders();
 
@@ -105,10 +192,10 @@ $(document).ready(function () {
         console.log("Sent: " + data);
     }
 
-    /*
-        Listeners go below here
-        vvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-    */
+    //
+    //  Listeners go below here
+    //  vvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+    //
 
     jwerty.key('ctrl+enter', function () {
         $("#run-code-button").click()
@@ -146,10 +233,10 @@ $(document).ready(function () {
         clearAndSend("deliverAssignment");
     });
 
-    /*
-        Helper functions go below here
-        vvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-    */
+    //
+    //  Helper functions go below here
+    //  vvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+    //
 
     function clearAndSend(command){
         $("#editor-status").toggleClass("fa-circle fa-circle-o-notch running ready");
@@ -229,23 +316,6 @@ $(document).ready(function () {
         return $(editor.container).attr('data-file-id');
     }
 
-    function convertType(type) {
-        switch (type) {
-            case 'Warning':
-                return 'warning';
-            case 'Information':
-                return 'info';
-            default:
-                return 'error';
-        }
-    }
-
-    function Annotation(lineNumber, message, type){
-        this.row = lineNumber;
-        this.text = message;
-        this.type = type; // "error", "warning", "info"
-    }
-
     var throttle = (function(){
         var timer = 0;
         return function(callback, ms){
@@ -277,3 +347,4 @@ $(document).ready(function () {
         return $.inArray(element, array) > -1;
     }
 });
+    */
