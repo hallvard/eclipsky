@@ -8,8 +8,10 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import no.hal.eclipsky.services.workspace.SourceFileMarker;
+
 @SuppressWarnings("serial")
-public class SourceFileEditorServlet extends WorkspaceServiceServlet {
+public class SourceFileEditorServlet extends SourceFileMarkersServlet {
 		/*
 		<html lang="en">
 		<head>
@@ -57,7 +59,7 @@ public class SourceFileEditorServlet extends WorkspaceServiceServlet {
 		"\t</head>\n" +
 		"\t<body>\n" +
 		"\t\t<div id=\"editor\">");
-			writer.print(htmlEscape(stringContent));
+			writer.print(XmlResponseFormatter.escapeHtml(stringContent));
 			writer.println("</div>\n" +
 		"\t\t\t<script src=\"/ace/ace.js\" type=\"text/javascript\" charset=\"utf-8\"></script>\n" +
 		"\t\t<script>\n" +
@@ -71,7 +73,7 @@ public class SourceFileEditorServlet extends WorkspaceServiceServlet {
 				"\t\t\t// var parameters = url.search.substring(1) + \"&content=\" + editor.getValue();\n" +
 				"\t\t\tvar urlString = url.href;\n" +
 				"\t\t\tvar requestUrl = urlString; // .substring(0, urlString.indexOf('?'));\n" +
-				"\t\t\tvar ok = window.confirm(requestUrl);\n" +
+				"\t\t\tvar ok = true; // window.confirm(requestUrl);\n" +
 				"\t\t\tif (ok == true) {\n" +
 				"\t\t\txmlHttp.open(\"POST\", requestUrl, true);\n" +
 				"\t\t\t}\n" +
@@ -112,7 +114,11 @@ public class SourceFileEditorServlet extends WorkspaceServiceServlet {
 		if (stringContent == null) {
 			super.doPost(request, response);
 		} else {
-			getWorkspaceService().updateSourceFile(projectName, packageName, resourceName, stringContent);
+			String responseFormat = getResponseFormat(request);
+			response.setContentType("text/" + ("html".equals(responseFormat) ? "html" : "plain"));
+			SourceFileMarker[] sourceFileMarkers = getWorkspaceService().updateSourceFile(projectName, packageName, resourceName, stringContent, true);
+			writeResponse(responseFormat, new PrintWriter(System.out), sourceFileMarkers);
+			writeResponse(responseFormat, response.getWriter(), sourceFileMarkers);
 		}
 	}
 }
