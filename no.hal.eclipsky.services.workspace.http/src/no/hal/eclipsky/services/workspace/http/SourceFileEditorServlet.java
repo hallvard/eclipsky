@@ -79,15 +79,14 @@ public class SourceFileEditorServlet extends SourceFileMarkersServlet {
 				"\t\t\t}\n" +
 				"\t\t\txmlHttp.send(editor.getValue());\n" +
 				"\t\t\t}\n" +
-			"\t\t});\n" + 
-
-		    "\t\teditor.getSession().setMode(\"ace/mode/" + getEditorMode(resourceName) + "\");\n" +
-		"\t\t</script>\n" +
+			"\t\t});\n"); 
+			writer.println("\t\teditor.getSession().setMode(\"ace/mode/" + getEditorMode(resourceName) + "\");\n");
+			writer.println("\t\t</script>\n" +
 		"\t</body>\n" +
 		"</html>\n");
 		}
 	}
-	
+
 	protected String getEditorMode(String resourceName) {
 		int pos = resourceName.lastIndexOf('.');
 		String ext = pos < 0 ? resourceName : resourceName.substring(pos + 1);
@@ -98,8 +97,7 @@ public class SourceFileEditorServlet extends SourceFileMarkersServlet {
 		}
 	}
 
-	@Override
-	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+	protected void updateSourceFile(HttpServletRequest request, HttpServletResponse response, Boolean exists, Boolean markers) throws ServletException, IOException {
 		String projectName = request.getParameter("projectName");
 		String packageName = request.getParameter("packageName");
 		String resourceName = request.getParameter("resourceName");
@@ -116,9 +114,21 @@ public class SourceFileEditorServlet extends SourceFileMarkersServlet {
 		} else {
 			String responseFormat = getResponseFormat(request);
 			response.setContentType("text/" + ("html".equals(responseFormat) ? "html" : "plain"));
-			SourceFileMarker[] sourceFileMarkers = getWorkspaceService().updateSourceFile(projectName, packageName, resourceName, stringContent, true);
+			SourceFileMarker[] sourceFileMarkers = getWorkspaceService().updateSourceFile(projectName, packageName, resourceName, stringContent, exists, markers);
 			writeResponse(responseFormat, new PrintWriter(System.out), sourceFileMarkers);
 			writeResponse(responseFormat, response.getWriter(), sourceFileMarkers);
 		}
+	}
+
+	protected Boolean markersDefault = true;
+	
+	@Override
+	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		updateSourceFile(request, response, true, markersDefault);
+	}
+	
+	@Override
+	protected void doPut(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		updateSourceFile(request, response, false, markersDefault);
 	}
 }

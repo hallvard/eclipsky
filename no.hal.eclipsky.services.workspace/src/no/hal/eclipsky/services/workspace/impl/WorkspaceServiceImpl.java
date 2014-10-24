@@ -162,8 +162,8 @@ public class WorkspaceServiceImpl implements WorkspaceService, IResourceChangeLi
 	}
 	
 	@Override
-	public SourceFileMarker[] updateSourceFile(String projectName, String packageName, String resourceName, String stringContent, Boolean markers) {
-		IFile file = getFile(projectName, packageName, resourceName, true, "src", "resources");
+	public SourceFileMarker[] updateSourceFile(String projectName, String packageName, String resourceName, String stringContent, Boolean exists, Boolean markers) {
+		IFile file = getFile(projectName, packageName, resourceName, exists, "src", "resources");
 		if (Boolean.TRUE.equals(markers)) {
 			markerResources.add(file);
 		}

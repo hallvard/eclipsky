@@ -8,5 +8,5 @@ public interface WorkspaceService {
 	public byte[] getResource(String projectName, String packageName, String resourceName);
 	
 	public SourceFileMarker[] getSourceFileMarkers(String projectName, String packageName, String resourceName, boolean build);
-	public SourceFileMarker[] updateSourceFile(String projectName, String packageName, String resourceName, String stringContent, Boolean markers);
+	public SourceFileMarker[] updateSourceFile(String projectName, String packageName, String resourceName, String stringContent, Boolean exists, Boolean markers);
 }
