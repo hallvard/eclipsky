@@ -4,6 +4,7 @@ Bundle-Name: Eclipse in the Sky Workspace Actor
 Bundle-SymbolicName: no.hal.eclipsky.services.workspace.http;singleton:=true
 Bundle-Version: 0.1.0.qualifier
 Require-Bundle: org.eclipse.core.runtime,
+ org.eclipse.core.resources;bundle-version="3.9.0",
  org.eclipse.osgi.services;bundle-version="3.4.0",
  org.eclipse.equinox.ds;bundle-version="1.4.200",
  org.eclipse.equinox.util;bundle-version="1.0.500",

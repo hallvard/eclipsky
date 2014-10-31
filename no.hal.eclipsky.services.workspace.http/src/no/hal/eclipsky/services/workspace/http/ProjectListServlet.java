@@ -7,6 +7,10 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.Platform;
+
 @SuppressWarnings("serial")
 public class ProjectListServlet extends WorkspaceServiceServlet {
 	
@@ -24,7 +28,8 @@ public class ProjectListServlet extends WorkspaceServiceServlet {
 			writer.println("<html>\n"
 					+ "\t<head><title>Project list</title></head>\n"
 					+ "\t<body>");
-			writer.println("\t\t<h1>Projects</h1>\n\t\t<ul>");
+			IPath workspaceLocation = ResourcesPlugin.getWorkspace().getRoot().getLocation();
+			writer.println("\t\t<h1>Projects from workspace at: " + workspaceLocation + "</h1>\n\t\t<ul>");
 			break;
 		}
 		}
