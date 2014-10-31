@@ -39,6 +39,7 @@ public class WorkspaceHttpServiceImpl {
 			httpServiceAliases = new ArrayList<String>();
 			try {
 				registerServlet(new ProjectListServlet(), "/projects");
+				registerServlet(new EnsureProjectServlet(), "/ensure");
 				registerServlet(new ProjectResourceServlet(), "/resource");
 				registerServlet(new SourceFileEditorServlet(), "/editor");
 				registerServlet(new SourceFileMarkersServlet(), "/markers");
