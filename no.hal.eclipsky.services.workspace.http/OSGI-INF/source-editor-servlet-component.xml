@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" name="no.hal.eclipsky.services.workspace.http.SourceEditorServlet"
+	activate="activate" deactivate="deactivate"
+	immediate="true"
+	>
+   	<implementation class="no.hal.eclipsky.services.workspace.http.SourceEditorServlet"/>
+   	<reference
+   		name="editorService"
+   		interface="no.hal.eclipsky.services.editor.EditorService"
+   		bind="setEditorService"
+   	/>
+   	<reference
+   		name="httpService"
+   		interface="org.osgi.service.http.HttpService"
+   		bind="setHttpService"
+   	/>
+</scr:component>

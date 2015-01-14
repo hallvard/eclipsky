@@ -8,17 +8,17 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import no.hal.eclipsky.services.common.ResourceRef;
+
 @SuppressWarnings("serial")
-public class ProjectResourceServlet extends WorkspaceServiceServlet {
+public class ProjectResourceServlet extends AbstractWorkspaceServiceServlet {
 
 	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		String projectName = request.getParameter("projectName");
-		String packageName = request.getParameter("packageName");
-		String resourceName = request.getParameter("resourceName");
-		boolean binary = "true".equals(request.getParameter("binary"));
+		ResourceRef resourceRef = getResourceRef(request);
+		boolean binary = Boolean.valueOf(request.getParameter("binary"));
 		if (binary) {
-			byte[] contentBytes = getWorkspaceService().getResource(projectName, packageName, resourceName);
+			byte[] contentBytes = getWorkspaceService().getResource(resourceRef);
 			if (contentBytes == null) {
 				super.doGet(request, response);
 			} else {
@@ -27,7 +27,7 @@ public class ProjectResourceServlet extends WorkspaceServiceServlet {
 				output.write(contentBytes);
 			}
 		} else {
-			String contentString = getWorkspaceService().getSourceFile(projectName, packageName, resourceName);
+			String contentString = getWorkspaceService().getSourceFile(resourceRef);
 			if (contentString == null) {
 				super.doGet(request, response);
 			} else {

@@ -11,10 +11,19 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.equinox.http.jetty;bundle-version="3.0.200",
  org.apache.commons.logging;bundle-version="1.1.1",
  org.eclipse.jetty.http;bundle-version="8.1.14",
- no.hal.eclipsky.services.workspace;bundle-version="0.1.0"
+ org.eclipse.jetty.websocket;bundle-version="8.1.16",
+ org.eclipse.jetty.util;bundle-version="8.1.16",
+ no.hal.eclipsky.services.workspace;bundle-version="0.1.0",
+ no.hal.emfs;bundle-version="0.1.0",
+ no.hal.eclipsky.services.emfs;bundle-version="0.1.0"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
 Bundle-ClassPath: .
-Service-Component: OSGI-INF/component.xml
+Service-Component: OSGI-INF/component.xml,
+ OSGI-INF/project-list-servlet-component.xml,
+ OSGI-INF/ensure-project-servlet-component.xml,
+ OSGI-INF/source-file-editor-servlet-component.xml,
+ OSGI-INF/source-file-markers-servlet-component.xml,
+ OSGI-INF/source-editor-servlet-component.xml
 Import-Package: javax.servlet;version="2.6.0",
  javax.servlet.http;version="2.6.0"

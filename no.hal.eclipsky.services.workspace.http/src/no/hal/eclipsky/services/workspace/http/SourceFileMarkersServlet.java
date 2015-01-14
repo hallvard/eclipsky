@@ -7,27 +7,26 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import no.hal.eclipsky.services.workspace.SourceFileMarker;
+import no.hal.eclipsky.services.common.ResourceRef;
+import no.hal.eclipsky.services.common.SourceFileMarker;
 
 @SuppressWarnings("serial")
-public class SourceFileMarkersServlet extends WorkspaceServiceServlet {
+public class SourceFileMarkersServlet extends AbstractWorkspaceServiceServlet {
 
 	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		String projectName = request.getParameter("projectName");
-		String packageName = request.getParameter("packageName");
-		String resourceName = request.getParameter("resourceName");
-		SourceFileMarker[] sourceFileMarkers = getWorkspaceService().getSourceFileMarkers(projectName, packageName, resourceName, false);
+		ResourceRef resourceRef = getResourceRef(request);
+		SourceFileMarker[] sourceFileMarkers = getWorkspaceService().getSourceFileMarkers(resourceRef, false);
 		if (sourceFileMarkers == null) {
 			super.doPost(request, response);
 		} else {
 			String responseFormat = getResponseFormat(request);
 			response.setContentType("text/" + ("html".equals(responseFormat) ? "html" : "plain"));
-			writeResponse(responseFormat, response.getWriter(), sourceFileMarkers);
+			writeMarkersResponse(responseFormat, response.getWriter(), sourceFileMarkers);
 		}
 	}
-	
-	protected void writeResponse(String responseFormat, PrintWriter writer, SourceFileMarker[] sourceFileMarkers) {
+
+	public static void writeMarkersResponse(String responseFormat, PrintWriter writer, SourceFileMarker[] sourceFileMarkers) {
 		ResponseFormatter formatter = getResponseFormatter(responseFormat, writer);
 		if (formatter != null) {
 			formatter.startEntities("problems", true);
@@ -37,7 +36,7 @@ public class SourceFileMarkersServlet extends WorkspaceServiceServlet {
 					+ "\t<body>");
 			writer.println("\t\t<h1>Problems</h1>\n\t\t<ul>");
 		}
-		int count = sourceFileMarkers.length;
+		int count = (sourceFileMarkers != null ? sourceFileMarkers.length : 0);
 		for (int i = 0; i < count; i++) {
 			SourceFileMarker problem = sourceFileMarkers[i];
 			if (formatter != null) {

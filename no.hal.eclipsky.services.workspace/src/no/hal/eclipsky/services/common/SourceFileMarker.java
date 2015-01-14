@@ -1,6 +1,5 @@
-package no.hal.eclipsky.services.workspace;
+package no.hal.eclipsky.services.common;
 
-import no.hal.eclipsky.services.Status;
 
 public class SourceFileMarker extends Status {
 	
@@ -14,5 +13,10 @@ public class SourceFileMarker extends Status {
 		this.lineNumber = lineNumber;
 		this.start = start;
 		this.end = end;
+	}
+	
+	@Override
+	public String toString() {
+		return severity + "! " + message + " @" + lineNumber + ":" + start + "-" + end;
 	}
 }

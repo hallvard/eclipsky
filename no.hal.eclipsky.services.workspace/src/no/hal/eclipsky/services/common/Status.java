@@ -1,4 +1,4 @@
-package no.hal.eclipsky.services;
+package no.hal.eclipsky.services.common;
 
 import java.io.Serializable;
 

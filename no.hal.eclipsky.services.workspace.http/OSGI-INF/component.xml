@@ -1,6 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" name="no.hal.eclipsky.services.workspace.http">
-   <implementation class="no.hal.eclipsky.services.workspace.http.WorkspaceHttpServiceImpl"/>
-   <reference bind="setWorkspaceService" cardinality="1..1" interface="no.hal.eclipsky.services.workspace.WorkspaceService" name="WorkspaceService" policy="static" unbind="unsetWorkspaceService"/>
-   <reference bind="setHttpService" cardinality="1..1" interface="org.osgi.service.http.HttpService" name="HttpService" policy="static" unbind="unsetHttpService"/>
+	<implementation
+		class="no.hal.eclipsky.services.workspace.http.WorkspaceHttpServiceImpl"
+	/>
+   	<reference
+   		name="httpService"
+   		interface="org.osgi.service.http.HttpService"
+   		bind="setHttpService"
+   	/>
+   	<reference
+   		name="workspaceServiceServlet"
+   		interface="no.hal.eclipsky.services.workspace.http.WorkspaceServiceServlet"
+   		cardinality="0..n"
+   		policy="dynamic"
+   		bind="addWorkspaceServiceServlet"
+   		unbind="removeWorkspaceServiceServlet"
+   	/>
 </scr:component>

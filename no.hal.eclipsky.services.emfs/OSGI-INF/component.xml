@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" name="no.hal.eclipsky.services.emfs">
+   <implementation class="no.hal.eclipsky.services.emfs.impl.EmfsServiceImpl"/>
+   <service>
+      <provide interface="no.hal.eclipsky.services.emfs.EmfsService"/>
+   </service>
+   	<reference
+   		name="workspaceServiceServlet"
+   		interface="no.hal.emfs.util.ImportSupport"
+   		cardinality="0..n"
+   		policy="dynamic"
+   		bind="addImportSupport"
+   		unbind="removeImportSupport"
+   	/>
+</scr:component>

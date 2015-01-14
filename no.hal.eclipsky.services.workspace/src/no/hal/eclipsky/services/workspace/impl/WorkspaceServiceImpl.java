@@ -1,10 +1,5 @@
 package no.hal.eclipsky.services.workspace.impl;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.StringBufferInputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -15,13 +10,13 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import java.util.regex.Pattern;
 
-import no.hal.eclipsky.services.Status;
-import no.hal.eclipsky.services.workspace.SourceFileMarker;
+import no.hal.eclipsky.services.common.AbstractResourceServiceImpl;
+import no.hal.eclipsky.services.common.ResourceRef;
+import no.hal.eclipsky.services.common.SourceFileMarker;
 import no.hal.eclipsky.services.workspace.WorkspaceService;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
-import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.resources.IResource;
@@ -32,15 +27,13 @@ import org.eclipse.core.resources.IResourceDeltaVisitor;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.junit.JUnitCore;
 import org.eclipse.jdt.launching.JavaRuntime;
 
-public class WorkspaceServiceImpl implements WorkspaceService, IResourceChangeListener, IResourceDeltaVisitor {
+public class WorkspaceServiceImpl extends AbstractResourceServiceImpl implements WorkspaceService, IResourceChangeListener, IResourceDeltaVisitor {
 
 	public void ensureProject(String name, String type) {
 		try {
@@ -91,10 +84,6 @@ public class WorkspaceServiceImpl implements WorkspaceService, IResourceChangeLi
 		}
 	}
 
-	protected IWorkspaceRoot getWorkspaceRoot() {
-		return ResourcesPlugin.getWorkspace().getRoot();
-	}
-
 	public String[] getProjectList(String namePattern, String type) {
 		IProject[] projects = getWorkspaceRoot().getProjects(IProject.NONE);
 		Collection<String> projectNames = new ArrayList<String>();
@@ -118,58 +107,37 @@ public class WorkspaceServiceImpl implements WorkspaceService, IResourceChangeLi
 		return projectNames.toArray(new String[projectNames.size()]);
 	}
 
-	protected IProject getProject(String projectName) {
-		return getWorkspaceRoot().getProject(projectName);
+	private static String[] SOURCE_FOLDER_NAMES = {"src", "resources"};
+	
+	protected String[] getSourceFolderNames() {
+		return SOURCE_FOLDER_NAMES;
 	}
-
-	protected IFile getFile(String projectName, String packageName, String name, Boolean exists, String...  folders) {
-		IProject project = getProject(projectName);
-		for (int i = 0; i < folders.length; i++) {
-			IPath path = new Path(IPath.SEPARATOR + folders[i] + IPath.SEPARATOR + packageName.replace('.', IPath.SEPARATOR) + IPath.SEPARATOR + name);
-			IFile file = project.getFile(path);
-			if (exists != null) {
-				if (exists == file.exists()) {
-					return file;
-				}
-			} else {
-				return file;
-			}			
-		}
-		return null;
-	}
-
-	@Override
-	public String getSourceFile(String projectName, String packageName, String resourceName) {
-		IFile file = getFile(projectName, packageName, resourceName, true, "src", "resources");
+	
+	protected String getSourceFile(String projectName, String packageName, String resourceName) {
+		IFile file = getFile(projectName, packageName, resourceName, true, getSourceFolderNames());
 		return (file != null ? getFileStringContent(file).toString() : null);
 	}
 
-	protected CharSequence getFileStringContent(IFile file) {
-		StringBuilder buffer = new StringBuilder();
-		try {
-			BufferedReader reader = new BufferedReader(new InputStreamReader(file.getContents()));
-			String line = null;
-			while ((line = reader.readLine()) != null) {
-				buffer.append(line);
-				buffer.append("\n");
-			}
-		} catch (Exception e) {
-			buffer.append(e.getMessage());
-		}
-		return buffer.toString();
+	@Override
+	public String getSourceFile(ResourceRef resourceRef) {
+		return getSourceFile(resourceRef.getProjectName(), resourceRef.getProjectName(), resourceRef.getResourceName());
 	}
 
-	@Override
-	public SourceFileMarker[] getSourceFileMarkers(String projectName, String packageName, String resourceName, boolean build) {
-		IFile file = getFile(projectName, packageName, resourceName, true, "src", "resources");
+	protected SourceFileMarker[] getSourceFileMarkers(String projectName, String packageName, String resourceName, boolean build) {
+		IFile file = getFile(projectName, packageName, resourceName, true, getSourceFolderNames());
 		if (build) {
 		}
 		return createSourceFileMarkers(file);
 	}
 
 	@Override
-	public SourceFileMarker[] updateSourceFile(String projectName, String packageName, String resourceName, String stringContent, Boolean exists, Boolean markers) {
-		IFile file = getFile(projectName, packageName, resourceName, exists, "src", "resources");
+	public SourceFileMarker[] getSourceFileMarkers(ResourceRef resourceRef, boolean build) {
+		return getSourceFileMarkers(resourceRef.getProjectName(), resourceRef.getProjectName(), resourceRef.getResourceName(),
+				build);
+	}
+
+	protected SourceFileMarker[] updateSourceFile(String projectName, String packageName, String resourceName, String stringContent, Boolean exists, Boolean markers) {
+		IFile file = getFile(projectName, packageName, resourceName, exists, getSourceFolderNames());
 		Future<SourceFileMarker[]> future = null;
 		if (Boolean.TRUE.equals(markers)) {
 			future = ensureResourceFuture(file);
@@ -189,66 +157,19 @@ public class WorkspaceServiceImpl implements WorkspaceService, IResourceChangeLi
 		}
 	}
 
-	protected SourceFileMarker[] createSourceFileMarkers(IResource resource) {
-		IMarker[] problems = null;
-		try {
-			problems = resource.findMarkers(IMarker.PROBLEM, true, IResource.DEPTH_INFINITE);
-		} catch (CoreException e) {
-		}
-		SourceFileMarker[] sourceFileMarkers = new SourceFileMarker[problems != null ? problems.length : 0];
-		for (int i = 0; i < sourceFileMarkers.length; i++) {
-			sourceFileMarkers[i] = createSourceFileMarker(problems[i]);
-		}
-		return sourceFileMarkers;
+	public SourceFileMarker[] updateSourceFile(ResourceRef resourceRef, String stringContent, Boolean exists, Boolean markers) {
+		return updateSourceFile(resourceRef.getProjectName(), resourceRef.getProjectName(), resourceRef.getResourceName(),
+				stringContent, exists, markers);
 	}
-
-	private SourceFileMarker createSourceFileMarker(IMarker marker) {
-		String message = marker.getAttribute(IMarker.MESSAGE, null);
-		int lineNumber = marker.getAttribute(IMarker.LINE_NUMBER, -1);
-		int start = marker.getAttribute(IMarker.CHAR_START, -1), end = marker.getAttribute(IMarker.CHAR_END, -1);
-		int markerSeverity = marker.getAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
-		return new SourceFileMarker(createSeverity(markerSeverity), message, lineNumber, start, end);
-	}
-
-	private Status.Severity createSeverity(int severity) {
-		switch (severity) {
-		case IMarker.SEVERITY_WARNING:
-			return Status.Severity.Warning;
-		case IMarker.SEVERITY_INFO:
-			return Status.Severity.Info;
-		default:
-			return Status.Severity.Error;
-		}
-	}
-
-	@SuppressWarnings("deprecation")
-	protected void setFileStringContent(IFile file, CharSequence content) {
-		try {
-			file.setContents(new StringBufferInputStream(content.toString()), true, true, null);
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
-	}
-
-	private byte[] byteBuffer = new byte[2048];
-
-	protected byte[] getFileBytesContent(IFile file) {
-		ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-		try {
-			InputStream input = file.getContents();
-			int len = 0;
-			while ((len = input.read(byteBuffer)) >= 0) {
-				buffer.write(byteBuffer, 0, len);
-			}
-		} catch (Exception e) {
-		}
-		return buffer.toByteArray();
+	
+	protected byte[] getResource(String projectName, String packageName, String resourceName) {
+		IFile file = getFile(projectName, packageName, resourceName, true, getSourceFolderNames());
+		return (file != null ? getFileBytesContent(file) : null);
 	}
 
 	@Override
-	public byte[] getResource(String projectName, String packageName, String resourceName) {
-		IFile file = getFile(projectName, packageName, resourceName, true, "src", "resources");
-		return (file != null ? getFileBytesContent(file) : null);
+	public byte[] getResource(ResourceRef resourceRef) {
+		return getResource(resourceRef.getProjectName(), resourceRef.getProjectName(), resourceRef.getResourceName());
 	}
 
 	//

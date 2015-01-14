@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" name="no.hal.eclipsky.services.workspace.http.EnsureProjectServlet">
+   	<implementation class="no.hal.eclipsky.services.workspace.http.EnsureProjectServlet"/>
+   	<service>
+      	<provide interface="no.hal.eclipsky.services.workspace.http.WorkspaceServiceServlet"/>
+   	</service>
+   	<reference
+   		name="workspaceService"
+   		interface="no.hal.eclipsky.services.workspace.WorkspaceService"
+   		bind="setWorkspaceService"
+   	/>
+   	<reference
+   		name="emfsService"
+   		interface="no.hal.eclipsky.services.emfs.EmfsService"
+   		bind="setEmfsService"
+   	/>
+   <property name="servlet.alias" value="ensureProject"/>
+</scr:component>

@@ -1,12 +1,15 @@
 package no.hal.eclipsky.services.workspace;
 
+import no.hal.eclipsky.services.common.ResourceRef;
+import no.hal.eclipsky.services.common.SourceFileMarker;
+
 public interface WorkspaceService {
 	public String[] getProjectList(String namePattern, String type);
 	public void ensureProject(String name, String type);
 
-	public String getSourceFile(String projectName, String packageName, String resourceName);
-	public byte[] getResource(String projectName, String packageName, String resourceName);
+	public String getSourceFile(ResourceRef resourceRef);
+	public byte[] getResource(ResourceRef resourceRef);
 	
-	public SourceFileMarker[] getSourceFileMarkers(String projectName, String packageName, String resourceName, boolean build);
-	public SourceFileMarker[] updateSourceFile(String projectName, String packageName, String resourceName, String stringContent, Boolean exists, Boolean markers);
+	public SourceFileMarker[] getSourceFileMarkers(ResourceRef resourceRef, boolean build);
+	public SourceFileMarker[] updateSourceFile(ResourceRef resourceRef, String stringContent, Boolean exists, Boolean markers);
 }

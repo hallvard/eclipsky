@@ -8,6 +8,7 @@ function edit(editorId, mode, url) {
 	});
 	editor.getSession().setMode("ace/mode/" + mode);
 	editor.serviceUrl = window.location;
+	openWebSocket(editor);
 	registerChangeHandler(editor);
 	return editor;
 }
@@ -18,6 +19,37 @@ var saveTimer = null;
 
 function registerChangeHandler(editor) {
     editor.on('change', function() { handleChanged(editor, saveDelay); });
+}
+
+var webSocket = null;
+
+function sendWSMessage(type, message) {
+    console.time(type);
+    message = type + '\n' + message;
+    var data = message; // JSON.stringify({type: type, data: message});
+    webSocket.send(data);
+    console.log("Sent: " + data);
+}
+
+function openWebSocket(editor) {
+
+	var url = document.createElement('a');
+	url.href = editor.serviceUrl.href;
+	url.protocol = "ws";
+    webSocket = new WebSocket(url.href, "json");
+
+    webSocket.onerror = function() {
+        console.log('ws error');
+    };
+
+    webSocket.onclose = function() {
+        console.log('ws closed');
+    };
+
+    webSocket.onmessage = function(event) {
+        console.log(event.data);
+    	updateMarkers(editor, event.data);
+    }
 }
 
 function handleChanged(editor, delay) {
@@ -36,6 +68,18 @@ function handleChanged(editor, delay) {
 }
 
 function save(editor) {
+	if (webSocket != null && webSocket.readyState == webSocket.OPEN) {
+		saveWS(editor);
+	} else {
+		saveXHR(editor);
+	}
+}
+
+function saveWS(editor) {
+	sendWSMessage("update", editor.getValue());
+}
+
+function saveXHR(editor) {
 	var xmlHttp = new XMLHttpRequest();
 	var saveUrl = editor.serviceUrl.href + "&format=json";
 	xmlHttp.open("POST", saveUrl, true);

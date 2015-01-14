@@ -8,7 +8,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 @SuppressWarnings("serial")
-public class ProjectListServlet extends WorkspaceServiceServlet {
+public class ProjectListServlet extends AbstractWorkspaceServiceServlet {
 	
 	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -16,7 +16,10 @@ public class ProjectListServlet extends WorkspaceServiceServlet {
 		String namePattern = request.getParameter("namePattern");
 		String[] projectNames = getWorkspaceService().getProjectList(namePattern, null);
 		response.setContentType("text/" + ("html".equals(responseFormat) ? "html" : "plain")); 
-		PrintWriter writer = response.getWriter();
+		writeProjectListResponse(responseFormat, response.getWriter(), projectNames);
+	}
+
+	protected void writeProjectListResponse(String responseFormat, PrintWriter writer, String... projectNames) throws ServletException, IOException {
 		switch (responseFormat) {
 		case "xml" : writer.println("<projects>"); break;
 		case "json" : writer.println("["); break;
@@ -40,7 +43,7 @@ public class ProjectListServlet extends WorkspaceServiceServlet {
 				break;
 			}
 			case "html" : writer.println("\t\t\t<li>" + projectName + "</li>");
-				break;
+			break;
 			}
 		}
 		switch (responseFormat) {

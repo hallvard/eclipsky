@@ -15,7 +15,10 @@ Require-Bundle: org.eclipse.core.runtime,
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
 Bundle-ClassPath: .
-Export-Package: no.hal.eclipsky.services,
+Export-Package: no.hal.eclipsky.services.common,
+ no.hal.eclipsky.services.editor,
+ no.hal.eclipsky.services.editor.impl,
  no.hal.eclipsky.services.workspace,
  no.hal.eclipsky.services.workspace.impl
-Service-Component: OSGI-INF/component.xml
+Service-Component: OSGI-INF/workspace-service-component.xml,
+ OSGI-INF/editor-service-component.xml

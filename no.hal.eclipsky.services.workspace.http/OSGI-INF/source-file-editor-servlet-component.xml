@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" name="no.hal.eclipsky.services.workspace.http.SourceFileEditorServlet">
+   	<implementation class="no.hal.eclipsky.services.workspace.http.SourceFileEditorServlet"/>
+   	<service>
+      	<provide interface="no.hal.eclipsky.services.workspace.http.WorkspaceServiceServlet"/>
+   	</service>
+   	<reference
+   		name="workspaceService"
+   		interface="no.hal.eclipsky.services.workspace.WorkspaceService"
+   		bind="setWorkspaceService"
+   	/>
+   <property name="servlet.alias" value="editor"/>
+   <property name="resource.alias.ace" value="/web/ace-builds/src-noconflict"/>
+   <property name="resource.alias.js" value="/web/js"/>   
+</scr:component>

@@ -1,0 +1,16 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Eclipse in the Sky Git Service
+Bundle-SymbolicName: no.hal.eclipsky.services.git;singleton:=true
+Bundle-Version: 0.1.0.qualifier
+Require-Bundle: org.eclipse.osgi.services;bundle-version="3.4.0",
+ org.eclipse.equinox.ds;bundle-version="1.4.200",
+ org.eclipse.equinox.util;bundle-version="1.0.500",
+ org.eclipse.jgit;bundle-version="3.4.0",
+ no.hal.emfs;bundle-version="0.1.0",
+ no.hal.emfs.git;bundle-version="0.1.0"
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-ActivationPolicy: lazy
+Bundle-ClassPath: .
+Export-Package: no.hal.eclipsky.services.git
+Service-Component: OSGI-INF/component.xml
