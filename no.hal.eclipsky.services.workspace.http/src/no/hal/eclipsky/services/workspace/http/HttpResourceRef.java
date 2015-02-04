@@ -11,10 +11,10 @@ public class HttpResourceRef extends ResourceRef {
 		if (param == null) {
 			String[] elements = request.getPathTranslated().split("/");
 			if (pathElementNum < elements.length) {
-				return elements[pathElementNum];
+				param = elements[pathElementNum];
 			}
 		}
-		return null;
+		return param;
 	}
 	
 	public HttpResourceRef(HttpServletRequest request) {
