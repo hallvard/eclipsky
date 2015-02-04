@@ -120,7 +120,7 @@ public class WorkspaceServiceImpl extends AbstractResourceServiceImpl implements
 
 	@Override
 	public String getSourceFile(ResourceRef resourceRef) {
-		return getSourceFile(resourceRef.getProjectName(), resourceRef.getProjectName(), resourceRef.getResourceName());
+		return getSourceFile(resourceRef.getProjectName(), resourceRef.getPackageName(), resourceRef.getResourceName());
 	}
 
 	protected SourceFileMarker[] getSourceFileMarkers(String projectName, String packageName, String resourceName, boolean build) {
@@ -132,7 +132,7 @@ public class WorkspaceServiceImpl extends AbstractResourceServiceImpl implements
 
 	@Override
 	public SourceFileMarker[] getSourceFileMarkers(ResourceRef resourceRef, boolean build) {
-		return getSourceFileMarkers(resourceRef.getProjectName(), resourceRef.getProjectName(), resourceRef.getResourceName(),
+		return getSourceFileMarkers(resourceRef.getProjectName(), resourceRef.getPackageName(), resourceRef.getResourceName(),
 				build);
 	}
 
@@ -158,7 +158,7 @@ public class WorkspaceServiceImpl extends AbstractResourceServiceImpl implements
 	}
 
 	public SourceFileMarker[] updateSourceFile(ResourceRef resourceRef, String stringContent, Boolean exists, Boolean markers) {
-		return updateSourceFile(resourceRef.getProjectName(), resourceRef.getProjectName(), resourceRef.getResourceName(),
+		return updateSourceFile(resourceRef.getProjectName(), resourceRef.getPackageName(), resourceRef.getResourceName(),
 				stringContent, exists, markers);
 	}
 	
@@ -169,7 +169,7 @@ public class WorkspaceServiceImpl extends AbstractResourceServiceImpl implements
 
 	@Override
 	public byte[] getResource(ResourceRef resourceRef) {
-		return getResource(resourceRef.getProjectName(), resourceRef.getProjectName(), resourceRef.getResourceName());
+		return getResource(resourceRef.getProjectName(), resourceRef.getPackageName(), resourceRef.getResourceName());
 	}
 
 	//
