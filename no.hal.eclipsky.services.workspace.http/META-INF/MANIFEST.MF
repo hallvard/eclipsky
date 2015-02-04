@@ -15,7 +15,8 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.jetty.util;bundle-version="8.1.16",
  no.hal.eclipsky.services.workspace;bundle-version="0.1.0",
  no.hal.emfs;bundle-version="0.1.0",
- no.hal.eclipsky.services.emfs;bundle-version="0.1.0"
+ no.hal.eclipsky.services.emfs;bundle-version="0.1.0",
+ no.hal.eclipsky.services.git;bundle-version="0.1.0"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
 Bundle-ClassPath: .
