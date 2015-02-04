@@ -9,7 +9,7 @@ Require-Bundle: org.eclipse.osgi.services;bundle-version="3.4.0",
  org.eclipse.jgit;bundle-version="3.4.0",
  no.hal.emfs;bundle-version="0.1.0",
  no.hal.emfs.git;bundle-version="0.1.0"
-Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Bundle-ActivationPolicy: lazy
 Bundle-ClassPath: .
 Export-Package: no.hal.eclipsky.services.git
