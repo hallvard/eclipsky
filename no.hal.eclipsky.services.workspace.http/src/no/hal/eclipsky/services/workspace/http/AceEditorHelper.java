@@ -52,13 +52,17 @@ public class AceEditorHelper {
 		writer.print(XmlResponseFormatter.escapeHtml(stringContent));
 		writer.println("</div>\n" +
 				"\t\t\t<script src=\"/ace/ace.js\" type=\"text/javascript\" charset=\"utf-8\"></script>\n" +
-				"\t\t\t<script src=\"/js/editor.js\" type=\"text/javascript\" charset=\"utf-8\"></script>\n" +
-				"\t\t<script>\n");
-		writer.println("\t\tedit(\"" + editorId + "\", \"" + mode + "\", window.location);\n");
-		writer.println("\t\t</script>\n");
+				"\t\t\t<script src=\"/ace/ext-language_tools.js\" type=\"text/javascript\" charset=\"utf-8\"></script>\n" +
+				"\t\t\t<script src=\"/js/connector.js\" type=\"text/javascript\" charset=\"utf-8\"></script>\n" +
+				"\t\t\t<script src=\"/js/editor.js\" type=\"text/javascript\" charset=\"utf-8\"></script>\n");
+		writer.println("\t\t\t<script>\n" +
+				"\t\t\tvar editors = [{id: window.location}];\n" +
+				"\t\t\teditor.init('" + editorId + "', 'java', editors);\n" +
+				"\t\t\t</script>");
 		if (! embed) {
 			writer.println("\t</body>\n</html>\n");
 		}
+		
 	}
 
 	public String getEditorMode(String resourceName) {
