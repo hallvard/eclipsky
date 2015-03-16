@@ -2,10 +2,10 @@
 <scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" name="no.hal.eclipsky.services.workspace.http.ProjectListServlet">
    	<implementation class="no.hal.eclipsky.services.workspace.http.ProjectListServlet"/>
    	<service>
-      	<provide interface="no.hal.eclipsky.services.workspace.http.WorkspaceServiceServlet"/>
+      	<provide interface="no.hal.eclipsky.services.workspace.http.ServiceServlet"/>
    	</service>
    	<reference
-   		name="WorkspaceService"
+   		name="workspaceService"
    		interface="no.hal.eclipsky.services.workspace.WorkspaceService"
    		bind="setWorkspaceService"
    	/>

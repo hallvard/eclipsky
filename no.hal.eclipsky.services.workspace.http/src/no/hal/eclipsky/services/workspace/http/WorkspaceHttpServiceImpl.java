@@ -15,16 +15,16 @@ public class WorkspaceHttpServiceImpl {
 		this.httpService = httpService;
 	}
 	
-	private Collection<WorkspaceServiceServlet> workspaceServiceServlets = new ArrayList<WorkspaceServiceServlet>();
+	private Collection<ServiceServlet> serviceServlets = new ArrayList<ServiceServlet>();
 	
-	public synchronized void addWorkspaceServiceServlet(WorkspaceServiceServlet workspaceServiceServlet) {
+	public synchronized void addServiceServlet(ServiceServlet workspaceServiceServlet) {
 		try {
 			String alias = workspaceServiceServlet.getAlias();
 			if (alias != null) {
 				alias = "/" + alias;
 				System.out.println("Registering servlet alias: " + workspaceServiceServlet + " @ " + alias);
 				httpService.registerServlet(alias, (HttpServlet) workspaceServiceServlet, null, null);
-				workspaceServiceServlets.add(workspaceServiceServlet);
+				serviceServlets.add(workspaceServiceServlet);
 			}
 			String[] resourceAliases = workspaceServiceServlet.getResourceAliases();
 			if (resourceAliases != null) {
@@ -38,8 +38,8 @@ public class WorkspaceHttpServiceImpl {
 		}
 	}
 
-	public synchronized void removeWorkspaceServiceServlet(WorkspaceServiceServlet workspaceServiceServlet) {
-		workspaceServiceServlets.remove(workspaceServiceServlet);
+	public synchronized void removeServiceServlet(ServiceServlet workspaceServiceServlet) {
+		serviceServlets.remove(workspaceServiceServlet);
 		String alias = workspaceServiceServlet.getAlias();
 		if (alias != null) {
 			alias = "/" + alias;

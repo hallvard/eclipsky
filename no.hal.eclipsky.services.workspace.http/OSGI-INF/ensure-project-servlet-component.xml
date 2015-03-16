@@ -2,7 +2,7 @@
 <scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" name="no.hal.eclipsky.services.workspace.http.EnsureProjectServlet">
    	<implementation class="no.hal.eclipsky.services.workspace.http.EnsureProjectServlet"/>
    	<service>
-      	<provide interface="no.hal.eclipsky.services.workspace.http.WorkspaceServiceServlet"/>
+      	<provide interface="no.hal.eclipsky.services.workspace.http.ServiceServlet"/>
    	</service>
    	<reference
    		name="workspaceService"
@@ -15,4 +15,5 @@
    		bind="setEmfsService"
    	/>
    <property name="servlet.alias" value="ensureProject"/>
+   <property name="resource.alias.ensureProjectForm.html" value="/html/ensureProjectForm.html"/>
 </scr:component>

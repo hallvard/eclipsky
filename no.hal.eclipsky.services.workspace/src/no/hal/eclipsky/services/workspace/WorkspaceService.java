@@ -1,15 +1,23 @@
 package no.hal.eclipsky.services.workspace;
 
-import no.hal.eclipsky.services.common.ResourceRef;
-import no.hal.eclipsky.services.common.SourceFileMarker;
+/**
+ * Workspace level methods, i.e. mainly covering projects
+ * @author hal
+ */
+public interface WorkspaceService extends ResourcesService {
 
-public interface WorkspaceService {
+	/**
+	 * Gets the list of projects in the workspace
+	 * @param namePattern
+	 * @param type
+	 * @return
+	 */
 	public String[] getProjectList(String namePattern, String type);
-	public void ensureProject(String name, String type);
-
-	public String getSourceFile(ResourceRef resourceRef);
-	public byte[] getResource(ResourceRef resourceRef);
 	
-	public SourceFileMarker[] getSourceFileMarkers(ResourceRef resourceRef, boolean build);
-	public SourceFileMarker[] updateSourceFile(ResourceRef resourceRef, String stringContent, Boolean exists, Boolean markers);
+	/**
+	 * Creates a project and populates it according to the provided emfs model
+	 * @param name the project name
+	 * @param types project type(s) 
+	 */
+	public void ensureProject(String name, String... types);
 }

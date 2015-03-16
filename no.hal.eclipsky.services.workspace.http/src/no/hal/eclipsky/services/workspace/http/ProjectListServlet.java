@@ -42,7 +42,7 @@ public class ProjectListServlet extends AbstractWorkspaceServiceServlet {
 				writer.println();
 				break;
 			}
-			case "html" : writer.println("\t\t\t<li>" + projectName + "</li>");
+			case "html" : writer.println("\t\t\t<li><a href='projectResources?projectName=" + projectName + "'>" + projectName + "</a></li>");
 			break;
 			}
 		}

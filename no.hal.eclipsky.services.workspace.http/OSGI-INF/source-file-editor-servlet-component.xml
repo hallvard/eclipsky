@@ -2,12 +2,12 @@
 <scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" name="no.hal.eclipsky.services.workspace.http.SourceFileEditorServlet">
    	<implementation class="no.hal.eclipsky.services.workspace.http.SourceFileEditorServlet"/>
    	<service>
-      	<provide interface="no.hal.eclipsky.services.workspace.http.WorkspaceServiceServlet"/>
+      	<provide interface="no.hal.eclipsky.services.workspace.http.ServiceServlet"/>
    	</service>
    	<reference
-   		name="workspaceService"
-   		interface="no.hal.eclipsky.services.workspace.WorkspaceService"
-   		bind="setWorkspaceService"
+   		name="projectService"
+   		interface="no.hal.eclipsky.services.workspace.ProjectService"
+   		bind="setProjectService"
    	/>
    <property name="servlet.alias" value="editor"/>
    <property name="resource.alias.ace" value="/web/ace-builds/src-noconflict"/>

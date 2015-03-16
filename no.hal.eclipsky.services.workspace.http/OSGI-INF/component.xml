@@ -9,11 +9,11 @@
    		bind="setHttpService"
    	/>
    	<reference
-   		name="workspaceServiceServlet"
-   		interface="no.hal.eclipsky.services.workspace.http.WorkspaceServiceServlet"
+   		name="serviceServlet"
+   		interface="no.hal.eclipsky.services.workspace.http.ServiceServlet"
    		cardinality="0..n"
    		policy="dynamic"
-   		bind="addWorkspaceServiceServlet"
-   		unbind="removeWorkspaceServiceServlet"
+   		bind="addServiceServlet"
+   		unbind="removeServiceServlet"
    	/>
 </scr:component>

@@ -11,12 +11,12 @@ import no.hal.eclipsky.services.common.ResourceRef;
 import no.hal.eclipsky.services.common.SourceFileMarker;
 
 @SuppressWarnings("serial")
-public class SourceFileMarkersServlet extends AbstractWorkspaceServiceServlet {
+public class SourceFileMarkersServlet extends AbstractProjectServiceServlet {
 
 	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		ResourceRef resourceRef = getResourceRef(request);
-		SourceFileMarker[] sourceFileMarkers = getWorkspaceService().getSourceFileMarkers(resourceRef, false);
+		SourceFileMarker[] sourceFileMarkers = getProjectService().getSourceFileMarkers(resourceRef, false);
 		if (sourceFileMarkers == null) {
 			super.doPost(request, response);
 		} else {

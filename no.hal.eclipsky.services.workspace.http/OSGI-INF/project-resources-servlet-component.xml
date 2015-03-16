@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" name="no.hal.eclipsky.services.workspace.http.SourceFileMarkersServlet">
-   	<implementation class="no.hal.eclipsky.services.workspace.http.SourceFileMarkersServlet"/>
+<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" name="no.hal.eclipsky.services.workspace.http.ProjectResourcesServlet">
+   	<implementation class="no.hal.eclipsky.services.workspace.http.ProjectResourcesServlet"/>
    	<service>
       	<provide interface="no.hal.eclipsky.services.workspace.http.ServiceServlet"/>
    	</service>
@@ -9,5 +9,5 @@
    		interface="no.hal.eclipsky.services.workspace.ProjectService"
    		bind="setProjectService"
    	/>
-   <property name="servlet.alias" value="markers"/>
+   <property name="servlet.alias" value="projectResources"/>
 </scr:component>

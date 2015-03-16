@@ -16,7 +16,7 @@ public class SourceFileEditorServlet extends SourceFileMarkersServlet {
 	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		ResourceRef resourceRef = getResourceRef(request);
-		String stringContent = getWorkspaceService().getSourceFile(resourceRef);
+		String stringContent = getProjectService().getSourceFile(resourceRef);
 		if (stringContent == null) {
 			super.doGet(request, response);
 		} else {
@@ -38,7 +38,7 @@ public class SourceFileEditorServlet extends SourceFileMarkersServlet {
 		} else {
 			String responseFormat = getResponseFormat(request);
 			response.setContentType("text/" + ("html".equals(responseFormat) ? "html" : "plain"));
-			SourceFileMarker[] sourceFileMarkers = getWorkspaceService().updateSourceFile(resourceRef, bodyContent, exists, markers);
+			SourceFileMarker[] sourceFileMarkers = getProjectService().updateSourceFile(resourceRef, bodyContent, exists, markers);
 			if (debugWriter != null) {
 				writeMarkersResponse(responseFormat, debugWriter, sourceFileMarkers);
 				debugWriter.flush();

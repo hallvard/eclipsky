@@ -10,12 +10,11 @@ import javax.servlet.http.HttpServletResponse;
 import no.hal.eclipsky.services.common.Proposal;
 
 @SuppressWarnings("serial")
-public class SourceFileCompletionsServlet extends AbstractWorkspaceServiceServlet {
+public class SourceFileCompletionsServlet extends AbstractProjectServiceServlet {
 
 	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// TODO
-		
 		/*
 		ResourceRef resourceRef = getResourceRef(request);
 		

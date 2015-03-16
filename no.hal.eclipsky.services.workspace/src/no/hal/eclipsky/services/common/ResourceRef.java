@@ -1,21 +1,13 @@
 package no.hal.eclipsky.services.common;
 
-public class ResourceRef {
+public class ResourceRef extends ProjectRef {
 
-	private String projectName, packageName, resourceName;
+	private String packageName, resourceName;
 	
 	public ResourceRef(String projectName, String packageName, String resourceName) {
-		this.projectName = projectName;
+		super(projectName);
 		this.packageName = packageName;
 		this.resourceName = resourceName;
-	}
-
-	public String getProjectName() {
-		return projectName;
-	}
-
-	protected void setProjectName(String projectName) {
-		this.projectName = projectName;
 	}
 
 	public String getPackageName() {

@@ -1,11 +1,13 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Eclipsky Emfs Services
-Bundle-SymbolicName: no.hal.eclipsky.services.emfs
+Bundle-SymbolicName: no.hal.eclipsky.services.emfs;singleton:=true
 Bundle-Version: 0.1.0.qualifier
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
-Require-Bundle: org.eclipse.core.runtime;bundle-version="3.10.0",
- org.eclipse.core.resources;bundle-version="3.9.0",
- no.hal.emfs;bundle-version="0.1.0"
-Service-Component: OSGI-INF/component.xml
+Require-Bundle: org.eclipse.core.resources;bundle-version="3.9.0",
+ org.eclipse.core.runtime;bundle-version="3.10.0",
+ no.hal.emfs;bundle-version="0.1.0",
+ no.hal.emfs.xtext.runtime;bundle-version="0.1.0";resolution:=optional
 Export-Package: no.hal.eclipsky.services.emfs
+Service-Component: OSGI-INF/component.xml
+Bundle-ActivationPolicy: lazy

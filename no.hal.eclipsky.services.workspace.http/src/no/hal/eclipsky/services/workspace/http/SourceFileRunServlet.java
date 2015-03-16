@@ -10,12 +10,11 @@ import javax.servlet.http.HttpServletResponse;
 import no.hal.eclipsky.services.editor.RunResult;
 
 @SuppressWarnings("serial")
-public class SourceFileRunServlet extends AbstractWorkspaceServiceServlet {
+public class SourceFileRunServlet extends AbstractProjectServiceServlet {
 
 	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// TODO
-		
 		/*
 		ResourceRef resourceRef = getResourceRef(request);
 		

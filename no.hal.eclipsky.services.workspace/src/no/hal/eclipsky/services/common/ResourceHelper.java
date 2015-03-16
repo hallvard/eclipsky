@@ -89,7 +89,7 @@ public class ResourceHelper {
 	}
 	
 	@SuppressWarnings("deprecation")
-	public void setFileStringContent(IFile file, CharSequence content) {
+	public static void setFileStringContent(IFile file, CharSequence content) {
 		try {
 			file.setContents(new StringBufferInputStream(content.toString()), true, true, null);
 		} catch (Exception e) {
