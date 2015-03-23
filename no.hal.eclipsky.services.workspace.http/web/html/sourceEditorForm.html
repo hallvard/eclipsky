@@ -1,0 +1,38 @@
+<html>
+<head>
+	<title>Source editor</title>
+<head>
+<body>
+<h1>Source editor</h1>
+<form action="sourceEditor" method="POST" accept-charset="UTF-8" target="response">
+	Project name:
+	<input type="text" name="projectName" value="&lt;project name&gt;"></br>
+	Operation:
+	 <select name="op">
+	  <option value="refresh">refresh</option>
+	  <option value="markers">markers</option>
+	  <option value="update">update</option>
+	  <option value="run">run</option>
+	</select>
+	</br>
+	Package and resource names (for certain op's):
+	<input type="text" name="packageName" value="&lt;package name&gt;">
+	<input type="text" name="resourceName" value="&lt;resource name&gt;">
+	</br>
+	Request body (for certain op's):</br>	
+	<textarea name="body" cols="80" rows="20">
+	</textarea>
+	</br>
+	Response format (not all are supported by all op's):
+	 <select name="format">
+	  <option value="json">json</option>
+	  <option value="html">html</option>
+	  <option value="xml">xml</option>
+	</select>
+	<input type="submit" value="Submit"/>
+</form>
+<hr/>
+Response:</br>
+<iframe name="response" width="600" height="200"/> 
+</body>
+</html>

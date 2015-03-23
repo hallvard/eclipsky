@@ -1,4 +1,4 @@
-package no.hal.eclipsky.services.workspace.http;
+package no.hal.eclipsky.services.workspace.http.util;
 
 import java.io.PrintWriter;
 import java.util.Stack;
@@ -120,6 +120,6 @@ public abstract class ResponseFormatter {
 		return this;
 	}
 
-	protected abstract ResponseFormatter startEntities(String name, boolean multi);
-	protected abstract ResponseFormatter endEntities();
+	public abstract ResponseFormatter startEntities(String name, boolean multi);
+	public abstract ResponseFormatter endEntities();
 }

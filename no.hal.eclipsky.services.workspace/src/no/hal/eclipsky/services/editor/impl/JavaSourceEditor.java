@@ -3,33 +3,28 @@ package no.hal.eclipsky.services.editor.impl;
 import java.util.Collection;
 
 import no.hal.eclipsky.services.common.Proposal;
+import no.hal.eclipsky.services.common.ResourceRef;
 import no.hal.eclipsky.services.common.SourceFileMarker;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.debug.core.DebugPlugin;
-import org.eclipse.debug.core.ILaunchConfiguration;
-import org.eclipse.debug.core.ILaunchConfigurationType;
-import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
-import org.eclipse.debug.core.ILaunchManager;
 import org.eclipse.jdt.core.CompletionProposal;
 import org.eclipse.jdt.core.CompletionRequestor;
-import org.eclipse.jdt.core.IBuffer;
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IProblemRequestor;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.WorkingCopyOwner;
-import org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants;
 
 public class JavaSourceEditor extends GenericSourceEditor {
 
 	private ICompilationUnit workingCopy = null;
 
-	public JavaSourceEditor(String projectName, String packageName, String resourceName) {
-		super(projectName, packageName, resourceName);
+	public JavaSourceEditor(ResourceRef resourceRef) {
+		super(resourceRef);
+		System.out.println("JavaSourceEditor: Getting file for " + resourceRef);
 		IFile file = getFile(true);
+		System.out.println("JavaSourceEditor: Creating working copy for " + file);
 		workingCopy = JavaCore.createCompilationUnitFrom(file);
 		if (workingCopy.exists()) {
 			try {
@@ -49,10 +44,10 @@ public class JavaSourceEditor extends GenericSourceEditor {
 	@Override
 	public SourceFileMarker[] update(String stringContent, boolean markers, boolean commit) {
 		if (workingCopy != null) {
-			IBuffer buffer;
 			try {
-				buffer = workingCopy.getBuffer();
-				buffer.setContents(stringContent);
+				if (stringContent != null) {
+					workingCopy.getBuffer().setContents(stringContent);
+				}
 				final SourceFileMarkersProvider sourceFileMarkersProvider = new SourceFileMarkersProvider();
 				workingCopy.reconcile(ICompilationUnit.NO_AST, true, new WorkingCopyOwner() {
 					@Override
@@ -101,28 +96,5 @@ public class JavaSourceEditor extends GenericSourceEditor {
 			}
 		}
 		super.close(monitor);
-	}
-
-	// launching
-		
-	private static String javaApplicationLaunchId = IJavaLaunchConfigurationConstants.ID_JAVA_APPLICATION;
-	private static String junitTestLaunchId = "org.eclipse.jdt.junit.launchconfig";
-
-	protected ILaunchConfiguration getLaunchConfiguration(String key) throws Exception {
-		if (MAIN_LAUNCH_KEY.equals(key)) {
-			return createLaunchConfiguration(javaApplicationLaunchId, "Run Main", getQualifiedClassName(null));
-		} else if (TESTS_LAUNCH_KEY.equals(key)) {
-			return createLaunchConfiguration(junitTestLaunchId, "Run Tests", getQualifiedClassName("Test"));
-		}
-		return null;
-	}
-	
-	private ILaunchConfiguration createLaunchConfiguration(String launchConfigurationTypeId, String configName, String qualifiedClassName) throws CoreException {
-		ILaunchManager launchManager = DebugPlugin.getDefault().getLaunchManager();
-		ILaunchConfigurationType launchConfigurationType = launchManager.getLaunchConfigurationType(launchConfigurationTypeId);
-		ILaunchConfigurationWorkingCopy workingCopy = launchConfigurationType.newInstance(null, configName);
-		workingCopy.setAttribute(IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME, projectName);
-		workingCopy.setAttribute(IJavaLaunchConfigurationConstants.ATTR_MAIN_TYPE_NAME, qualifiedClassName);
-		return workingCopy.doSave();
 	}
 }

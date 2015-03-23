@@ -6,6 +6,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 
 import no.hal.eclipsky.services.common.AbstractResourcesServiceImpl;
+import no.hal.eclipsky.services.common.ResourceHelper;
 import no.hal.eclipsky.services.common.ResourceRef;
 import no.hal.eclipsky.services.common.SourceFileMarker;
 import no.hal.eclipsky.services.workspace.ProjectService;
@@ -22,7 +23,7 @@ import org.eclipse.core.runtime.CoreException;
 public class ProjectServiceImpl extends AbstractResourcesServiceImpl implements ProjectService, IResourceChangeListener, IResourceDeltaVisitor {
 
 	protected String[] getSourceFolderNames() {
-		return SOURCE_FOLDER_NAMES;
+		return ResourceHelper.SOURCE_FOLDER_NAMES;
 	}
 	
 	protected String getSourceFile(String projectName, String packageName, String resourceName) {

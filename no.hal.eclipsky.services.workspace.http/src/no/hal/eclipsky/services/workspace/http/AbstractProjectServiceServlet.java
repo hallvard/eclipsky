@@ -1,8 +1,5 @@
 package no.hal.eclipsky.services.workspace.http;
 
-import javax.servlet.http.HttpServletRequest;
-
-import no.hal.eclipsky.services.common.ResourceRef;
 import no.hal.eclipsky.services.workspace.ProjectService;
 
 @SuppressWarnings("serial")

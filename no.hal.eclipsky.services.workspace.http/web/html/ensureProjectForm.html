@@ -4,10 +4,10 @@
 <head>
 <body>
 <h1>Create project</h1>
-<form action="ensureProject" method="POST">
+<form action="ensureProject" method="POST" accept-charset="UTF-8">
 	Project name:
 	<input type="text" name="projectName"></br>
-	Emfs contents:
+	Emfs contents: <br/>
 	<textarea name="emfs" cols="80" rows="20">
 emfs $testspath="no.hal.jex.collection/src-gen/objectstructures"
 /
@@ -40,8 +40,9 @@ tests/objectstructures/
 	class-container org.eclipse.jdt.launching.JRE_CONTAINER
 	output-folder bin
 ;
-	</textarea></br>
-	<input type="submit" value="Submit">
+	</textarea><br/>
+	Forward to: <input type="text" name="forward" value="sourceEditorForm.html"/>
+	<input type="submit" value="Submit"/>
 </form>
 </body>
 </html>

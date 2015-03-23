@@ -1,4 +1,4 @@
-package no.hal.eclipsky.services.workspace.http;
+package no.hal.eclipsky.services.workspace.http.util;
 
 import java.io.PrintWriter;
 
@@ -131,7 +131,7 @@ public class JsonResponseFormatter extends ResponseFormatter {
 	}
 
 	@Override
-	protected ResponseFormatter startEntities(String name, boolean multi) {
+	public ResponseFormatter startEntities(String name, boolean multi) {
 		if (! contextStack.isEmpty()) {
 			printWriter.write("\"" + name + "\": ");
 		}
@@ -147,7 +147,7 @@ public class JsonResponseFormatter extends ResponseFormatter {
 	}
 
 	@Override
-	protected ResponseFormatter endEntities() {
+	public ResponseFormatter endEntities() {
 		pop(1);
 		newline(-1);
 		writeDelimiter(popDelimiter());
