@@ -71,20 +71,19 @@ public class AceEditorHelper {
 		if (options.resourceRefs != null) {
 			for (int i = 0; i < options.resourceRefs.length; i++) {
 				ResourceRef resourceRef = options.resourceRefs[i];
-				String baseName = resourceRef.getResourceName(), language = null;
-				int pos = baseName.lastIndexOf('.');
+				String resourceName = resourceRef.getResourceName(), language = null;
+				int pos = resourceName.lastIndexOf('.');
 				if (pos > 0) {
-					language = baseName.substring(pos + 1);
-					baseName = baseName.substring(0, pos);
+					language = resourceName.substring(pos + 1);
 				}
 				if (i > 0) {
 					writer.print(",");
 				}
-				writer.print("{resourceRef: '" + resourceRef.getPackageName() + "." + baseName);
+				writer.print("{resourceRef: '" + resourceRef.getPackageName() + "/" + resourceName);
 				if (language != null) {
 					writer.print("', language: '" + language + "'");
 				}
-				writer.println("},");
+				writer.println("}");
 			}
 		}
 		writer.println("];\n" +

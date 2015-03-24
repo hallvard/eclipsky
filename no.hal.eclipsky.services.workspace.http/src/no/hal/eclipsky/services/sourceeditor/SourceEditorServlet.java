@@ -38,7 +38,6 @@ public class SourceEditorServlet extends WebSocketServlet {
 	private Map<String, SourceEditorServletService> editorServices = new HashMap<String, SourceEditorServletService>();
 	
 	public synchronized void addSourceEditorServletService(SourceEditorServletService editorService) {
-		System.out.println("Adding SourceEditorServletService: " + editorService);
 		String[] operations = editorService.getSupportedOperations();
 		for (String op : operations) {
 			editorServices.put(op, editorService);
@@ -46,7 +45,6 @@ public class SourceEditorServlet extends WebSocketServlet {
 	}
 
 	public synchronized void removeServiceServlet(SourceEditorServletService editorService) {
-		System.out.println("Removing SourceEditorServletService: " + editorService);
 		String[] operations = editorService.getSupportedOperations();
 		for (String op : operations) {
 			editorServices.remove(op);
@@ -55,7 +53,6 @@ public class SourceEditorServlet extends WebSocketServlet {
 
 	protected void activate() {
 		try {
-			System.out.println("Registering servlet alias and resources for " + this);
 			httpService.registerServlet("/sourceEditor", (HttpServlet) this, null, null);
 			httpService.registerResources("/ace", "/web/ace-builds/src-noconflict", null);
 			httpService.registerResources("/js", "/web/js", null);
@@ -73,16 +70,6 @@ public class SourceEditorServlet extends WebSocketServlet {
 		} catch (Exception e) {
 		}
 	}
-
-//	private SourceProject getSourceProject(EditorServiceRequest request) {
-//		return sourceProjectManager.getSourceProject(request.resourceRef);
-//	}
-//
-//	private SourceEditor getSourceEditor(HttpServletRequest request) {
-//		ResourceRef resourceRef = AbstractServiceServlet.getResourceRef(request);
-//		SourceEditor editor = sourceProjectManager.getSourceProject(resourceRef).getSourceEditor(resourceRef);
-//		return editor;
-//	}
 	
 	private AceEditorHelper aceEditorHelper = new AceEditorHelper();
 
@@ -115,7 +102,6 @@ public class SourceEditorServlet extends WebSocketServlet {
 
 	protected void doEditorServiceOperation(String op, HttpServletRequest request, PrintWriter writer) {
 		ResourceRef resourceRef = AbstractServiceServlet.getResourceRef(request);
-		System.out.println("Resource argument: " + resourceRef);
 		EditorServiceRequest editorServiceRequest = new EditorServiceRequest(op, resourceRef, AbstractServiceServlet.getResponseFormat(request));
 		try {
 			CharSequence response = invokeEditorServiceOperation(editorServiceRequest, request.getParameter("body"));
@@ -124,6 +110,8 @@ public class SourceEditorServlet extends WebSocketServlet {
 			AbstractServiceServlet.writeExceptionResponse("html", writer, e);
 		}
 	}
+	
+	private final static String EMPTY_EDITOR_SERVLET_SERVICE_RESPONSE = "[]";
 
 	private CharSequence invokeEditorServiceOperation(EditorServiceRequest request, String requestBody) {
 		SourceEditorServletService editorService = editorServices.get(request.op);
@@ -132,43 +120,10 @@ public class SourceEditorServlet extends WebSocketServlet {
 			response = editorService.doSourceEditorServletService(request, requestBody);
 		}
 		if (response == null || response.length() == 0) {
-			response = "{}";
+			response = EMPTY_EDITOR_SERVLET_SERVICE_RESPONSE;
 		}
 		return response;
 	}
-
-//	private PrintWriter debugWriter = null; // new PrintWriter(System.out);
-	
-//	protected void updateSourceFile(HttpServletRequest request, HttpServletResponse response, Boolean exists, Boolean markers) throws ServletException, IOException {
-//		StringBuilder body = new StringBuilder(request.getContentLength());
-//		BufferedReader reader = request.getReader();
-//		String line = null;
-//		while ((line = reader.readLine()) != null) {
-//			body.append(line);
-//			body.append("\n");
-//		}
-//		String stringContent = body.toString();
-//		if (stringContent == null) {
-//			super.doPost(request, response);
-//		} else {
-//			SourceEditor editor = getSourceEditor(request);
-//			if (editor == null) {
-//				super.doPost(request, response);
-//			} else {
-//				String responseFormat = AbstractWorkspaceServiceServlet.getResponseFormat(request);
-//				response.setContentType("text/" + ("html".equals(responseFormat) ? "html" : "plain"));
-//				SourceFileMarker[] sourceFileMarkers = editor.update(stringContent, markers, false);
-//				if (debugWriter != null) {
-//					writeMarkersResponse(responseFormat, debugWriter, sourceFileMarkers);
-//					debugWriter.flush();
-//				}
-//				writeMarkersResponse(responseFormat, response.getWriter(), sourceFileMarkers);
-//			}
-//		}
-//	}
-
-	private final static String EMPTY_EDITOR_SERVLET_SERVICE_RESPONSE = "{}";
-
 	
 	@Override
 	public WebSocket doWebSocketConnect(HttpServletRequest request, final String protocol) {
@@ -187,7 +142,6 @@ public class SourceEditorServlet extends WebSocketServlet {
 
 			@Override
 			public void onMessage(String message) {
-				System.out.println("WebSocket message: " + message);
 				int pos = message.indexOf('\n');
 				String op = message, contents = null;
 				ResourceRef resourceRef = new ResourceRef(projectRef, null, null);
@@ -197,7 +151,7 @@ public class SourceEditorServlet extends WebSocketServlet {
 				}
 				pos = op.indexOf(' ');
 				if (pos >= 0) {
-					resourceRef = AbstractServiceServlet.getResourceRef(projectRef, op.substring(pos + 1));
+					resourceRef = AbstractServiceServlet.getResourceRef(op.substring(pos + 1), projectRef);
 					op = op.substring(0, pos);
 				}
 				EditorServiceRequest editorServiceRequest = new EditorServiceRequest(op, resourceRef, "json");
