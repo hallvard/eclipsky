@@ -4,35 +4,52 @@
 <head>
 <body>
 <h1>Source editor</h1>
-<form action="sourceEditor" method="POST" accept-charset="UTF-8" target="response">
-	Project name:
-	<input type="text" name="projectName" value="&lt;project name&gt;"></br>
-	Operation:
-	 <select name="op">
-	  <option value="refresh">refresh</option>
-	  <option value="markers">markers</option>
-	  <option value="update">update</option>
-	  <option value="run">run</option>
-	</select>
-	</br>
-	Package and resource names (for certain op's):
-	<input type="text" name="packageName" value="&lt;package name&gt;">
-	<input type="text" name="resourceName" value="&lt;resource name&gt;">
-	</br>
-	Request body (for certain op's):</br>	
-	<textarea name="body" cols="80" rows="20">
-	</textarea>
-	</br>
-	Response format (not all are supported by all op's):
-	 <select name="format">
-	  <option value="json">json</option>
-	  <option value="html">html</option>
-	  <option value="xml">xml</option>
-	</select>
-	<input type="submit" value="Submit"/>
-</form>
-<hr/>
-Response:</br>
-<iframe name="response" width="600" height="200"/> 
+<table>
+	<tr><th>Test form</th><th>Response</th></tr>
+	<tr>
+		<td>
+			<form action="sourceEditor" method="POST" accept-charset="UTF-8" target="response">
+				<b>projectName</b>:
+				<input type="text" name="projectName" value="&lt;project name&gt;"></br>
+				<b>op</b>eration:
+				 <select name="op">
+				  <option value="refresh">refresh</option>
+				  <option value="markers">markers</option>
+				  <option value="completion">completion</option>
+				  <option value="update">update</option>
+				  <option value="run">run</option>
+				</select>
+				</br>
+				<b>packageName</b> and <b>resourceName</b> (for certain op's):
+				<input type="text" name="packageName"/>
+				<input type="text" name="resourceName"/>
+				</br>...or...</br>
+				<b>resourceRef</b> (for certain op's):
+				<input type="text" name="resourceRef"/>
+				</br>
+				Request <b>body</b> (for certain op's):</br>	
+				<textarea name="body" cols="80" rows="20">
+				</textarea>
+				</br>
+				Response <b>format</b> (not all are supported by all op's):
+				 <select name="format">
+				  <option value="json">json</option>
+				  <option value="html">html</option>
+				  <option value="xml">xml</option>
+				</select>
+				<input type="submit" name="test" value="Submit"/>
+				</br><input type="submit" name="edit" value="Start editor" formmethod="GET" formtarget="editor"/>
+			</form>
+		</td>
+		<td>
+			<iframe name="response" width="600" height="400"></iframe>
+		</td>
+	</tr>
+	<tr>
+		<td colspan="2">
+			<iframe name="editor" width="800" height="400"></iframe>
+		</td>
+	</tr>
+</table> 
 </body>
 </html>

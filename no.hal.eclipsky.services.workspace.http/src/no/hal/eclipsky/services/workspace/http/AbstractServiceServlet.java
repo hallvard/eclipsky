@@ -158,25 +158,66 @@ public abstract class AbstractServiceServlet extends HttpServlet implements Serv
 	static String PROJECT_NAME_REQUEST_PARAMETER = "projectName";
 	static String PACKAGE_NAME_REQUEST_PARAMETER = "packageName";
 	static String RESOURCE_NAME_REQUEST_PARAMETER = "resourceName";
+	static String RESOURCE_REF_REQUEST_PARAMETER = "resourceRef";
 
 	public static ProjectRef getProjectRef(HttpServletRequest request) {
 		return new ProjectRef(request.getParameter(PROJECT_NAME_REQUEST_PARAMETER));
 	}
 
 	public static ResourceRef getResourceRef(HttpServletRequest request) {
+		return getResourceRef(request, null);
+	}
+
+	public static ResourceRef getResourceRef(HttpServletRequest request, ProjectRef defaultProject) {
+		String resourceRefString = request.getParameter(RESOURCE_REF_REQUEST_PARAMETER);
+		String projectName = request.getParameter(PROJECT_NAME_REQUEST_PARAMETER);
+		if (resourceRefString != null && resourceRefString.trim().length() > 0) {
+			if (defaultProject == null && projectName != null && projectName.trim().length() > 0) {
+				defaultProject = new ProjectRef(projectName);
+			}
+			return getResourceRef(resourceRefString, defaultProject);
+		}
+		if (projectName == null || projectName.trim().length() == 0 && defaultProject != null) {
+			projectName = defaultProject.getProjectName();
+		}
 		return new ResourceRef(
-				request.getParameter(PROJECT_NAME_REQUEST_PARAMETER),
+				projectName,
 				request.getParameter(PACKAGE_NAME_REQUEST_PARAMETER),
 				request.getParameter(RESOURCE_NAME_REQUEST_PARAMETER)
 				);
 	}
 
-	public static ResourceRef getResourceRef(ProjectRef projectRef, String resourcePath) {
-		String[] segments = resourcePath.split("/");
-		int count = segments.length;
-		String resourceName = (count >= 1 ? segments[count - 1] : null);
-		String packageName = (count >= 2 ? segments[count - 2] : null);
-		return new ResourceRef(projectRef, packageName.replace('/', '.'), resourceName);
+	public static ResourceRef getResourceRef(String resourcePath) {
+		return getResourceRef(resourcePath, null);
+	}
+
+	public static ResourceRef getResourceRef(String resourcePath, ProjectRef defaultProject) {
+		int startPos = 0, pos = resourcePath.indexOf('/'), lastPos = resourcePath.lastIndexOf('/');
+		String projectName = null, packageName = null, resourceName = null;
+		if (pos == 0) {
+			// skip first char
+			startPos = 1;
+			pos = resourcePath.indexOf('/');
+		}
+		if (pos < 0) {
+			// one segment
+			resourceName = resourcePath;
+		} else {
+			// at least two segment: resourceName
+			resourceName = resourcePath.substring(lastPos + 1);
+			if (pos == lastPos) {
+				// only two segments: packageName/resourceName
+				packageName = resourcePath.substring(startPos, lastPos);
+			} else {
+				// three or more segments: projectName/packageName/resourceName
+				projectName = resourcePath.substring(startPos, pos);
+				packageName = resourcePath.substring(pos + 1, lastPos).replace('/', '.');
+			}
+		}
+		if (projectName == null && defaultProject != null) {
+			projectName = defaultProject.getProjectName();
+		}
+		return new ResourceRef(projectName, packageName, resourceName);
 	}
 	
 	protected void writerResourcesResponse(String responseFormat, PrintWriter writer, ResourcesService resourcesService, ResourceRef resourceRef, int depth) throws ServletException, IOException {

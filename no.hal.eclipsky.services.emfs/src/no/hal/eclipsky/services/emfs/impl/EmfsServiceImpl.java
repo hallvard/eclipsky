@@ -10,6 +10,7 @@ import no.hal.eclipsky.services.emfs.EmfsService;
 import no.hal.emfs.EmfsResource;
 import no.hal.emfs.util.CompositeImportSupport;
 import no.hal.emfs.util.ImportHelper;
+import no.hal.emfs.util.ImportHelperOptions;
 import no.hal.emfs.util.ImportSupport;
 import no.hal.emfs.xtext.XemfsStandaloneSetup;
 
@@ -30,10 +31,10 @@ public class EmfsServiceImpl implements EmfsService {
 	}
 
 	@Override
-	public void importResources(Collection<EmfsResource> emfsResources, String projectName, boolean overwrite, IProgressMonitor monitor) throws Exception {
+	public void importResources(Collection<EmfsResource> emfsResources, String projectName, ImportHelperOptions options, IProgressMonitor monitor) throws Exception {
 		IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject(projectName);
 		ImportHelper importHelper = new ImportHelper();
-		importHelper.overwrite = overwrite;
+		importHelper.set(options);
 		importHelper.importSupport = importSupports;
 		importHelper.importResources(emfsResources, project, monitor);
 	}
