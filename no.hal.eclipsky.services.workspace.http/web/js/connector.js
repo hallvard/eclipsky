@@ -8,13 +8,40 @@ var connector = (function() {
 		// All subscribers need to implement a 'notify()'-function
 		subscribers = [], 
 
-		XHRpostfix = "&format=json";
+		XHRpostfix = "&format=json",
+		
+		queue = [];
 	
 	// Publish to all listeners
 	function publish(data) {
 		c.log('publishing: ', data);
 		for (var i = subscribers.length - 1; i >= 0; i--) {
 			subscribers[i].notify(data);
+		}
+	};
+	
+	// Add to the queue of requests to send
+	function push(data) {
+		// Empty array, pop right away
+		queue.push(data);
+		if (queue.length === 0) {
+			pop();
+		} 	
+	};
+	
+	// Pop from the queue and perform a send request
+	function pop() {
+		var data;
+		if (queue.length > 0) {
+			data = queue.pop();
+		} else {
+			return;
+		}
+		
+		if (webSocket.readyState === webSocket.OPEN) {
+			webSocket.send(data);
+		} else {
+			sendXHRdata(data);
 		}
 	};
 	
@@ -25,13 +52,14 @@ var connector = (function() {
 		var startTime = new Date();
 		xmlHttp.onreadystatechange = function () {
 			if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
+				pop();
 				publish(xmlHttp.responseText);
 			}
 		}
 		xmlHttp.send(data);
 	};
 	
-	
+	// Compatibility
 	function getXmlHTTP() {
         if (window.XMLHttpRequest) {
             return new XMLHttpRequest();
@@ -39,10 +67,6 @@ var connector = (function() {
             return new ActiveXObject('Microsoft.XMLHTTP');
         }
     };
-	
-	function sendWSdata(data) {
-		webSocket.send(data);
-	};
 	
 	function initializeWebsocket(url) {
 		var link = document.createElement('a');
@@ -66,6 +90,7 @@ var connector = (function() {
 	    };
 
 	    webSocket.onmessage = function(event) {
+			pop();
 	    	publish(event);
 	    }
 	};
@@ -78,11 +103,7 @@ var connector = (function() {
 		},
 
 		send : function(data) {
-			if (webSocket.readyState === webSocket.OPEN) {
-				sendWSdata(data);
-			} else {
-				sendXHRdata(data);
-			}
+			push(data);
 		},
 		
 		subscribe : function(subscriber) {
