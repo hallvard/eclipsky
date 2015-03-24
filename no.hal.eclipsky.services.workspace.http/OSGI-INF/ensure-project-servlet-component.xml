@@ -10,9 +10,9 @@
    		bind="setWorkspaceService"
    	/>
    	<reference
-   		name="emfsService"
-   		interface="no.hal.eclipsky.services.emfs.EmfsService"
-   		bind="setEmfsService"
+   		name="sourceProjectManager"
+   		interface="no.hal.eclipsky.services.workspace.http.SourceProjectManager"
+   		bind="setSourceProjectManager"
    	/>
    <property name="servlet.alias" value="ensureProject"/>
    <property name="resource.alias.ensureProjectForm.html" value="/html/ensureProjectForm.html"/>

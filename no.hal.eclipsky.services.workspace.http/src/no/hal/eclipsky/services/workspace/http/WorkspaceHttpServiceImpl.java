@@ -17,16 +17,16 @@ public class WorkspaceHttpServiceImpl {
 	
 	private Collection<ServiceServlet> serviceServlets = new ArrayList<ServiceServlet>();
 	
-	public synchronized void addServiceServlet(ServiceServlet workspaceServiceServlet) {
+	public synchronized void addServiceServlet(ServiceServlet serviceServlet) {
 		try {
-			String alias = workspaceServiceServlet.getAlias();
+			String alias = serviceServlet.getAlias();
 			if (alias != null) {
 				alias = "/" + alias;
-				System.out.println("Registering servlet alias: " + workspaceServiceServlet + " @ " + alias);
-				httpService.registerServlet(alias, (HttpServlet) workspaceServiceServlet, null, null);
-				serviceServlets.add(workspaceServiceServlet);
+				System.out.println("Registering servlet alias: " + serviceServlet + " @ " + alias);
+				httpService.registerServlet(alias, (HttpServlet) serviceServlet, null, null);
+				serviceServlets.add(serviceServlet);
 			}
-			String[] resourceAliases = workspaceServiceServlet.getResourceAliases();
+			String[] resourceAliases = serviceServlet.getResourceAliases();
 			if (resourceAliases != null) {
 				for (int i = 0; i < resourceAliases.length; i += 2) {
 					String resourceAlias = "/" + resourceAliases[i], resourceAliasValue = resourceAliases[i + 1];
@@ -38,15 +38,15 @@ public class WorkspaceHttpServiceImpl {
 		}
 	}
 
-	public synchronized void removeServiceServlet(ServiceServlet workspaceServiceServlet) {
-		serviceServlets.remove(workspaceServiceServlet);
-		String alias = workspaceServiceServlet.getAlias();
+	public synchronized void removeServiceServlet(ServiceServlet serviceServlet) {
+		serviceServlets.remove(serviceServlet);
+		String alias = serviceServlet.getAlias();
 		if (alias != null) {
 			alias = "/" + alias;
 			System.out.println("Unregistering alias: " + alias);
 			httpService.unregister(alias);
 		}
-		String[] resourceAliases = workspaceServiceServlet.getResourceAliases();
+		String[] resourceAliases = serviceServlet.getResourceAliases();
 		if (resourceAliases != null) {
 			for (int i = 0; i < resourceAliases.length; i += 2) {
 				String resourceAlias = "/" + resourceAliases[i];

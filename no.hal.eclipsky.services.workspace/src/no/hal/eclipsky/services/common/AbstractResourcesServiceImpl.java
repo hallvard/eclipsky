@@ -42,16 +42,13 @@ public class AbstractResourcesServiceImpl implements ResourcesService {
 		return ResourceHelper.getFileBytesContent(file);
 	}
 	
-	protected static String[] SOURCE_FOLDER_NAMES = {"src", "resources"};
-	protected static String[] SOURCE_AND_TEST_FOLDER_NAMES = {"src", "resources", "tests"};
-	
 	@Override
 	public void visitResources(ResourceVisitor visitor, int depth, ResourceRef resourceRef) {
 		String projectName = resourceRef.getProjectName();
 		IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject(projectName);
 		if (project != null && project.exists()) {
-			for (int j = 0; j < SOURCE_AND_TEST_FOLDER_NAMES.length; j++) {
-				String packageRoot = IPath.SEPARATOR + SOURCE_AND_TEST_FOLDER_NAMES[j];
+			for (String sourceFolderName : ResourceHelper.SOURCE_AND_TEST_FOLDER_NAMES) {
+				String packageRoot = IPath.SEPARATOR + sourceFolderName;
 				visitResource(visitor, depth, project, packageRoot, resourceRef.getPackageName(), resourceRef.getResourceName());
 				visitor.visit(new ResourceRef(projectName, null, null));
 			}

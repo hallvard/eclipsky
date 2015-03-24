@@ -1,4 +1,4 @@
-package no.hal.eclipsky.services.workspace.http;
+package no.hal.eclipsky.services.workspace.http.util;
 
 import java.io.PrintWriter;
 
@@ -89,13 +89,13 @@ public class XmlResponseFormatter extends ResponseFormatter {
 	}
 
 	@Override
-	protected ResponseFormatter startEntities(String name, boolean multi) {
+	public ResponseFormatter startEntities(String name, boolean multi) {
 		startTag(name, true);
 		return null;
 	}
 
 	@Override
-	protected ResponseFormatter endEntities() {
+	public ResponseFormatter endEntities() {
 		indent(-1);
 		endTag(true);
 		return this;

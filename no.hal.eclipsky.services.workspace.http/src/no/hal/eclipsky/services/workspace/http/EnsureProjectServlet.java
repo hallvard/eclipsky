@@ -5,9 +5,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -15,10 +12,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import no.hal.eclipsky.services.common.ProjectRef;
 import no.hal.eclipsky.services.common.ResourceRef;
-import no.hal.eclipsky.services.emfs.EmfsService;
 import no.hal.emfs.EmfsPackage;
 import no.hal.emfs.EmfsResource;
-import no.hal.emfs.util.PropertyResolver;
 
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.Resource;
@@ -28,11 +23,11 @@ import org.eclipse.emf.ecore.util.EcoreUtil;
 
 @SuppressWarnings("serial")
 public class EnsureProjectServlet extends ProjectListServlet {
+
+	private SourceProjectManager sourceProjectManager;
 	
-	private EmfsService emfsService;
-	
-	public synchronized void setEmfsService(EmfsService emfsService) {
-		this.emfsService = emfsService;
+	public synchronized void setSourceProjectManager(SourceProjectManager sourceProjectManager) {
+		this.sourceProjectManager = sourceProjectManager;
 	}
 	
 	@Override
@@ -64,54 +59,55 @@ public class EnsureProjectServlet extends ProjectListServlet {
 		}
 	}
 
-	private PropertyResolver propertyResolver = new PropertyResolver(false, true);
-
 	@Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		doPut(request, response);
+		handleRequest(request, response);
 	}
 
+	@Override
 	protected void doPut(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		handleRequest(request, response);
+	}
+	
+	private void handleRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		ProjectRef projectRef = getProjectRef(request);
 		String emfsContent = request.getParameter("emfs"); // getRequestBodyContent(request);
-		EmfsResource emfsResource = null;
 		Exception ex = null;
 		try {
-			emfsResource = getEmfsResource(emfsContent);
+			EmfsResource emfsResource = getEmfsResource(emfsContent);
+			sourceProjectManager.ensureSourceProject(projectRef, emfsResource);
 		} catch (Exception resourceException) {
 			ex = resourceException;
 		}
-		Collection<String> natures = new ArrayList<String>();
-		Object naturePropertyValue = (emfsResource != null ? propertyResolver.getProperty(emfsResource, "natures") : null);
-		if (naturePropertyValue != null) {
-//			natures.addAll(Arrays.asList(String.valueOf(naturePropertyValue).split("[,;]")));
-		}
-		String projectName = projectRef.getProjectName();
-		getWorkspaceService().ensureProject(projectName, natures.toArray(new String[natures.size()]));
-		if (emfsResource != null) {
-//			boolean overwrite = Boolean.valueOf(request.getParameter("overwrite"));
-			try {
-				emfsService.importResources(Arrays.asList(emfsResource), projectName, true, null);
-			} catch (Exception importException) {
-				ex = importException;
+		String responseFormat = getResponseFormat(request);
+		String forward = request.getParameter("forward");
+		if (ex != null) {
+			PrintWriter writer = response.getWriter();
+			writeExceptionResponse(responseFormat, writer, ex);
+		} else if (forward != null) {
+			if (! forward.contains("?")) {
+				forward += "?";
+			} else {
+				forward += "&";
+			}  
+			forward += "projectName=" + projectRef.getProjectName();
+//			request.getRequestDispatcher(forward).forward(request, response);
+			response.sendRedirect(forward);
+		} else {
+			PrintWriter writer = response.getWriter();
+			String projectName = projectRef.getProjectName();
+			if (! "html".equals(responseFormat)) {
+				writeProjectListResponse(responseFormat, writer, projectName);
+			} else {
+				writer.println("<html>\n"
+						+ "\t<head><title>Project " + projectName + "</title></head>\n"
+						+ "\t<body>");
+				writer.println("<h1>Project " + projectName + "'s packages and resources</h1>\n"
+						+ "\t<ul>");
+				writerResourcesResponse(responseFormat, writer, getWorkspaceService(), new ResourceRef(projectName, null, null), -1);
+				writer.println("\t</ul></body>\n"
+						+ "</html>");
 			}
 		}
-		String responseFormat = getResponseFormat(request);
-		PrintWriter writer = response.getWriter();
-		if (ex != null) {
-			writeExceptionResponse(responseFormat, writer, ex);
-		} else if (! "html".equals(responseFormat)) {
-			writeProjectListResponse(responseFormat, writer, projectName);
-		} else {
-			writer.println("<html>\n"
-					+ "\t<head><title>Project " + projectName + "</title></head>\n"
-					+ "\t<body>");
-			writer.println("<h1>Project " + projectName + "'s packages and resources</h1>\n"
-					+ "\t<ul>");
-			writerResourcesResponse(responseFormat, writer, getWorkspaceService(), new ResourceRef(projectName, null, null), -1);
-			writer.println("\t</ul></body>\n"
-					+ "</html>");
-		}
-		writer.close();
 	}
 }

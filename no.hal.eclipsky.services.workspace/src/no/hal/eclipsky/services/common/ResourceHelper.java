@@ -20,6 +20,26 @@ import org.eclipse.core.runtime.Path;
 
 public class ResourceHelper {
 
+	public static String[] SOURCE_FOLDER_NAMES = {"src", "resources"};
+	public static String[] SOURCE_AND_TEST_FOLDER_NAMES = {"src", "resources", "tests"};
+
+	private static boolean isNamed(String name, String... names) {
+		for (int i = 0; i < names.length; i++) {
+			if (names[i].equals(name)) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	public static boolean isSourceOrTestFolderName(String name) {
+		return isNamed(name, SOURCE_AND_TEST_FOLDER_NAMES);
+	}
+
+	public static boolean isSourceFolderName(String name) {
+		return isNamed(name, SOURCE_FOLDER_NAMES);
+	}
+	
 	private IFile file;
 	
 	public ResourceHelper(IFile file) {

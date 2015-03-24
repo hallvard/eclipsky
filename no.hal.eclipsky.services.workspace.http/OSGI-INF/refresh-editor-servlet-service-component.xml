@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" name="no.hal.eclipsky.services.sourceeditor.RefreshEditorServletService"
+	activate="activate"
+	immediate="true"
+	>
+   	<implementation class="no.hal.eclipsky.services.sourceeditor.RefreshEditorServletService"/>
+   	<service>
+      	<provide interface="no.hal.eclipsky.services.sourceeditor.SourceEditorServletService"/>
+   	</service>
+   	<reference
+   		name="sourceProjectManager"
+   		interface="no.hal.eclipsky.services.workspace.http.SourceProjectManager"
+   		bind="setSourceProjectManager"
+   	/>
+   	<property name="operations" value="refresh"/>
+</scr:component>

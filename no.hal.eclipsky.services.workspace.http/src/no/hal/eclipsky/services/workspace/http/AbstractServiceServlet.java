@@ -16,6 +16,9 @@ import no.hal.eclipsky.services.common.AbstractResourceVisitor;
 import no.hal.eclipsky.services.common.ProjectRef;
 import no.hal.eclipsky.services.common.ResourceRef;
 import no.hal.eclipsky.services.workspace.ResourcesService;
+import no.hal.eclipsky.services.workspace.http.util.JsonResponseFormatter;
+import no.hal.eclipsky.services.workspace.http.util.ResponseFormatter;
+import no.hal.eclipsky.services.workspace.http.util.XmlResponseFormatter;
 
 import org.osgi.service.component.ComponentContext;
 
@@ -68,7 +71,7 @@ public abstract class AbstractServiceServlet extends HttpServlet implements Serv
 		return getResponseFormat(request, "html");
 	}
 	
-	protected static ResponseFormatter getResponseFormatter(String responseFormat, PrintWriter writer) {
+	public static ResponseFormatter getResponseFormatter(String responseFormat, PrintWriter writer) {
 		switch (responseFormat) {
 		case "xml": return new XmlResponseFormatter(writer);
 		case "json": return new JsonResponseFormatter(writer);
@@ -90,7 +93,7 @@ public abstract class AbstractServiceServlet extends HttpServlet implements Serv
 		return body.toString();
 	}
 	
-	protected void writeExceptionResponse(String responseFormat, PrintWriter writer, Exception ex) throws ServletException, IOException {
+	public static void writeExceptionResponse(String responseFormat, PrintWriter writer, Exception ex) {
 		switch (responseFormat) {
 		case "xml" : writer.println("<exception>"); break;
 		case "json" : writer.println("["); break;
@@ -101,7 +104,7 @@ public abstract class AbstractServiceServlet extends HttpServlet implements Serv
 			break;
 		}
 		}
-		writer.print(ex);
+		ex.printStackTrace(writer);
 		switch (responseFormat) {
 		case "xml" : writer.println("</exception>"); break;
 		case "json" : writer.println("]"); break;
@@ -115,6 +118,7 @@ public abstract class AbstractServiceServlet extends HttpServlet implements Serv
 
 	protected static class ResourceResponseWriter extends AbstractResourceVisitor {
 		
+		@SuppressWarnings("unused")
 		private String responseFormat;
 		private PrintWriter writer;
 		
@@ -151,12 +155,28 @@ public abstract class AbstractServiceServlet extends HttpServlet implements Serv
 		}
 	}
 	
+	static String PROJECT_NAME_REQUEST_PARAMETER = "projectName";
+	static String PACKAGE_NAME_REQUEST_PARAMETER = "packageName";
+	static String RESOURCE_NAME_REQUEST_PARAMETER = "resourceName";
+
 	public static ProjectRef getProjectRef(HttpServletRequest request) {
-		return new HttpProjectRef(request);
+		return new ProjectRef(request.getParameter(PROJECT_NAME_REQUEST_PARAMETER));
 	}
 
 	public static ResourceRef getResourceRef(HttpServletRequest request) {
-		return new HttpResourceRef(request);
+		return new ResourceRef(
+				request.getParameter(PROJECT_NAME_REQUEST_PARAMETER),
+				request.getParameter(PACKAGE_NAME_REQUEST_PARAMETER),
+				request.getParameter(RESOURCE_NAME_REQUEST_PARAMETER)
+				);
+	}
+
+	public static ResourceRef getResourceRef(ProjectRef projectRef, String resourcePath) {
+		String[] segments = resourcePath.split("/");
+		int count = segments.length;
+		String resourceName = (count >= 1 ? segments[count - 1] : null);
+		String packageName = (count >= 2 ? segments[count - 2] : null);
+		return new ResourceRef(projectRef, packageName.replace('/', '.'), resourceName);
 	}
 	
 	protected void writerResourcesResponse(String responseFormat, PrintWriter writer, ResourcesService resourcesService, ResourceRef resourceRef, int depth) throws ServletException, IOException {

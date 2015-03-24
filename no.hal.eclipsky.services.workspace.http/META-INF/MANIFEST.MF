@@ -20,11 +20,15 @@ Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
 Bundle-ClassPath: .
 Service-Component: OSGI-INF/component.xml,
+ OSGI-INF/source-project-manager-component.xml,
  OSGI-INF/project-list-servlet-component.xml,
  OSGI-INF/project-resources-servlet-component.xml,
  OSGI-INF/ensure-project-servlet-component.xml,
- OSGI-INF/source-file-editor-servlet-component.xml,
- OSGI-INF/source-file-markers-servlet-component.xml,
- OSGI-INF/source-editor-servlet-component.xml
+ OSGI-INF/source-editor-servlet-component.xml,
+ OSGI-INF/refresh-editor-servlet-service-component.xml,
+ OSGI-INF/update-editor-servlet-service-component.xml,
+ OSGI-INF/completion-editor-servlet-service-component.xml,
+ OSGI-INF/markers-editor-servlet-service-component.xml,
+ OSGI-INF/run-editor-servlet-service-component.xml
 Import-Package: javax.servlet;version="2.6.0",
  javax.servlet.http;version="2.6.0"
