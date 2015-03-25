@@ -1,5 +1,6 @@
 package no.hal.eclipsky.services.sourceeditor;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.HashMap;
@@ -15,6 +16,8 @@ import no.hal.eclipsky.services.common.ResourceRef;
 import no.hal.eclipsky.services.workspace.http.AbstractServiceServlet;
 import no.hal.eclipsky.services.workspace.http.AceEditorHelper;
 import no.hal.eclipsky.services.workspace.http.SourceProjectManager;
+import no.hal.eclipsky.services.workspace.http.util.JsonResponseFormatter;
+import no.hal.eclipsky.services.workspace.http.util.ResponseFormatter;
 
 import org.eclipse.jetty.websocket.WebSocket;
 import org.eclipse.jetty.websocket.WebSocketServlet;
@@ -74,7 +77,7 @@ public class SourceEditorServlet extends WebSocketServlet {
 	private AceEditorHelper aceEditorHelper = new AceEditorHelper();
 
 	@Override
-	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {		
 		ResourceRef resourceRef = AbstractServiceServlet.getResourceRef(request);
 		boolean embed = Boolean.valueOf(request.getParameter("embed"));
 		response.setContentType("text/html");
@@ -103,8 +106,9 @@ public class SourceEditorServlet extends WebSocketServlet {
 	protected void doEditorServiceOperation(String op, HttpServletRequest request, PrintWriter writer) {
 		ResourceRef resourceRef = AbstractServiceServlet.getResourceRef(request);
 		EditorServiceRequest editorServiceRequest = new EditorServiceRequest(op, resourceRef, AbstractServiceServlet.getResponseFormat(request));
+		String protocol = editorServiceRequest.responseFormat;
 		try {
-			CharSequence response = invokeEditorServiceOperation(editorServiceRequest, request.getParameter("body"));
+			CharSequence response = invokeEditorServiceOperation(editorServiceRequest, request.getParameter("body"), protocol);
 			writer.print(response);
 		} catch (Exception e) {
 			AbstractServiceServlet.writeExceptionResponse("html", writer, e);
@@ -113,11 +117,11 @@ public class SourceEditorServlet extends WebSocketServlet {
 	
 	private final static String EMPTY_EDITOR_SERVLET_SERVICE_RESPONSE = "[]";
 
-	private CharSequence invokeEditorServiceOperation(EditorServiceRequest request, String requestBody) {
+	private CharSequence invokeEditorServiceOperation(EditorServiceRequest request, String requestBody, String protocol) {
 		SourceEditorServletService editorService = editorServices.get(request.op);
 		CharSequence response = null;
 		if (editorService != null) {
-			response = editorService.doSourceEditorServletService(request, requestBody);
+			response = editorService.doSourceEditorServletService(request, requestBody, protocol);
 		}
 		if (response == null || response.length() == 0) {
 			response = EMPTY_EDITOR_SERVLET_SERVICE_RESPONSE;
@@ -142,34 +146,84 @@ public class SourceEditorServlet extends WebSocketServlet {
 
 			@Override
 			public void onMessage(String message) {
+				System.out.println("Message: " + message);
 				int pos = message.indexOf('\n');
-				String op = message, contents = null;
+				String op = message, contents = "", identifier = "";
 				ResourceRef resourceRef = new ResourceRef(projectRef, null, null);
+				
+				// First operation
 				if (pos >= 0) {
 					op = op.substring(0, pos);
 					contents = message.substring(pos + 1);
 				}
+				
+				// Second operation
 				pos = op.indexOf(' ');
 				if (pos >= 0) {
 					resourceRef = AbstractServiceServlet.getResourceRef(op.substring(pos + 1), projectRef);
 					op = op.substring(0, pos);
 				}
-				EditorServiceRequest editorServiceRequest = new EditorServiceRequest(op, resourceRef, "json");
-				CharSequence response = invokeEditorServiceOperation(editorServiceRequest, contents);
+				
+				// Third operation
+				int newPos = op.indexOf(' ', pos);
+				if (newPos >= 0) {
+					identifier = op.substring(pos, newPos);
+				}
+				EditorServiceRequest editorServiceRequest = new EditorServiceRequest(op, resourceRef, protocol);
+				CharSequence response = invokeEditorServiceOperation(editorServiceRequest, contents, protocol);
+				
 				try {
 					connection.sendMessage(response != null ? response.toString() : EMPTY_EDITOR_SERVLET_SERVICE_RESPONSE);
 				} catch (IOException e) {
+					e.printStackTrace();
 				}
 			}
 			
 			@Override
-			public void onOpen(Connection connection) {
+			public void onOpen(Connection connection) {				
 				this.connection = connection;
+				
+				try {
+					connection.sendMessage(getReadyResponse(protocol));
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+				
+				/*
 				try {
 					connection.sendMessage(EMPTY_EDITOR_SERVLET_SERVICE_RESPONSE);
 				} catch (IOException e) {
 					e.printStackTrace();
+				}*/
+			}
+			
+			private String getReadyResponse(String protocol) {
+				
+				ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+				PrintWriter writer = new PrintWriter(buffer);
+				ResponseFormatter formatter = AbstractServiceServlet.getResponseFormatter(protocol, writer);
+				if (formatter != null) {
+					formatter.startEntities("ready", false);
+				} else {
+					writer.println("<html>\n"
+							+ "\t<head><title>Refresh</title></head>\n"
+							+ "\t<body>");
+					writer.println("\t\t<h1>Refresh</h1>\n\t\t");
 				}
+
+				if (formatter != null) {
+					formatter.entity("ready").endEntity();
+				} else {
+					// TODO: Write a proper result display
+					writer.println("\t\t\t<p>Ready</p>");
+				}
+				
+				if (formatter == null) {
+					writer.println("\t</body>\n</html>");
+				}
+				
+				writer.close();		
+				return buffer.toString();
 			}
 		};
 	}
