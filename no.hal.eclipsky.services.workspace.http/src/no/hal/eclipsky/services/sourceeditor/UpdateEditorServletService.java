@@ -8,8 +8,8 @@ public class UpdateEditorServletService extends AbstractSourceEditorServletServi
 	protected Boolean markersDefault = true;
 
 	@Override
-	public String doSourceEditorServletService(EditorServiceRequest request, String requestBody) {
+	public String doSourceEditorServletService(EditorServiceRequest request, String requestBody, String protocol) {
 		SourceFileMarker[] sourceFileMarkers = getSourceEditor(request).update(requestBody, markersDefault, false);
-		return MarkersEditorServletService.markersResponse(sourceFileMarkers, request.responseFormat);
+		return MarkersEditorServletService.markersResponse(sourceFileMarkers, protocol);
 	}
 }

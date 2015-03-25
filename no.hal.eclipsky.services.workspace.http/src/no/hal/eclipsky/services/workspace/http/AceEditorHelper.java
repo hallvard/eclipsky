@@ -65,6 +65,7 @@ public class AceEditorHelper {
 				"\t\t\t<script src=\"/ace/ace.js\" type=\"text/javascript\" charset=\"utf-8\"></script>\n" +
 				"\t\t\t<script src=\"/ace/ext-language_tools.js\" type=\"text/javascript\" charset=\"utf-8\"></script>\n" +
 				"\t\t\t<script src=\"/js/connector.js\" type=\"text/javascript\" charset=\"utf-8\"></script>\n" +
+				"\t\t\t<script src=\"/js/cookiemanager.js\" type=\"text/javascript\" charset=\"utf-8\"></script>\n" +
 				"\t\t\t<script src=\"/js/editor.js\" type=\"text/javascript\" charset=\"utf-8\"></script>\n");
 		writer.println("\t\t\t<script>\n" +
 				"\t\t\tvar editors = [");
@@ -87,7 +88,7 @@ public class AceEditorHelper {
 			}
 		}
 		writer.println("];\n" +
-				"\t\t\teditor.init('" + editorId + "', '" + options.requestUrl + "', '" + options.projectId + "', editors);\n" +
+				"\t\t\tvar currentEditor = editor.init('" + editorId + "', '" + options.requestUrl + "', '" + options.projectId + "', editors);\n" +
 				"\t\t\t</script>");
 		if (! options.embed) {
 			writer.println("\t</body>\n</html>\n");

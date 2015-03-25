@@ -160,8 +160,12 @@ public abstract class AbstractServiceServlet extends HttpServlet implements Serv
 	static String RESOURCE_NAME_REQUEST_PARAMETER = "resourceName";
 	static String RESOURCE_REF_REQUEST_PARAMETER = "resourceRef";
 
-	public static ProjectRef getProjectRef(HttpServletRequest request) {
+	public static ProjectRef getProjectRef(HttpServletRequest request) {	
 		return new ProjectRef(request.getParameter(PROJECT_NAME_REQUEST_PARAMETER));
+	}
+	
+	public static ProjectRef getProjectRef(String projectName) {
+		return new ProjectRef(projectName);
 	}
 
 	public static ResourceRef getResourceRef(HttpServletRequest request) {

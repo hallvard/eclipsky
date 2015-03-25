@@ -11,9 +11,9 @@ import no.hal.eclipsky.services.workspace.http.util.ResponseFormatter;
 public class RunEditorServletService extends AbstractSourceEditorServletService {
 
 	@Override
-	public String doSourceEditorServletService(EditorServiceRequest request, String requestBody) {
+	public String doSourceEditorServletService(EditorServiceRequest request, String requestBody, String protocol) {
 		RunResult result = getSourceProject(request).run(true);
-		return runResponse(result, request.responseFormat);
+		return runResponse(result, protocol);
 	}
 	
 	private String runResponse(RunResult result, String protocol) {
