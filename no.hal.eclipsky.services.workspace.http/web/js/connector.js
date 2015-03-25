@@ -2,13 +2,14 @@ var connector = (function() {
 	var webSocket = null,
 		
 		// Set logging
-		logging = true,
+		logging = false,
 		c = (logging ? console : {log : function(){}});
 		
 		// All subscribers need to implement a 'notify()'-function
 		subscribers = [], 
 
-		XHRpostfix = "&format=json",
+		url = null,
+		postfix = "&format=json",
 		
 		queue = [];
 	
@@ -22,33 +23,41 @@ var connector = (function() {
 	
 	// Add to the queue of requests to send
 	function push(data) {
-		// Empty array, pop right away
-		queue.push(data);
 		if (queue.length === 0) {
+			queue.push(data);
 			pop();
-		} 	
+		} else {
+			queue.push(data);
+		}
+		
 	};
 	
 	// Pop from the queue and perform a send request
 	function pop() {
 		var data;
 		if (queue.length > 0) {
-			data = queue.pop();
+			data = queue.shift();
 		} else {
 			return;
 		}
 		
+		c.log('Sending data: ', data);
 		if (webSocket.readyState === webSocket.OPEN) {
-			webSocket.send(data);
+			sendWSdata(data);
 		} else {
 			sendXHRdata(data);
 		}
 	};
 	
+	function sendWSdata(data) {
+		var wsData = data.op + "\n" + data.body;
+		webSocket.send(wsData);
+	};
+	
 	// Private function for sending XHR requests
 	function sendXHRdata(data) {
 		var xmlHttp = getXmlHTTP();
-		xmlHttp.open("POST", url + XHRPostfix, true);
+		xmlHttp.open("POST", url + postfix, true);
 		var startTime = new Date();
 		xmlHttp.onreadystatechange = function () {
 			if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
@@ -73,8 +82,6 @@ var connector = (function() {
 		
 		link.href = url;
 		link.protocol = "ws";
-		c.log('Connecting with link: ');
-		c.log(link);
 	    webSocket = new WebSocket(link.href, "json");
 
 	    webSocket.onerror = function(event) {
@@ -102,8 +109,8 @@ var connector = (function() {
 			initializeWebsocket(url);
 		},
 
-		send : function(data) {
-			push(data);
+		send : function(operation, content) {
+			push({op: operation, body: content});
 		},
 		
 		subscribe : function(subscriber) {
@@ -117,6 +124,11 @@ var connector = (function() {
 					return;
 				}
 			}
+		},
+		
+		// Emptying the queue
+		invalidate : function() {
+			queue = [];
 		}
 	};
 	
