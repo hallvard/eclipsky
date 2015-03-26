@@ -52,18 +52,17 @@ public class SourceProjectManagerImpl implements SourceProjectManager {
 		if (emfsResource != null) {
 			emfsService.importResources(Arrays.asList(emfsResource), projectName, importHelperOptions, null);
 			emfsModels.put(projectRef, emfsResource);
-			Collection<ResourceRef> editableResources = getEditableResources(projectRef);
-			sourceProject.setEditable(editableResources.toArray(new ResourceRef[editableResources.size()]));
-			Collection<ResourceRef> runnables = getRunnableResources(projectRef);
-			sourceProject.setRunnable(runnables.size() > 0 ? runnables.iterator().next() : null);
-			Collection<ResourceRef> testables = getTestableResources(projectRef);
-			sourceProject.setTestable(testables.size() > 0 ? testables.iterator().next() : null);
 		}
 	}
 
 	@Override
 	public SourceProject getSourceProject(ProjectRef projectRef) {
 		return sourceProjects.get(new ProjectRef(projectRef));
+	}
+
+	@Override
+	public EmfsResource getEmfs(ProjectRef projectRef) {
+		return emfsModels.get(new ProjectRef(projectRef));
 	}
 	
 	private ResourceRef withProjectRef(ProjectRef projectRef, ResourceRef resourceRef) {

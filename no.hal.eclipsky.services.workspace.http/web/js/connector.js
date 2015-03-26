@@ -2,13 +2,16 @@ var connector = (function() {
 	var webSocket = null,
 		
 		// Set logging
-		logging = true,
+		logging = false,
 		c = (logging ? console : {log : function(){}});
 		
 		// All subscribers need to implement a 'notify()'-function
 		subscribers = [], 
 
-		XHRpostfix = "&format=json";
+		url = null,
+		postfix = "&format=json",
+		
+		queue = [];
 	
 	// Publish to all listeners
 	function publish(data) {
@@ -18,20 +21,54 @@ var connector = (function() {
 		}
 	};
 	
+	// Add to the queue of requests to send
+	function push(data) {
+		if (queue.length === 0) {
+			queue.push(data);
+			pop();
+		} else {
+			queue.push(data);
+		}
+		
+	};
+	
+	// Pop from the queue and perform a send request
+	function pop() {
+		var data;
+		if (queue.length > 0) {
+			data = queue.shift();
+		} else {
+			return;
+		}
+		
+		c.log('Sending data: ', data);
+		if (webSocket.readyState === webSocket.OPEN) {
+			sendWSdata(data);
+		} else {
+			sendXHRdata(data);
+		}
+	};
+	
+	function sendWSdata(data) {
+		var wsData = data.op + "\n" + data.body;
+		webSocket.send(wsData);
+	};
+	
 	// Private function for sending XHR requests
 	function sendXHRdata(data) {
 		var xmlHttp = getXmlHTTP();
-		xmlHttp.open("POST", url + XHRPostfix, true);
+		xmlHttp.open("POST", url + postfix, true);
 		var startTime = new Date();
 		xmlHttp.onreadystatechange = function () {
 			if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
+				pop();
 				publish(xmlHttp.responseText);
 			}
 		}
 		xmlHttp.send(data);
 	};
 	
-	
+	// Compatibility
 	function getXmlHTTP() {
         if (window.XMLHttpRequest) {
             return new XMLHttpRequest();
@@ -40,17 +77,11 @@ var connector = (function() {
         }
     };
 	
-	function sendWSdata(data) {
-		webSocket.send(data);
-	};
-	
 	function initializeWebsocket(url) {
 		var link = document.createElement('a');
 		
 		link.href = url;
 		link.protocol = "ws";
-		c.log('Connecting with link: ');
-		c.log(link);
 	    webSocket = new WebSocket(link.href, "json");
 
 	    webSocket.onerror = function(event) {
@@ -66,6 +97,7 @@ var connector = (function() {
 	    };
 
 	    webSocket.onmessage = function(event) {
+			pop();
 	    	publish(event);
 	    }
 	};
@@ -77,12 +109,8 @@ var connector = (function() {
 			initializeWebsocket(url);
 		},
 
-		send : function(data) {
-			if (webSocket.readyState === webSocket.OPEN) {
-				sendWSdata(data);
-			} else {
-				sendXHRdata(data);
-			}
+		send : function(operation, content) {
+			push({op: operation, body: content});
 		},
 		
 		subscribe : function(subscriber) {
@@ -96,6 +124,11 @@ var connector = (function() {
 					return;
 				}
 			}
+		},
+		
+		// Emptying the queue
+		invalidate : function() {
+			queue = [];
 		}
 	};
 	

@@ -1,11 +1,7 @@
 package no.hal.eclipsky.services.editor.impl;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import no.hal.eclipsky.services.common.ProjectRef;
 import no.hal.eclipsky.services.common.ResourceRef;
@@ -22,7 +18,7 @@ import org.eclipse.debug.core.model.IProcess;
 import org.eclipse.debug.core.model.IStreamMonitor;
 import org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants;
 
-public class GenericSourceProject implements SourceProject {
+public abstract class GenericSourceProject implements SourceProject {
 
 	protected final ProjectRef projectRef;
 	
@@ -34,42 +30,8 @@ public class GenericSourceProject implements SourceProject {
 	public ProjectRef getProjectRef() {
 		return projectRef;
 	}
-	
-	private ResourceRef runnable;
-	
-	public ResourceRef getRunnable() {
-		return runnable;
-	}
-	
-	public void setRunnable(ResourceRef runnable) {
-		this.runnable = runnable;
-	}
-	
-	private ResourceRef testable;
 
-	public ResourceRef getTestable() {
-		return testable;
-	}
-	
-	public void setTestable(ResourceRef testable) {
-		this.testable = testable;
-	}
-
-	private Collection<SourceEditor> sourceEditors = null;
-	
-	public void setEditable(ResourceRef... editables) {
-		sourceEditors = new ArrayList<SourceEditor>();
-		for (int i = 0; i < editables.length; i++) {
-			SourceEditor sourceEditor = createSourceEditor(editables[i]);
-			sourceEditors.add(sourceEditor);
-		}
-	}
-
-	@Override
-	public ResourceRef[] getEditables() {
-		Collection<ResourceRef> resourceRefs = sourceEditors.stream().map(SourceEditor::getResourceRef).collect(Collectors.toList());
-		return resourceRefs.toArray(new ResourceRef[resourceRefs.size()]);
-	}
+	private Map<ResourceRef, SourceEditor> sourceEditors = null;
 	
 	protected SourceEditor createSourceEditor(ResourceRef editable) {
 		return new GenericSourceEditor(editable);
@@ -77,26 +39,27 @@ public class GenericSourceProject implements SourceProject {
 
 	@Override
 	public SourceEditor getSourceEditor(ResourceRef resourceRef) {
-		if (sourceEditors != null) {
-			for (SourceEditor sourceEditor : sourceEditors) {
-				if (sourceEditor.getResourceRef().equals(resourceRef)) {
-					return sourceEditor;
-				}
-			}
+		if (sourceEditors == null) {
+			sourceEditors = new HashMap<ResourceRef, SourceEditor>();
 		}
-		return null;
+		SourceEditor sourceEditor = sourceEditors.get(resourceRef);
+		if (sourceEditor == null) {
+			sourceEditor = createSourceEditor(resourceRef);
+			sourceEditors.put(resourceRef, sourceEditor);
+		}
+		return sourceEditor;
 	}
 
 	//
 	
 	protected Map<ResourceRef, ILaunchConfiguration> launchConfigs = new HashMap<ResourceRef, ILaunchConfiguration>();
 
-	protected RunResult launch(ResourceRef resourceRef, boolean result) {
+	protected RunResult launch(ResourceRef resourceRef, String launchKey, String launchName) {
 		RunResult runResult = null;
 		try {
 			ILaunchConfiguration launchConfig = launchConfigs.get(resourceRef);
 			if (launchConfig == null) {
-				launchConfig = getLaunchConfiguration(resourceRef);
+				launchConfig = createLaunchConfiguration(resourceRef, launchKey, launchName);
 				launchConfigs.put(resourceRef, launchConfig);
 			}
 			if (launchConfig != null) {
@@ -107,18 +70,21 @@ public class GenericSourceProject implements SourceProject {
 		return runResult;
 	}
 	
-	protected ILaunchConfiguration getLaunchConfiguration(ResourceRef resourceRef) throws Exception {
+	protected ILaunchConfiguration createLaunchConfiguration(ResourceRef resourceRef, String launchKey, String launchName) throws Exception {
 		return null;
 	}
 
+	protected abstract String getRunLaunchKey();
+	protected abstract String getTestLaunchKey();
+
 	@Override
-	public RunResult run(boolean result) {
-		return launch(runnable, result);
+	public RunResult run(ResourceRef resourceRef) {
+		return launch(resourceRef, getRunLaunchKey(), "Run Main");
 	}
 
 	@Override
-	public RunResult test(boolean result) {
-		return launch(testable, result);
+	public RunResult test(ResourceRef resourceRef) {
+		return launch(resourceRef, getTestLaunchKey(), "Run Tests");
 	}
 
 	// launching

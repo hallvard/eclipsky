@@ -8,4 +8,5 @@ public interface SourceProjectManager {
 
 	public void ensureSourceProject(ProjectRef projectRef, EmfsResource emfsResource) throws Exception;
 	public SourceProject getSourceProject(ProjectRef projectRef);
+	public EmfsResource getEmfs(ProjectRef projectRef);
 }

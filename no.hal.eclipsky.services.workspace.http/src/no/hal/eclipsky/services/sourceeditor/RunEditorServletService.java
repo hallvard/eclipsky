@@ -6,17 +6,23 @@ import java.io.PrintWriter;
 import no.hal.eclipsky.services.editor.RunResult;
 import no.hal.eclipsky.services.sourceeditor.SourceEditorServlet.EditorServiceRequest;
 import no.hal.eclipsky.services.workspace.http.AbstractServiceServlet;
+import no.hal.eclipsky.services.workspace.http.util.EmfsUtil;
 import no.hal.eclipsky.services.workspace.http.util.ResponseFormatter;
+import no.hal.emfs.EmfsResource;
 
 public class RunEditorServletService extends AbstractSourceEditorServletService {
 
 	@Override
 	public String doSourceEditorServletService(EditorServiceRequest request, String requestBody) {
-		RunResult result = getSourceProject(request).run(true);
-		return runResponse(result, request.responseFormat);
+		EmfsResource emfsResource = EmfsUtil.findEmfsResource(getSourceProjectManager().getEmfs(request.resourceRef), EmfsUtil::isRunnable);
+		if (emfsResource != null) {
+			RunResult result = getSourceProject(request).run(EmfsUtil.createResourceRef(emfsResource));
+			return runResponse(result, request.responseFormat);
+		}
+		return null;
 	}
 	
-	private String runResponse(RunResult result, String protocol) {
+	protected String runResponse(RunResult result, String protocol) {
 		ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 		PrintWriter output = new PrintWriter(buffer);
 		writeRunResponse(protocol, output, result);

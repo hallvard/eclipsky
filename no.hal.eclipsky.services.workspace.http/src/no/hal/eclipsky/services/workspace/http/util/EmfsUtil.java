@@ -61,6 +61,15 @@ public class EmfsUtil {
 		return true;
 	}
 	
+	public static EmfsResource getEmfsResource(EmfsResource emfsModel, ResourceRef resourceRef) {
+		return findEmfsResource(emfsModel, emfsResource -> resourceRef.equals(createResourceRef(emfsResource)));
+	}
+
+	public static boolean isEmfsResource(EmfsResource emfsModel, ResourceRef resourceRef, Predicate<EmfsResource> predicate) {
+		EmfsResource foundEmfsResource = findEmfsResource(emfsModel, emfsResource -> resourceRef.equals(createResourceRef(emfsResource)));
+		return foundEmfsResource != null && predicate.test(foundEmfsResource);
+	}
+
 	public static EmfsResource findEmfsResource(EmfsResource emfsModel, Predicate<EmfsResource> predicate) {
 		TreeIterator<EObject> it = emfsModel.eAllContents();
 		while (it.hasNext()) {

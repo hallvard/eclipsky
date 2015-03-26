@@ -18,31 +18,30 @@ import org.eclipse.jdt.core.WorkingCopyOwner;
 
 public class JavaSourceEditor extends GenericSourceEditor {
 
+	private final IFile file;
 	private ICompilationUnit workingCopy = null;
 
 	public JavaSourceEditor(ResourceRef resourceRef) {
 		super(resourceRef);
-		System.out.println("JavaSourceEditor: Getting file for " + resourceRef);
-		IFile file = getFile(true);
-		System.out.println("JavaSourceEditor: Creating working copy for " + file);
-		workingCopy = JavaCore.createCompilationUnitFrom(file);
-		if (workingCopy.exists()) {
-			try {
-				workingCopy.becomeWorkingCopy(null);
-			} catch (JavaModelException e) {
-				workingCopy = null;
+		file = getFile(true);
+	}
+
+	private void ensureWorkingCopy() {
+		if (workingCopy == null) {
+			workingCopy = JavaCore.createCompilationUnitFrom(file);
+			if (workingCopy.exists()) {
+				try {
+					workingCopy.becomeWorkingCopy(null);
+				} catch (JavaModelException e) {
+					workingCopy = null;
+				}
 			}
 		}
 	}
-
-	private static String[] JAVA_SOURCE_FOLDERS = {"src", "resources"}; 
 	
-	protected String[] getSourceFolderNames() {
-		return JAVA_SOURCE_FOLDERS;
-	}
-
 	@Override
 	public SourceFileMarker[] update(String stringContent, boolean markers, boolean commit) {
+		ensureWorkingCopy();
 		if (workingCopy != null) {
 			try {
 				if (stringContent != null) {
@@ -69,20 +68,20 @@ public class JavaSourceEditor extends GenericSourceEditor {
 
 	@Override
 	protected void addCompletionProposals(int pos, Collection<Proposal> completions) throws NullPointerException {
-		if (workingCopy == null) {
-			throw new NullPointerException("Working Copy is null");
-		}
-		try {
-			workingCopy.codeComplete(pos, new CompletionRequestor() {
-				@Override
-				public void accept(CompletionProposal proposal) {
-					Proposal p = Proposal.getProposal(proposal);
-					completions.add(p);					
-				}
-			});		
-		} catch (JavaModelException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
+		ensureWorkingCopy();
+		if (workingCopy != null) {
+			try {
+				workingCopy.codeComplete(pos, new CompletionRequestor() {
+					@Override
+					public void accept(CompletionProposal proposal) {
+						Proposal p = Proposal.getProposal(proposal);
+						completions.add(p);					
+					}
+				});		
+			} catch (JavaModelException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
 		}
 	}
 	
@@ -94,6 +93,7 @@ public class JavaSourceEditor extends GenericSourceEditor {
 				workingCopy.discardWorkingCopy();
 			} catch (JavaModelException e) {
 			}
+			workingCopy = null;
 		}
 		super.close(monitor);
 	}

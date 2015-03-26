@@ -30,17 +30,19 @@ public class JavaSourceProject extends GenericSourceProject {
 
 	private static String javaApplicationLaunchId = IJavaLaunchConfigurationConstants.ID_JAVA_APPLICATION;
 	private static String junitTestLaunchId = "org.eclipse.jdt.junit.launchconfig";
+	
+	@Override
+	protected String getRunLaunchKey() {
+		return javaApplicationLaunchId;
+	}
 
-	protected ILaunchConfiguration getLaunchConfiguration(ResourceRef resourceRef) throws Exception {
-		if (getRunnable().equals(resourceRef)) {
-			return createLaunchConfiguration(javaApplicationLaunchId, "Run Main", resourceRef);
-		} else if (getTestable().equals(resourceRef)) {
-			return createLaunchConfiguration(junitTestLaunchId, "Run Tests", resourceRef);
-		}
-		return null;
+	@Override
+	protected String getTestLaunchKey() {
+		return junitTestLaunchId;
 	}
 	
-	private ILaunchConfiguration createLaunchConfiguration(String launchConfigurationTypeId, String configName, ResourceRef resourceRef) throws CoreException {
+	@Override
+	protected ILaunchConfiguration createLaunchConfiguration(ResourceRef resourceRef, String launchConfigurationTypeId, String configName) throws CoreException {
 		ILaunchManager launchManager = DebugPlugin.getDefault().getLaunchManager();
 		ILaunchConfigurationType launchConfigurationType = launchManager.getLaunchConfigurationType(launchConfigurationTypeId);
 		ILaunchConfigurationWorkingCopy workingCopy = launchConfigurationType.newInstance(null, configName);

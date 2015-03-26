@@ -29,6 +29,7 @@ Service-Component: OSGI-INF/component.xml,
  OSGI-INF/update-editor-servlet-service-component.xml,
  OSGI-INF/completion-editor-servlet-service-component.xml,
  OSGI-INF/markers-editor-servlet-service-component.xml,
- OSGI-INF/run-editor-servlet-service-component.xml
+ OSGI-INF/run-editor-servlet-service-component.xml,
+ OSGI-INF/test-editor-servlet-service-component.xml
 Import-Package: javax.servlet;version="2.6.0",
  javax.servlet.http;version="2.6.0"
