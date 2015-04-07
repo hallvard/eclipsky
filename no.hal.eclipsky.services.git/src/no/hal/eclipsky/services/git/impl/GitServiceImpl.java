@@ -7,7 +7,11 @@ import no.hal.emfs.git.GitImportSupport;
 import no.hal.emfs.util.ImportSupport;
 
 import org.osgi.service.component.ComponentContext;
+import org.osgi.service.component.annotations.Component;
 
+@Component(
+	property=GitServiceImpl.GIT_DIRECTORY_KEY + "=git"
+)
 public class GitServiceImpl extends GitImportSupport implements GitService, ImportSupport {
 
 	public final static String GIT_DIRECTORY_KEY = "git.directory";

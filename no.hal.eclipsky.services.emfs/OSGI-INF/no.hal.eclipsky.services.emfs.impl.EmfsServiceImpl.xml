@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" name="no.hal.eclipsky.services.emfs.impl.EmfsServiceImpl">
+   <implementation class="no.hal.eclipsky.services.emfs.impl.EmfsServiceImpl"/>
+   <service>
+      <provide interface="no.hal.eclipsky.services.emfs.EmfsService"/>
+   </service>
+   <reference bind="addImportSupport" cardinality="0..n" interface="no.hal.emfs.util.ImportSupport" name="ImportSupport" policy="dynamic" unbind="removeImportSupport"/>
+</scr:component>

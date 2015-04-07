@@ -23,25 +23,42 @@ import no.hal.emfs.EmfsResource;
 
 import org.eclipse.jetty.websocket.WebSocket;
 import org.eclipse.jetty.websocket.WebSocketServlet;
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
+import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ReferenceCardinality;
+import org.osgi.service.component.annotations.ReferencePolicy;
 import org.osgi.service.http.HttpService;
 
+@Component(
+	immediate = true,
+	property = AbstractServiceServlet.SERVLET_ALIAS_KEY + "=sourceEditor"
+)
 @SuppressWarnings("serial")
 public class SourceEditorServlet extends WebSocketServlet {
 
 	private HttpService httpService;
 	
+	@Reference
 	public synchronized void setHttpService(HttpService httpService) {
 		this.httpService = httpService;
 	}
 
 	private SourceProjectManager sourceProjectManager;
 	
+	@Reference
 	public synchronized void setSourceProjectManager(SourceProjectManager sourceProjectManager) {
 		this.sourceProjectManager = sourceProjectManager;
 	}
 
 	private Map<String, SourceEditorServletService> editorServices = new HashMap<String, SourceEditorServletService>();
 	
+	@Reference(
+		cardinality = ReferenceCardinality.MULTIPLE,
+		policy = ReferencePolicy.DYNAMIC,
+		unbind = "removeServiceServlet"
+	)
 	public synchronized void addSourceEditorServletService(SourceEditorServletService editorService) {
 		String[] operations = editorService.getSupportedOperations();
 		for (String op : operations) {
@@ -56,6 +73,7 @@ public class SourceEditorServlet extends WebSocketServlet {
 		}
 	}
 
+	@Activate
 	protected void activate() {
 		try {
 			httpService.registerServlet("/sourceEditor", (HttpServlet) this, null, null);
@@ -66,6 +84,7 @@ public class SourceEditorServlet extends WebSocketServlet {
 		}
 	}
 
+	@Deactivate
 	protected void deactivate() {
 		try {
 			httpService.unregister("/sourceEditor");
@@ -87,7 +106,7 @@ public class SourceEditorServlet extends WebSocketServlet {
 		AceEditorHelper.Options options = new AceEditorHelper.Options();
 		options.requestUrl = request.getRequestURI();
 		options.projectId = resourceRef.getProjectName();
-		Collection<ResourceRef> emfsResources = EmfsUtil.collectResources(sourceProjectManager.getEmfs(resourceRef), EmfsResource::isWriteable);
+		Collection<ResourceRef> emfsResources = EmfsUtil.collectResources(sourceProjectManager.getEmfsResource(new ProjectRef(resourceRef)), EmfsResource::isWriteable);
 		ResourceRef[] editables = emfsResources.toArray(new ResourceRef[emfsResources.size()]);
 		options.editorName = (editables != null && editables.length > 0 ? editables[0].getResourceName() : options.projectId);
 		options.resourceRefs = editables;

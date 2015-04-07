@@ -5,18 +5,29 @@ import java.util.Collection;
 
 import javax.servlet.http.HttpServlet;
 
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ReferenceCardinality;
+import org.osgi.service.component.annotations.ReferencePolicy;
 import org.osgi.service.http.HttpService;
 
+@Component
 public class WorkspaceHttpServiceImpl {
 
 	private HttpService httpService;
 	
+	@Reference
 	public synchronized void setHttpService(HttpService httpService) {
 		this.httpService = httpService;
 	}
 	
 	private Collection<ServiceServlet> serviceServlets = new ArrayList<ServiceServlet>();
 	
+	@Reference(
+		cardinality = ReferenceCardinality.MULTIPLE,
+		policy = ReferencePolicy.DYNAMIC,
+		unbind = "removeServiceServlet"
+	)
 	public synchronized void addServiceServlet(ServiceServlet serviceServlet) {
 		try {
 			String alias = serviceServlet.getAlias();

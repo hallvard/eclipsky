@@ -7,9 +7,23 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import no.hal.eclipsky.services.workspace.WorkspaceService;
+
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
+
+@Component(
+	property = AbstractServiceServlet.SERVLET_ALIAS_KEY + "=projects"
+)
 @SuppressWarnings("serial")
-public class ProjectListServlet extends AbstractWorkspaceServiceServlet {
+public class ProjectListServlet extends AbstractWorkspaceServiceServlet implements ServiceServlet {
 	
+	@Reference
+	@Override
+	public synchronized void setWorkspaceService(WorkspaceService workspaceService) {
+		super.setWorkspaceService(workspaceService);
+	}
+
 	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		String responseFormat = getResponseFormat(request);

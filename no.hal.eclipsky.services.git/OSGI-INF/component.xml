@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" name="no.hal.eclipsky.services.git">
-	<implementation class="no.hal.eclipsky.services.git.impl.GitServiceImpl"/>
-   	<service>
-      	<!-- <provide interface="no.hal.eclipsky.services.git.GitService"/> -->
-      	<provide interface="no.hal.emfs.util.ImportSupport"/>
-   	</service>
-	<property name="git.directory" value="git"/>
-</scr:component>

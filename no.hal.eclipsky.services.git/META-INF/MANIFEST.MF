@@ -13,4 +13,4 @@ Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Bundle-ActivationPolicy: lazy
 Bundle-ClassPath: .
 Export-Package: no.hal.eclipsky.services.git
-Service-Component: OSGI-INF/component.xml
+Service-Component: OSGI-INF/no.hal.eclipsky.services.git.impl.GitServiceImpl.xml

@@ -12,20 +12,35 @@ import javax.servlet.http.HttpServletResponse;
 
 import no.hal.eclipsky.services.common.ProjectRef;
 import no.hal.eclipsky.services.common.ResourceRef;
+import no.hal.eclipsky.services.workspace.WorkspaceService;
+import no.hal.eclipsky.services.workspace.http.util.EmfsUtil;
 import no.hal.emfs.EmfsPackage;
 import no.hal.emfs.EmfsResource;
 
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.Resource;
-import org.eclipse.emf.ecore.resource.ResourceSet;
-import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.eclipse.emf.ecore.util.EcoreUtil;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
+@Component(
+	property = {
+		AbstractServiceServlet.SERVLET_ALIAS_KEY + "=ensureProject",
+		AbstractServiceServlet.RESOURCE_ALIAS_KEY_PREFIX + "ensureProjectForm.html=/html/ensureProjectForm.html"
+	}
+)
 @SuppressWarnings("serial")
-public class EnsureProjectServlet extends ProjectListServlet {
+public class EnsureProjectServlet extends ProjectListServlet implements ServiceServlet {
+
+	@Reference
+	@Override
+	public synchronized void setWorkspaceService(WorkspaceService workspaceService) {
+		super.setWorkspaceService(workspaceService);
+	}
 
 	private SourceProjectManager sourceProjectManager;
 	
+	@Reference
 	public synchronized void setSourceProjectManager(SourceProjectManager sourceProjectManager) {
 		this.sourceProjectManager = sourceProjectManager;
 	}
@@ -35,22 +50,10 @@ public class EnsureProjectServlet extends ProjectListServlet {
 		response.sendRedirect("ensureProjectForm.html");
 	}
 
-	protected EmfsResource getEmfsResource(String body) throws Exception {
-		ResourceSet resourceSet = new ResourceSetImpl();
+	protected EmfsResource getEmfsResource(String name, String body) throws Exception {
 		String defaultExt = "emfs";
 		String ext = (body.startsWith("<?xml") ? defaultExt : "xemfs");
-		Resource.Factory.Registry registry = Resource.Factory.Registry.INSTANCE;
-		if (resourceSet.getResourceFactoryRegistry() == null) {
-			resourceSet.setResourceFactoryRegistry(registry);
-		}
-		Resource.Factory resourceFactory = (Resource.Factory) resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().get(ext);
-		if (resourceFactory == null) {
-			resourceFactory = (Resource.Factory) Resource.Factory.Registry.INSTANCE.getExtensionToFactoryMap().get(ext);
-		}
-		if (resourceFactory == null) {
-			ext = defaultExt;
-		}
-		Resource resource = resourceFactory.createResource(URI.createURI("temp." + ext));
+		Resource resource = EmfsUtil.createEmfsResource(URI.createURI(name), ext);
 		byte[] bytes = body.getBytes(StandardCharsets.UTF_8);
 		try (InputStream stream = new ByteArrayInputStream(bytes);) {
 			resource.load(stream, null);
@@ -74,7 +77,7 @@ public class EnsureProjectServlet extends ProjectListServlet {
 		String emfsContent = request.getParameter("emfs"); // getRequestBodyContent(request);
 		Exception ex = null;
 		try {
-			EmfsResource emfsResource = getEmfsResource(emfsContent);
+			EmfsResource emfsResource = getEmfsResource("temp", emfsContent);
 			sourceProjectManager.ensureSourceProject(projectRef, emfsResource);
 		} catch (Exception resourceException) {
 			ex = resourceException;
