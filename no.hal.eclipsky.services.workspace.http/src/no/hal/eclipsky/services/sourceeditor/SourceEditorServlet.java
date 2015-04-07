@@ -124,6 +124,8 @@ public class SourceEditorServlet extends WebSocketServlet {
 		CharSequence response = null;
 		if (editorService != null) {
 			response = editorService.doSourceEditorServletService(request, requestBody);
+		} else {
+			System.err.println("Editor for op '" + request.op + "' doesn't exist");
 		}
 		if (response == null || response.length() == 0) {
 			response = EMPTY_EDITOR_SERVLET_SERVICE_RESPONSE;

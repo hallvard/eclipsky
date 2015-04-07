@@ -8,7 +8,7 @@ var editor = (function(ace, con, cookies) {
 		editorName,
 		currentId = 0,
 
-		RUN_KEY = 'F9',
+		RUN_KEY = 'R',
 	   
 		completionCallback = null,
 		saveDelay = 500,
@@ -218,9 +218,10 @@ var editor = (function(ace, con, cookies) {
 			handleResponse(event);
 		},
 	   
+	   	// Store info by closing current editor, and refresh with new content
 		switchEditor : function(id) {
-			// Store info and refresh editor
 			currentId = id;
+			con.send('close ' + editorName);
 			editorName = editors[currentId].resourceRef;
 			cookies.setCookie(projectId, id, 180);
 			refreshEditor();

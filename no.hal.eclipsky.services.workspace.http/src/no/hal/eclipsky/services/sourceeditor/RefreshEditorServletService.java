@@ -8,12 +8,12 @@ import no.hal.eclipsky.services.sourceeditor.SourceEditorServlet.EditorServiceRe
 import no.hal.eclipsky.services.workspace.http.AbstractServiceServlet;
 import no.hal.eclipsky.services.workspace.http.util.ResponseFormatter;
 
-public class RefreshEditorServletService extends
-		AbstractSourceEditorServletService {
+public class RefreshEditorServletService extends AbstractSourceEditorServletService {
 
 	@Override
 	public CharSequence doSourceEditorServletService(EditorServiceRequest request, String requestBody) {
 		SourceEditor sourceEditor = getSourceEditor(request);
+		System.out.println(sourceEditor.getResourceRef().getResourceName());
 		return refreshResponse(sourceEditor.getSourceFileContents(), request.responseFormat);
 	}
 
