@@ -11,13 +11,13 @@ import no.hal.eclipsky.services.workspace.http.util.ResponseFormatter;
 public class CompletionEditorServletService extends AbstractSourceEditorServletService {
 
 	@Override
-	public String doSourceEditorServletService(EditorServiceRequest request, String requestBody, String protocol) {
+	public String doSourceEditorServletService(EditorServiceRequest request, String requestBody) {
 		int position = Integer.parseInt(requestBody);
 		Proposal[] completions = getSourceEditor(request).complete(position);
 		if (completions.length == 0) {
 			return null;
 		}
-		return completionsResponse(completions, protocol);
+		return completionsResponse(completions, request.responseFormat);
 	}
 	
 	private String completionsResponse(Proposal [] completions, String protocol) {

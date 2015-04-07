@@ -11,9 +11,9 @@ import no.hal.eclipsky.services.workspace.http.util.ResponseFormatter;
 public class MarkersEditorServletService extends AbstractSourceEditorServletService {
 
 	@Override
-	public String doSourceEditorServletService(EditorServiceRequest request, String requestBody, String protocol) {
+	public String doSourceEditorServletService(EditorServiceRequest request, String requestBody) {
 		SourceFileMarker[] sourceFileMarkers = getSourceEditor(request).update(null, true, false);
-		return markersResponse(sourceFileMarkers, protocol);
+		return markersResponse(sourceFileMarkers, request.responseFormat);
 	}
 
 	public static String markersResponse(SourceFileMarker[] sourceFileMarkers, String protocol) {
