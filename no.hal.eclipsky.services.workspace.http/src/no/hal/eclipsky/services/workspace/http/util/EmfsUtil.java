@@ -141,14 +141,17 @@ public class EmfsUtil {
 	
 	//
 	
-	public static Resource createEmfsResource(URI uri, String ext) throws Exception {
+	public static Resource createEmfsResource(URI uri, String ext) {
 		ResourceSet resourceSet = new ResourceSetImpl();
 		String defaultExt = "emfs";
 		Resource.Factory.Registry registry = Resource.Factory.Registry.INSTANCE;
 		if (resourceSet.getResourceFactoryRegistry() == null) {
 			resourceSet.setResourceFactoryRegistry(registry);
 		}
-		Object resourceFactory = resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().get(ext);
+		Object resourceFactory = null;
+		if (ext != null) {
+			resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().get(ext);
+		}
 		if (resourceFactory == null) {
 			resourceFactory = Resource.Factory.Registry.INSTANCE.getExtensionToFactoryMap().get(ext);
 		}

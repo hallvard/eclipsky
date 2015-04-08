@@ -1,15 +1,11 @@
 package no.hal.eclipsky.services.workspace.http;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
-
-import org.eclipse.emf.common.util.URI;
-import org.eclipse.emf.ecore.resource.Resource;
-import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Reference;
 
 import no.hal.eclipsky.services.common.ProjectRef;
 import no.hal.eclipsky.services.common.ResourceRef;
@@ -18,9 +14,17 @@ import no.hal.eclipsky.services.editor.impl.JavaSourceProject;
 import no.hal.eclipsky.services.emfs.EmfsService;
 import no.hal.eclipsky.services.workspace.WorkspaceService;
 import no.hal.eclipsky.services.workspace.http.util.EmfsUtil;
-import no.hal.emfs.EmfsFile;
+import no.hal.emfs.EmfsPackage;
 import no.hal.emfs.EmfsResource;
 import no.hal.emfs.util.ImportHelperOptions;
+
+import org.eclipse.emf.common.util.URI;
+import org.eclipse.emf.ecore.resource.Resource;
+import org.eclipse.emf.ecore.resource.ResourceSet;
+import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
+import org.eclipse.emf.ecore.util.EcoreUtil;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
 @Component
 public class SourceProjectManagerImpl implements SourceProjectManager {
@@ -54,7 +58,7 @@ public class SourceProjectManagerImpl implements SourceProjectManager {
 	public void ensureSourceProject(ProjectRef projectRef, EmfsResource emfsResource) throws Exception {
 		String projectName = projectRef.getProjectName();
 		workspaceService.ensureProject(projectName);
-		JavaSourceProject sourceProject = new JavaSourceProject(projectRef);
+		SourceProject sourceProject = new JavaSourceProject(projectRef);
 		sourceProjects.put(projectRef, sourceProject);
 		if (emfsResource != null) {
 			Collection<EmfsResource> importResources = emfsService.importResources(Arrays.asList(emfsResource), projectName, importHelperOptions, null);
@@ -68,7 +72,7 @@ public class SourceProjectManagerImpl implements SourceProjectManager {
 			}
 			emfsResources.put(projectRef, emfsResource);
 			// create XMI resource
-			Resource emfsModel = EmfsUtil.createEmfsResource(URI.createPlatformResourceURI("/" + projectRef.getProjectName() + "/" + projectRef.getProjectName(), true), "emfs");
+			Resource emfsModel = EmfsUtil.createEmfsResource(createProjectEmfsUri(projectName), "emfs");
 			// move contents
 			emfsModel.getContents().addAll(emfsResource.eResource().getContents());
 			// and serialize
@@ -79,9 +83,38 @@ public class SourceProjectManagerImpl implements SourceProjectManager {
 		}
 	}
 
+	private URI createProjectEmfsUri(String projectName) {
+		return URI.createPlatformResourceURI("/" + projectName + "/" + projectName, true);
+	}
+
+	private boolean autoEnsureProject = true;
+	
 	@Override
 	public SourceProject getSourceProject(ProjectRef projectRef) {
-		return sourceProjects.get(new ProjectRef(projectRef));
+		projectRef = new ProjectRef(projectRef.getProjectName());
+		SourceProject sourceProject = sourceProjects.get(projectRef);
+		if (sourceProject == null && autoEnsureProject) {
+			sourceProject = ensureProject(projectRef);
+		}
+		return sourceProject;
+	}
+
+	protected SourceProject ensureProject(ProjectRef projectRef) {
+		Resource emfsModel = EmfsUtil.createEmfsResource(createProjectEmfsUri(projectRef.getProjectName()), "emfs");
+		ResourceSet resourceSet = new ResourceSetImpl();
+		resourceSet.getResources().add(emfsModel);
+		try {
+			emfsModel.load(null);
+			EmfsResource emfsResource = (EmfsResource) EcoreUtil.getObjectByType(emfsModel.getContents(), EmfsPackage.eINSTANCE.getEmfsResource());
+			if (emfsResource != null) {
+				SourceProject sourceProject = new JavaSourceProject(projectRef);
+				sourceProjects.put(projectRef, sourceProject);
+				emfsResources.put(projectRef, emfsResource);
+				return sourceProject;
+			}
+		} catch (IOException e1) {
+		}
+		return null;
 	}
 
 	@Override
