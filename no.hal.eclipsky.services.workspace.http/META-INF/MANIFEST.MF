@@ -7,6 +7,7 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.osgi.services;bundle-version="3.4.0",
  org.eclipse.equinox.ds;bundle-version="1.4.200",
  org.eclipse.equinox.util;bundle-version="1.0.500",
+ org.eclipse.equinox.console;bundle-version="1.1.0",
  org.eclipse.equinox.http.servlet;bundle-version="1.1.500",
  org.eclipse.equinox.http.jetty;bundle-version="3.0.200",
  org.apache.commons.logging;bundle-version="1.1.1",
@@ -15,7 +16,9 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.jetty.util;bundle-version="8.1.16",
  no.hal.eclipsky.services.workspace;bundle-version="0.1.0",
  no.hal.emfs;bundle-version="0.1.0",
- no.hal.eclipsky.services.emfs;bundle-version="0.1.0"
+ no.hal.eclipsky.services.emfs;bundle-version="0.1.0",
+ org.eclipse.ui.console;bundle-version="3.5.300",
+ org.eclipse.ui;bundle-version="3.106.0"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
 Bundle-ClassPath: .
@@ -24,11 +27,14 @@ Service-Component: OSGI-INF/no.hal.eclipsky.services.sourceeditor.RefreshUpdateE
  OSGI-INF/no.hal.eclipsky.services.workspace.http.ProjectListServlet.xml,
  OSGI-INF/no.hal.eclipsky.services.workspace.http.ProjectResourcesServlet.xml,
  OSGI-INF/no.hal.eclipsky.services.workspace.http.EnsureProjectServlet.xml,
- OSGI-INF/no.hal.eclipsky.services.sourceeditor.SourceEditorServlet.xml,
  OSGI-INF/no.hal.eclipsky.services.workspace.http.WorkspaceHttpServiceImpl.xml,
  OSGI-INF/no.hal.eclipsky.services.sourceeditor.CompletionEditorServletService.xml,
  OSGI-INF/no.hal.eclipsky.services.sourceeditor.MarkersEditorServletService.xml,
  OSGI-INF/no.hal.eclipsky.services.sourceeditor.RunEditorServletService.xml,
- OSGI-INF/no.hal.eclipsky.services.sourceeditor.TestEditorServletService.xml
+ OSGI-INF/no.hal.eclipsky.services.sourceeditor.TestEditorServletService.xml,
+ OSGI-INF/no.hal.eclipsky.services.sourceeditor.SourceEditorServletImpl.xml
 Import-Package: javax.servlet;version="2.6.0",
  javax.servlet.http;version="2.6.0"
+Export-Package: no.hal.eclipsky.services.sourceeditor,
+ no.hal.eclipsky.services.workspace.http,
+ no.hal.eclipsky.services.workspace.http.util
