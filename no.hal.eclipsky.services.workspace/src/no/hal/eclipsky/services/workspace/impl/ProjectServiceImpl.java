@@ -19,7 +19,11 @@ import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.IResourceDeltaVisitor;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
+import org.osgi.service.component.annotations.Component;
 
+@Component(
+	service=ProjectService.class
+)
 public class ProjectServiceImpl extends AbstractResourcesServiceImpl implements ProjectService, IResourceChangeListener, IResourceDeltaVisitor {
 
 	protected String[] getSourceFolderNames() {

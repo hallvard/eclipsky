@@ -2,26 +2,15 @@ package no.hal.eclipsky.services.editor.impl;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 
 import no.hal.eclipsky.services.common.Proposal;
 import no.hal.eclipsky.services.common.ResourceHelper;
 import no.hal.eclipsky.services.common.ResourceRef;
 import no.hal.eclipsky.services.common.SourceFileMarker;
-import no.hal.eclipsky.services.editor.RunResult;
 import no.hal.eclipsky.services.editor.SourceEditor;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.debug.core.ILaunch;
-import org.eclipse.debug.core.ILaunchConfiguration;
-import org.eclipse.debug.core.ILaunchManager;
-import org.eclipse.debug.core.IStreamListener;
-import org.eclipse.debug.core.model.IProcess;
-import org.eclipse.debug.core.model.IStreamMonitor;
-import org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants;
 
 public class GenericSourceEditor implements SourceEditor {
 

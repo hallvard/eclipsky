@@ -1,7 +1,6 @@
 package no.hal.eclipsky.services.workspace;
 
 import no.hal.eclipsky.services.common.ResourceRef;
-import no.hal.eclipsky.services.common.ResourceVisitor;
 import no.hal.eclipsky.services.common.SourceFileMarker;
 
 /**

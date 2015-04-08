@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" activate="activate" immediate="true" name="no.hal.eclipsky.services.sourceeditor.MarkersEditorServletService">
+   <implementation class="no.hal.eclipsky.services.sourceeditor.MarkersEditorServletService"/>
+   <service>
+      <provide interface="no.hal.eclipsky.services.sourceeditor.SourceEditorServletService"/>
+   </service>
+   <property name="operations" value="markers"/>
+   <reference bind="setSourceProjectManager" cardinality="1..1" interface="no.hal.eclipsky.services.workspace.http.SourceProjectManager" name="SourceProjectManager" policy="static"/>
+</scr:component>

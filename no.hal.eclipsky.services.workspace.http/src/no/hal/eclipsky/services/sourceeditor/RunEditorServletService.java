@@ -3,18 +3,41 @@ package no.hal.eclipsky.services.sourceeditor;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintWriter;
 
+import org.osgi.service.component.ComponentContext;
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
+
+import no.hal.eclipsky.services.common.ProjectRef;
 import no.hal.eclipsky.services.editor.RunResult;
 import no.hal.eclipsky.services.sourceeditor.SourceEditorServlet.EditorServiceRequest;
 import no.hal.eclipsky.services.workspace.http.AbstractServiceServlet;
+import no.hal.eclipsky.services.workspace.http.SourceProjectManager;
 import no.hal.eclipsky.services.workspace.http.util.EmfsUtil;
 import no.hal.eclipsky.services.workspace.http.util.ResponseFormatter;
 import no.hal.emfs.EmfsResource;
 
-public class RunEditorServletService extends AbstractSourceEditorServletService {
+@Component(
+	immediate = true,
+	property = AbstractSourceEditorServletService.OPERATION_KEY + "=run"
+)
+public class RunEditorServletService extends AbstractSourceEditorServletService implements SourceEditorServletService {
+
+	@Reference
+	@Override
+	public synchronized void setSourceProjectManager(SourceProjectManager sourceProjectManager) {
+		super.setSourceProjectManager(sourceProjectManager);
+	}
+
+	@Activate
+	@Override
+	protected void activate(ComponentContext context) {
+		super.activate(context);
+	}
 
 	@Override
 	public String doSourceEditorServletService(EditorServiceRequest request, String requestBody) {
-		EmfsResource emfsResource = EmfsUtil.findEmfsResource(getSourceProjectManager().getEmfs(request.resourceRef), EmfsUtil::isRunnable);
+		EmfsResource emfsResource = EmfsUtil.findEmfsResource(getSourceProjectManager().getEmfsResource(new ProjectRef(request.resourceRef)), EmfsUtil::isRunnable);
 		if (emfsResource != null) {
 			RunResult result = getSourceProject(request).run(EmfsUtil.createResourceRef(emfsResource));
 			return runResponse(result, request.responseFormat);

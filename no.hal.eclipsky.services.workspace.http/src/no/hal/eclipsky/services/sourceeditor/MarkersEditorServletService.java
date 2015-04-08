@@ -3,13 +3,35 @@ package no.hal.eclipsky.services.sourceeditor;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintWriter;
 
+import org.osgi.service.component.ComponentContext;
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
+
 import no.hal.eclipsky.services.common.SourceFileMarker;
 import no.hal.eclipsky.services.sourceeditor.SourceEditorServlet.EditorServiceRequest;
 import no.hal.eclipsky.services.workspace.http.AbstractServiceServlet;
+import no.hal.eclipsky.services.workspace.http.SourceProjectManager;
 import no.hal.eclipsky.services.workspace.http.util.ResponseFormatter;
 
-public class MarkersEditorServletService extends AbstractSourceEditorServletService {
+@Component(
+	immediate = true,
+	property = AbstractSourceEditorServletService.OPERATION_KEY + "=markers"
+)
+public class MarkersEditorServletService extends AbstractSourceEditorServletService implements SourceEditorServletService {
 
+	@Reference
+	@Override
+	public synchronized void setSourceProjectManager(SourceProjectManager sourceProjectManager) {
+		super.setSourceProjectManager(sourceProjectManager);
+	}
+
+	@Activate
+	@Override
+	protected void activate(ComponentContext context) {
+		super.activate(context);
+	}
+	
 	@Override
 	public String doSourceEditorServletService(EditorServiceRequest request, String requestBody) {
 		SourceFileMarker[] sourceFileMarkers = getSourceEditor(request).update(null, true, false);

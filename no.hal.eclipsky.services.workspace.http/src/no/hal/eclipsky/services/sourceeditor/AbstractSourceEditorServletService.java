@@ -15,7 +15,7 @@ public abstract class AbstractSourceEditorServletService implements SourceEditor
 	public SourceProjectManager getSourceProjectManager() {
 		return sourceProjectManager;
 	}
-	
+
 	public synchronized void setSourceProjectManager(SourceProjectManager sourceProjectManager) {
 		this.sourceProjectManager = sourceProjectManager;
 	}
