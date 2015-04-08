@@ -175,7 +175,7 @@ public abstract class AbstractServiceServlet extends HttpServlet implements Serv
 			if (defaultProject == null && projectName != null && projectName.trim().length() > 0) {
 				defaultProject = new ProjectRef(projectName);
 			}
-			return getResourceRef(resourceRefString, defaultProject);
+			return ResourceRef.valueOf(resourceRefString, defaultProject);
 		}
 		if (projectName == null || projectName.trim().length() == 0 && defaultProject != null) {
 			projectName = defaultProject.getProjectName();
@@ -185,39 +185,6 @@ public abstract class AbstractServiceServlet extends HttpServlet implements Serv
 				request.getParameter(PACKAGE_NAME_REQUEST_PARAMETER),
 				request.getParameter(RESOURCE_NAME_REQUEST_PARAMETER)
 				);
-	}
-
-	public static ResourceRef getResourceRef(String resourcePath) {
-		return getResourceRef(resourcePath, null);
-	}
-
-	public static ResourceRef getResourceRef(String resourcePath, ProjectRef defaultProject) {
-		int startPos = 0, pos = resourcePath.indexOf('/'), lastPos = resourcePath.lastIndexOf('/');
-		String projectName = null, packageName = null, resourceName = null;
-		if (pos == 0) {
-			// skip first char
-			startPos = 1;
-			pos = resourcePath.indexOf('/');
-		}
-		if (pos < 0) {
-			// one segment
-			resourceName = resourcePath;
-		} else {
-			// at least two segment: resourceName
-			resourceName = resourcePath.substring(lastPos + 1);
-			if (pos == lastPos) {
-				// only two segments: packageName/resourceName
-				packageName = resourcePath.substring(startPos, lastPos);
-			} else {
-				// three or more segments: projectName/packageName/resourceName
-				projectName = resourcePath.substring(startPos, pos);
-				packageName = resourcePath.substring(pos + 1, lastPos).replace('/', '.');
-			}
-		}
-		if (projectName == null && defaultProject != null) {
-			projectName = defaultProject.getProjectName();
-		}
-		return new ResourceRef(projectName, packageName, resourceName);
 	}
 	
 	protected void writerResourcesResponse(String responseFormat, PrintWriter writer, ResourcesService resourcesService, ResourceRef resourceRef, int depth) throws ServletException, IOException {
