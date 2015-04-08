@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" name="no.hal.eclipsky.ui.console.SourceEditorServletCommandProvider">
+   <implementation class="no.hal.eclipsky.ui.console.SourceEditorServletCommandProvider"/>
+   <service>
+      <provide interface="org.eclipse.osgi.framework.console.CommandProvider"/>
+   </service>
+   <reference bind="setSourceEditorServlet" cardinality="1..1" interface="no.hal.eclipsky.services.sourceeditor.SourceEditorServlet" name="SourceEditorServlet" policy="static"/>
+</scr:component>
