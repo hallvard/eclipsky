@@ -35,6 +35,10 @@ public class CompletionEditorServletService extends AbstractSourceEditorServletS
 	@Override
 	public String doSourceEditorServletService(EditorServiceRequest request, String requestBody) {
 		int position = Integer.parseInt(requestBody);
+		CharacterPosition offset = computeResourceOffset(getSourceProjectManager().getEmfsResource(request.resourceRef));
+		if (offset != null) {
+			position += offset.getPosition();
+		}
 		Proposal[] completions = getSourceEditor(request).complete(position);
 		if (completions.length == 0) {
 			return null;
