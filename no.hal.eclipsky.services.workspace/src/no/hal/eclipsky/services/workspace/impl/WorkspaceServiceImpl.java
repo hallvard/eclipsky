@@ -17,7 +17,9 @@ import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.launching.JavaRuntime;
+import org.osgi.service.component.annotations.Component;
 
+@Component
 public class WorkspaceServiceImpl extends AbstractResourcesServiceImpl implements WorkspaceService {
 
 	private final static String[] TYPE_NATURES = {

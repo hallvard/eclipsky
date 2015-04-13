@@ -20,6 +20,5 @@ Export-Package: no.hal.eclipsky.services.common,
  no.hal.eclipsky.services.editor.impl,
  no.hal.eclipsky.services.workspace,
  no.hal.eclipsky.services.workspace.impl
-Service-Component: OSGI-INF/workspace-service-component.xml,
- OSGI-INF/project-service-component.xml,
- OSGI-INF/editor-service-component.xml
+Service-Component: OSGI-INF/no.hal.eclipsky.services.workspace.impl.ProjectServiceImpl.xml,
+ OSGI-INF/no.hal.eclipsky.services.workspace.impl.WorkspaceServiceImpl.xml

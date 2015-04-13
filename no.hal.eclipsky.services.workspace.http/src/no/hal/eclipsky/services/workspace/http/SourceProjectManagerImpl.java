@@ -1,5 +1,6 @@
 package no.hal.eclipsky.services.workspace.http;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -13,10 +14,19 @@ import no.hal.eclipsky.services.editor.impl.JavaSourceProject;
 import no.hal.eclipsky.services.emfs.EmfsService;
 import no.hal.eclipsky.services.workspace.WorkspaceService;
 import no.hal.eclipsky.services.workspace.http.util.EmfsUtil;
-import no.hal.emfs.EmfsFile;
+import no.hal.emfs.EmfsPackage;
 import no.hal.emfs.EmfsResource;
 import no.hal.emfs.util.ImportHelperOptions;
 
+import org.eclipse.emf.common.util.URI;
+import org.eclipse.emf.ecore.resource.Resource;
+import org.eclipse.emf.ecore.resource.ResourceSet;
+import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
+import org.eclipse.emf.ecore.util.EcoreUtil;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
+
+@Component
 public class SourceProjectManagerImpl implements SourceProjectManager {
 
 	private ImportHelperOptions importHelperOptions;
@@ -29,59 +39,95 @@ public class SourceProjectManagerImpl implements SourceProjectManager {
 	
 	private WorkspaceService workspaceService;
 
+	@Reference
 	public synchronized void setWorkspaceService(WorkspaceService workspaceService) {
 		this.workspaceService = workspaceService;
 	}
 
 	private EmfsService emfsService;
 	
+	@Reference
 	public synchronized void setEmfsService(EmfsService emfsService) {
 		this.emfsService = emfsService;
 	}
 
 	private Map<ProjectRef, SourceProject> sourceProjects = new HashMap<ProjectRef, SourceProject>();
-	private Map<ProjectRef, EmfsResource> emfsModels = new HashMap<ProjectRef, EmfsResource>();
-	
+	private Map<ProjectRef, EmfsResource> emfsResources = new HashMap<ProjectRef, EmfsResource>();
 	
 	@Override
 	public void ensureSourceProject(ProjectRef projectRef, EmfsResource emfsResource) throws Exception {
 		String projectName = projectRef.getProjectName();
 		workspaceService.ensureProject(projectName);
-		JavaSourceProject sourceProject = new JavaSourceProject(projectRef);
+		SourceProject sourceProject = new JavaSourceProject(projectRef);
 		sourceProjects.put(projectRef, sourceProject);
 		if (emfsResource != null) {
-			emfsService.importResources(Arrays.asList(emfsResource), projectName, importHelperOptions, null);
-			emfsModels.put(projectRef, emfsResource);
+			Collection<EmfsResource> importResources = emfsService.importResources(Arrays.asList(emfsResource), projectName, importHelperOptions, null);
+			for (EmfsResource importedResource : importResources) {
+				EmfsResource sourceFolder = EmfsUtil.getEmfsContainer(importedResource.getContainer(), EmfsUtil::isSourceFolder);
+				if (sourceFolder != null) {
+					String packageName = EmfsUtil.getFullName(importedResource.getContainer(), EmfsUtil::isSourceFolder, ".");
+					ResourceRef resourceRef = new ResourceRef(projectRef, packageName, importedResource.getName());
+					emfsResources.put(resourceRef, importedResource);
+				}
+			}
+			emfsResources.put(projectRef, emfsResource);
+			// create XMI resource
+			Resource emfsModel = EmfsUtil.createEmfsResource(createProjectEmfsUri(projectName), "emfs");
+			// move contents
+			emfsModel.getContents().addAll(emfsResource.eResource().getContents());
+			// and serialize
+			try {
+				emfsModel.save(null);
+			} catch (Exception e) {
+			}
 		}
 	}
 
+	private URI createProjectEmfsUri(String projectName) {
+		return URI.createPlatformResourceURI("/" + projectName + "/" + projectName, true);
+	}
+
+	private boolean autoEnsureProject = true;
+	
 	@Override
 	public SourceProject getSourceProject(ProjectRef projectRef) {
-		return sourceProjects.get(new ProjectRef(projectRef));
+		projectRef = new ProjectRef(projectRef.getProjectName());
+		SourceProject sourceProject = sourceProjects.get(projectRef);
+		if (sourceProject == null && autoEnsureProject) {
+			sourceProject = ensureProject(projectRef);
+		}
+		return sourceProject;
+	}
+
+	protected SourceProject ensureProject(ProjectRef projectRef) {
+		Resource emfsModel = EmfsUtil.createEmfsResource(createProjectEmfsUri(projectRef.getProjectName()), "emfs");
+		ResourceSet resourceSet = new ResourceSetImpl();
+		resourceSet.getResources().add(emfsModel);
+		try {
+			emfsModel.load(null);
+			EmfsResource emfsResource = (EmfsResource) EcoreUtil.getObjectByType(emfsModel.getContents(), EmfsPackage.eINSTANCE.getEmfsResource());
+			if (emfsResource != null) {
+				SourceProject sourceProject = new JavaSourceProject(projectRef);
+				sourceProjects.put(projectRef, sourceProject);
+				emfsResources.put(projectRef, emfsResource);
+				return sourceProject;
+			}
+		} catch (IOException e1) {
+		}
+		return null;
 	}
 
 	@Override
-	public EmfsResource getEmfs(ProjectRef projectRef) {
-		return emfsModels.get(new ProjectRef(projectRef));
+	public EmfsResource getEmfsResource(ProjectRef resourceRef) {
+		return emfsResources.get(resourceRef);
 	}
 	
 	private ResourceRef withProjectRef(ProjectRef projectRef, ResourceRef resourceRef) {
 		return new ResourceRef(projectRef, resourceRef.getPackageName(), resourceRef.getResourceName());
 	}
 
-	private Collection<ResourceRef> withProjectRef(ProjectRef projectRef, Collection<ResourceRef> resourceRefs) {
-		return resourceRefs.stream().map(resourceRef -> withProjectRef(projectRef, resourceRef)).collect(Collectors.toList());
-	}
-
 	public Collection<ResourceRef> getEditableResources(ProjectRef projectRef) {
-		return withProjectRef(projectRef, EmfsUtil.collectResources(emfsModels.get(projectRef), EmfsResource::isWriteable));
-	}
-
-	private Collection<ResourceRef> getRunnableResources(ProjectRef projectRef) {
-		return withProjectRef(projectRef, EmfsUtil.collectResources(emfsModels.get(projectRef), emfsResource -> emfsResource instanceof EmfsFile && EmfsUtil.hasTags(emfsResource, "java", "application")));
-	}
-	
-	private Collection<ResourceRef> getTestableResources(ProjectRef projectRef) {
-		return withProjectRef(projectRef, EmfsUtil.collectResources(emfsModels.get(projectRef), EmfsUtil::isTestable));
+		Collection<ResourceRef> collectedResources = EmfsUtil.collectResources(emfsResources.get(projectRef), EmfsResource::isWriteable);
+		return collectedResources.stream().map(resourceRef -> withProjectRef(projectRef, resourceRef)).collect(Collectors.toList());
 	}
 }

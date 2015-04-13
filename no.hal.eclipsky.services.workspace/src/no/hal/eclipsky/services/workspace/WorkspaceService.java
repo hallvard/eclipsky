@@ -15,7 +15,7 @@ public interface WorkspaceService extends ResourcesService {
 	public String[] getProjectList(String namePattern, String type);
 	
 	/**
-	 * Creates a project and populates it according to the provided emfs model
+	 * Creates a project with the appropriate name and type(s)
 	 * @param name the project name
 	 * @param types project type(s) 
 	 */
