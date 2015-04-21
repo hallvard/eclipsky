@@ -14,7 +14,7 @@ var editor = (function(ace, con, cookies) {
 		saveDelay = 500,
 		saveTimer = null,
 		
-		logging = false,
+		logging = true,
 		c = (logging ? console : {log : function(){}});
    
 	function initialize(editorId, editorPrefs) {
@@ -22,7 +22,6 @@ var editor = (function(ace, con, cookies) {
 		ace.require("ace/ext/language_tools"); // Required for auto completion
 		_editor = ace.edit(editorId);
 		_editor.setTheme("ace/theme/monokai");
-		_editor.getSession().setMode("ace/mode/" + editorPrefs.language);
 	   
 		// Enable auto completion
 		_editor.completers = [createCompleter()];
@@ -40,7 +39,7 @@ var editor = (function(ace, con, cookies) {
 	   
 		// Custom event for when contents change
 		_editor.getSession().on('change', function(ev) {
-			if (ev.data.action === "insertText" && ev.data.text.length < 3) {
+			if (ev.data.action === "insertText" && ev.data.text.length < 3 || ev.data.action === 'removeText') {
 				ev.delay = true;
 				changed(ev);
 			}
@@ -137,12 +136,11 @@ var editor = (function(ace, con, cookies) {
 					break;
 				case 'refresh':
 					var session = _editor.getSession();
-					session.setMode(editors[currentId].language);
 					session.setValue(data.code);
+					session.setMode("ace/mode/" + editors[currentId].language);
 					break;
-				case 'ready':
-					refreshEditor();
-					break;
+				case 'close':
+					con.send('run');
 			}
 		}
 	};
@@ -189,17 +187,14 @@ var editor = (function(ace, con, cookies) {
 	};
    
 	return {
-		init : function(el, baseUrl, id, editorArray) {
+		init : function(el, baseUrl, id, editorArray, startIndex) {
 			// Configure current editor
 			editors = editorArray;
 			projectId = id;
 			
 			// Check if user had a previous editor in this project
-			var storedId = cookies.getCookie(projectId);
-			if (storedId) {
-				currentId = storedId;
-			}
-			
+			currentId = startIndex;
+
 			initialize(el, editors[currentId]);
 			editorName = editors[currentId].resourceRef;
 		   
@@ -236,9 +231,17 @@ var editor = (function(ace, con, cookies) {
 			
 			return namedEditors;
 		},
+
+		getCurrentIndex : function() {
+			return currentId;
+		},
 		
 		refresh : function() {
 			refreshEditor();
+		},
+
+		run : function() {
+			con.send('run');
 		}
 		   
 	};

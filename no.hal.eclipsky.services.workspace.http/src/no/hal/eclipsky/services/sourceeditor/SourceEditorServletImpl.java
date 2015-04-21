@@ -79,6 +79,8 @@ public class SourceEditorServletImpl extends WebSocketServlet implements SourceE
 			httpService.registerServlet("/sourceEditor", (HttpServlet) this, null, null);
 			httpService.registerResources("/ace", "/web/ace-builds/src-noconflict", null);
 			httpService.registerResources("/js", "/web/js", null);
+			httpService.registerResources("/css", "/web/css", null);
+			httpService.registerResources("/img", "/web/img", null);
 			httpService.registerResources("/sourceEditorForm.html", "/web/html/sourceEditorForm.html", null);
 		} catch (Exception e) {
 		}
@@ -90,6 +92,7 @@ public class SourceEditorServletImpl extends WebSocketServlet implements SourceE
 			httpService.unregister("/sourceEditor");
 			httpService.unregister("/ace");
 			httpService.unregister("/js");
+			httpService.unregister("/img");
 			httpService.unregister("/sourceEditorForm.html");
 		} catch (Exception e) {
 		}
@@ -111,6 +114,13 @@ public class SourceEditorServletImpl extends WebSocketServlet implements SourceE
 		options.editorName = (editables != null && editables.length > 0 ? editables[0].getResourceName() : options.projectId);
 		options.resourceRefs = editables;
 		options.embed = embed;
+		
+		String index = request.getParameter("startIndex");
+		if (index == null) {
+			options.startIndex = 0;
+		} else {
+			options.startIndex = Integer.parseInt(index);
+		}
 		aceEditorHelper.writeEditorHtml(writer, options);
 	}
 
