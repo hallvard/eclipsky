@@ -15,12 +15,16 @@ import javax.servlet.http.HttpServletRequest;
 import no.hal.eclipsky.services.common.AbstractResourceVisitor;
 import no.hal.eclipsky.services.common.ProjectRef;
 import no.hal.eclipsky.services.common.ResourceRef;
+import no.hal.eclipsky.services.monitoring.CompositeServiceLogger;
+import no.hal.eclipsky.services.monitoring.ServiceLogger;
 import no.hal.eclipsky.services.workspace.ResourcesService;
 import no.hal.eclipsky.services.workspace.http.util.JsonResponseFormatter;
 import no.hal.eclipsky.services.workspace.http.util.ResponseFormatter;
 import no.hal.eclipsky.services.workspace.http.util.XmlResponseFormatter;
 
 import org.osgi.service.component.ComponentContext;
+import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ReferenceCardinality;
 
 @SuppressWarnings("serial")
 public abstract class AbstractServiceServlet extends HttpServlet implements ServiceServlet {
@@ -57,6 +61,26 @@ public abstract class AbstractServiceServlet extends HttpServlet implements Serv
 		return resourceAliases;
 	}
 	
+	//
+
+	private final CompositeServiceLogger compositeServiceLogger = new CompositeServiceLogger();
+	
+	protected ServiceLogger getServiceLogger() {
+		return compositeServiceLogger;
+	}
+
+	@Reference(
+		cardinality = ReferenceCardinality.MULTIPLE,
+		unbind="removeServiceLogger"
+	)
+	public synchronized void addServiceLogger(ServiceLogger serviceLogger) {
+		compositeServiceLogger.addServiceLogger(serviceLogger);
+	}
+	
+	public synchronized void removeServiceLogger(ServiceLogger serviceLogger) {
+		compositeServiceLogger.removeServiceLogger(serviceLogger);
+	}
+
 	//
 	
 	public static String getResponseFormat(HttpServletRequest request, String def) {
