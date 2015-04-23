@@ -12,11 +12,15 @@ public class ProjectRef {
 		this(projectRef.getProjectName());
 	}
 
-	@Override
-	public String toString() {
-		return "->/" + projectName;
+	public String toPath() {
+		return projectName;
 	}
 
+	@Override
+	public String toString() {
+		return "->/" + toPath();
+	}
+	
 	public String getProjectName() {
 		return projectName;
 	}

@@ -19,8 +19,8 @@ public class ResourceRef extends ProjectRef {
 	}
 
 	@Override
-	public String toString() {
-		return "->/" + getProjectName() + "/" + packageName + "/" + resourceName;
+	public String toPath() {
+		return super.toPath() +  "/" + packageName.replace('.', '/') + "/" + resourceName;
 	}
 	
 	public String getPackageName() {
