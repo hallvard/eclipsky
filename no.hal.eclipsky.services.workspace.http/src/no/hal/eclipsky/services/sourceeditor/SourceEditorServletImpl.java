@@ -159,11 +159,11 @@ public class SourceEditorServletImpl extends WebSocketServlet implements SourceE
 		CharSequence response = null;
 		if (editorService != null) {
 			if (! compositeServiceLogger.isEmpty()) {
-				compositeServiceLogger.serviceRequested(request, request.resourceRef.toPath(), -1);
+				compositeServiceLogger.serviceRequested(request, request.op, -1);
 			}
 			response = editorService.doSourceEditorServletService(request, requestBody);
 			if (! compositeServiceLogger.isEmpty()) {
-				compositeServiceLogger.serviceResponded(request, null, -1);
+				compositeServiceLogger.serviceResponded(request, request.resourceRef.toPath(), -1);
 			}
 		}
 		if (response == null || response.length() == 0) {

@@ -95,15 +95,17 @@ public class MqttLogger extends AbstractServiceLogger implements ServiceLogger {
 	}
 
 	protected void log(byte[] payload, String... logKeys) throws MqttException, MqttPersistenceException {
-//		getMqttClient().publish(getTopicKey(logKeys), payload, 0, true);
-		System.out.println("Logging to topic " + getTopicKey(logKeys));
+		getMqttClient().publish(getTopicKey(logKeys), payload, 0, true);
+//		System.out.println("Logging to topic " + getTopicKey(logKeys));
 	}
+
+	private String DEFAULT_LOG_PAYLOAD = "...";
 
 	@Override
 	protected void serviceCompleted(String logKey, String payload, long start, long end) {
 		try {
 			log((start + "-" + end).getBytes(), "services", logKey, "time");
-			log((payload != null ? payload.getBytes() : null), "services", logKey, "details");
+			log((payload != null ? payload : DEFAULT_LOG_PAYLOAD).getBytes(), "services", logKey, "details");
 		} catch (MqttException e) {
 			e.printStackTrace();
 		}
