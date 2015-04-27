@@ -1,0 +1,10 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Monitoring
+Bundle-SymbolicName: no.hal.eclipsky.services.monitoring;singleton:=true
+Bundle-Version: 0.1.0.qualifier
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Export-Package: no.hal.eclipsky.services.monitoring
+Import-Package: org.osgi.service.component.annotations;version="1.2.0"
+Service-Component: OSGI-INF/no.hal.eclipsky.services.monitoring.ConsoleLogger.xml
+Bundle-ActivationPolicy: lazy

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" name="no.hal.eclipsky.services.workspace.http.ProjectListServlet">
+<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" activate="activate" name="no.hal.eclipsky.services.workspace.http.ProjectListServlet">
    <implementation class="no.hal.eclipsky.services.workspace.http.ProjectListServlet"/>
    <service>
       <provide interface="no.hal.eclipsky.services.workspace.http.ServiceServlet"/>

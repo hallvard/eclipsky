@@ -5,13 +5,10 @@ Bundle-SymbolicName: no.hal.eclipsky.services.workspace;singleton:=true
 Bundle-Version: 0.1.0.qualifier
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.core.resources;bundle-version="3.9.0",
- org.eclipse.debug.core;bundle-version="3.9.0",
  org.eclipse.jdt.core;bundle-version="3.9.50",
  org.eclipse.jdt.launching;bundle-version="3.7.100",
  org.eclipse.jdt.junit.core;bundle-version="3.7.300",
- org.eclipse.osgi.services;bundle-version="3.4.0",
- org.eclipse.equinox.ds;bundle-version="1.4.200",
- org.eclipse.equinox.util;bundle-version="1.0.500"
+ org.eclipse.debug.core;bundle-version="3.9.1"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
 Bundle-ClassPath: .
@@ -22,3 +19,4 @@ Export-Package: no.hal.eclipsky.services.common,
  no.hal.eclipsky.services.workspace.impl
 Service-Component: OSGI-INF/no.hal.eclipsky.services.workspace.impl.ProjectServiceImpl.xml,
  OSGI-INF/no.hal.eclipsky.services.workspace.impl.WorkspaceServiceImpl.xml
+Import-Package: org.osgi.service.component.annotations;version="1.2.0"

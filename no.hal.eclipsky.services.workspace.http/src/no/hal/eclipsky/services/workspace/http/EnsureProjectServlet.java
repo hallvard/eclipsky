@@ -12,6 +12,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import no.hal.eclipsky.services.common.ProjectRef;
 import no.hal.eclipsky.services.common.ResourceRef;
+import no.hal.eclipsky.services.monitoring.ServiceLogger;
 import no.hal.eclipsky.services.workspace.WorkspaceService;
 import no.hal.eclipsky.services.workspace.http.util.EmfsUtil;
 import no.hal.emfs.EmfsPackage;
@@ -20,6 +21,8 @@ import no.hal.emfs.EmfsResource;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.util.EcoreUtil;
+import org.osgi.service.component.ComponentContext;
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
@@ -36,6 +39,12 @@ public class EnsureProjectServlet extends ProjectListServlet implements ServiceS
 	@Override
 	public synchronized void setWorkspaceService(WorkspaceService workspaceService) {
 		super.setWorkspaceService(workspaceService);
+	}
+
+	@Activate
+	@Override
+	protected void activate(ComponentContext context) {
+		super.activate(context);
 	}
 
 	private SourceProjectManager sourceProjectManager;
@@ -73,6 +82,8 @@ public class EnsureProjectServlet extends ProjectListServlet implements ServiceS
 	}
 	
 	private void handleRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		ServiceLogger serviceLogger = getServiceLogger();
+		serviceLogger.serviceRequested(request, getClass().getSimpleName(), -1);
 		ProjectRef projectRef = getProjectRef(request);
 		String emfsContent = request.getParameter("emfs"); // getRequestBodyContent(request);
 		Exception ex = null;
@@ -112,5 +123,6 @@ public class EnsureProjectServlet extends ProjectListServlet implements ServiceS
 						+ "</html>");
 			}
 		}
+		serviceLogger.serviceResponded(request, projectRef.getProjectName(), -1);
 	}
 }

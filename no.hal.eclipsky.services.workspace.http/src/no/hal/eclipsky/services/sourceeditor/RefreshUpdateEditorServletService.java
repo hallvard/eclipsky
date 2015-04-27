@@ -3,11 +3,6 @@ package no.hal.eclipsky.services.sourceeditor;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintWriter;
 
-import org.osgi.service.component.ComponentContext;
-import org.osgi.service.component.annotations.Activate;
-import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Reference;
-
 import no.hal.eclipsky.services.common.SourceFileMarker;
 import no.hal.eclipsky.services.editor.SourceEditor;
 import no.hal.eclipsky.services.sourceeditor.SourceEditorServlet.EditorServiceRequest;
@@ -19,6 +14,11 @@ import no.hal.emfs.AbstractStringContents;
 import no.hal.emfs.EmfsFile;
 import no.hal.emfs.EmfsResource;
 import no.hal.emfs.StringContentProvider;
+
+import org.osgi.service.component.ComponentContext;
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
 @Component(
 	immediate = true,
@@ -54,7 +54,8 @@ public class RefreshUpdateEditorServletService extends AbstractSourceEditorServl
 				requestBody = ((StringContentProvider) ((EmfsFile) emfsResource).getContentProvider()).getStringContent();
 			}
 			SourceFileMarker[] sourceFileMarkers = getSourceEditor(request).update(requestBody, markersDefault, false);
-			return MarkersEditorServletService.markersResponse(sourceFileMarkers, request.responseFormat);
+			CharacterPosition offset = computeResourceOffset(getSourceProjectManager().getEmfsResource(request.resourceRef));
+			return MarkersEditorServletService.markersResponse(sourceFileMarkers, request.responseFormat, offset);
 		}
 		CharSequence stringContents = null;
 		if (editableStringContents != null) {

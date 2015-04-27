@@ -5,6 +5,11 @@ import java.util.Dictionary;
 import no.hal.eclipsky.services.editor.SourceEditor;
 import no.hal.eclipsky.services.editor.SourceProject;
 import no.hal.eclipsky.services.workspace.http.SourceProjectManager;
+import no.hal.eclipsky.services.workspace.http.util.EmfsUtil;
+import no.hal.emfs.AbstractStringContentProvider;
+import no.hal.emfs.AbstractStringContents;
+import no.hal.emfs.EmfsFile;
+import no.hal.emfs.EmfsResource;
 
 import org.osgi.service.component.ComponentContext;
 
@@ -43,5 +48,20 @@ public abstract class AbstractSourceEditorServletService implements SourceEditor
 
 	protected SourceEditor getSourceEditor(SourceEditorServlet.EditorServiceRequest request) {
 		return getSourceProject(request).getSourceEditor(request.resourceRef);
+	}
+	
+	//
+	
+	protected CharacterPosition computeResourceOffset(EmfsResource emfsResource) {
+		CharacterPosition offset = null;
+		if (emfsResource instanceof EmfsFile) {
+			EmfsFile emfsFile = (EmfsFile) emfsResource;
+			AbstractStringContents editableStringContents = EmfsUtil.findStringContents(emfsFile, AbstractStringContents::isWriteable);
+			if (editableStringContents != null && emfsFile.getContentProvider() instanceof AbstractStringContentProvider) {
+				offset = new CharacterPosition();
+				((AbstractStringContentProvider) emfsFile.getContentProvider()).accumulate(new CharacterPosition.Accumulator(editableStringContents), offset);
+			}
+		}
+		return offset;
 	}
 }

@@ -14,6 +14,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import no.hal.eclipsky.services.common.ProjectRef;
 import no.hal.eclipsky.services.common.ResourceRef;
+import no.hal.eclipsky.services.monitoring.CompositeServiceLogger;
+import no.hal.eclipsky.services.monitoring.ServiceLogger;
 import no.hal.eclipsky.services.workspace.http.AbstractServiceServlet;
 import no.hal.eclipsky.services.workspace.http.AceEditorHelper;
 import no.hal.eclipsky.services.workspace.http.SourceProjectManager;
@@ -71,6 +73,20 @@ public class SourceEditorServletImpl extends WebSocketServlet implements SourceE
 		for (String op : operations) {
 			editorServices.remove(op);
 		}
+	}
+
+	private final CompositeServiceLogger compositeServiceLogger = new CompositeServiceLogger();
+	
+	@Reference(
+		cardinality = ReferenceCardinality.MULTIPLE,
+		unbind="removeServiceLogger"
+	)
+	public synchronized void addServiceLogger(ServiceLogger serviceLogger) {
+		compositeServiceLogger.addServiceLogger(serviceLogger);
+	}
+	
+	public synchronized void removeServiceLogger(ServiceLogger serviceLogger) {
+		compositeServiceLogger.removeServiceLogger(serviceLogger);
 	}
 
 	@Activate
@@ -152,7 +168,13 @@ public class SourceEditorServletImpl extends WebSocketServlet implements SourceE
 		SourceEditorServletService editorService = editorServices.get(request.op);
 		CharSequence response = null;
 		if (editorService != null) {
+			if (! compositeServiceLogger.isEmpty()) {
+				compositeServiceLogger.serviceRequested(request, request.op, -1);
+			}
 			response = editorService.doSourceEditorServletService(request, requestBody);
+			if (! compositeServiceLogger.isEmpty()) {
+				compositeServiceLogger.serviceResponded(request, request.resourceRef.toPath(), -1);
+			}
 		}
 		if (response == null || response.length() == 0) {
 			response = EMPTY_EDITOR_SERVLET_SERVICE_RESPONSE;
@@ -177,7 +199,6 @@ public class SourceEditorServletImpl extends WebSocketServlet implements SourceE
 
 			@Override
 			public void onMessage(String message) {
-				System.out.println("Message to SourceEditorService: " + message);
 				int pos = message.indexOf('\n');
 				String op = message, contents = null;
 				ResourceRef resourceRef = new ResourceRef(projectRef, null, null);
@@ -192,7 +213,6 @@ public class SourceEditorServletImpl extends WebSocketServlet implements SourceE
 				}
 				EditorServiceRequest editorServiceRequest = new EditorServiceRequest(op, resourceRef, "json");
 				CharSequence response = invokeEditorServiceOperation(editorServiceRequest, contents);
-				System.out.println("Response from SourceEditorService: " + response);
 				try {
 					connection.sendMessage(response != null ? response.toString() : EMPTY_EDITOR_SERVLET_SERVICE_RESPONSE);
 				} catch (IOException e) {

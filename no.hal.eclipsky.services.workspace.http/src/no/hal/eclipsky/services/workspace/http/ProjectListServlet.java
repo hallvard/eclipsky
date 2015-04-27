@@ -9,6 +9,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import no.hal.eclipsky.services.workspace.WorkspaceService;
 
+import org.osgi.service.component.ComponentContext;
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
@@ -24,6 +26,12 @@ public class ProjectListServlet extends AbstractWorkspaceServiceServlet implemen
 		super.setWorkspaceService(workspaceService);
 	}
 
+	@Activate
+	@Override
+	protected void activate(ComponentContext context) {
+		super.activate(context);
+	}
+	
 	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		String responseFormat = getResponseFormat(request);

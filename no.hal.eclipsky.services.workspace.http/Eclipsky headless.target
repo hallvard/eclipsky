@@ -1,0 +1,243 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<?pde version="3.8"?><target name="Luna SR1-based OSGi headless runtime" sequenceNumber="168">
+<locations>
+<location path="${eclipse_home}" type="Profile"/>
+</locations>
+<includeBundles>
+<plugin id="ch.qos.logback.classic"/>
+<plugin id="ch.qos.logback.core"/>
+<plugin id="ch.qos.logback.slf4j"/>
+<plugin id="com.google.gson"/>
+<plugin id="com.google.guava"/>
+<plugin id="com.google.inject"/>
+<plugin id="com.google.inject.multibindings"/>
+<plugin id="com.google.protobuf"/>
+<plugin id="com.ibm.icu"/>
+<plugin id="com.jcraft.jsch"/>
+<plugin id="com.sun.el"/>
+<plugin id="javaewah"/>
+<plugin id="javax.activation"/>
+<plugin id="javax.annotation"/>
+<plugin id="javax.el"/>
+<plugin id="javax.inject"/>
+<plugin id="javax.mail"/>
+<plugin id="javax.persistence"/>
+<plugin id="javax.security.auth.message"/>
+<plugin id="javax.servlet"/>
+<plugin id="javax.servlet.jsp"/>
+<plugin id="javax.transaction"/>
+<plugin id="javax.wsdl"/>
+<plugin id="javax.xml"/>
+<plugin id="lpg.runtime.java"/>
+<plugin id="net.sourceforge.lpg.lpgjavaruntime"/>
+<plugin id="org.antlr.runtime"/>
+<plugin id="org.apache.ant"/>
+<plugin id="org.apache.commons.cli"/>
+<plugin id="org.apache.commons.codec"/>
+<plugin id="org.apache.commons.compress"/>
+<plugin id="org.apache.commons.httpclient"/>
+<plugin id="org.apache.commons.io"/>
+<plugin id="org.apache.commons.lang"/>
+<plugin id="org.apache.commons.lang3"/>
+<plugin id="org.apache.commons.logging"/>
+<plugin id="org.apache.commons.math"/>
+<plugin id="org.apache.commons.pool"/>
+<plugin id="org.apache.felix.gogo.command"/>
+<plugin id="org.apache.felix.gogo.runtime"/>
+<plugin id="org.apache.felix.gogo.shell"/>
+<plugin id="org.apache.httpcomponents.httpclient"/>
+<plugin id="org.apache.httpcomponents.httpcore"/>
+<plugin id="org.apache.jasper.glassfish"/>
+<plugin id="org.apache.log4j"/>
+<plugin id="org.apache.mina.core"/>
+<plugin id="org.apache.solr.client.solrj"/>
+<plugin id="org.apache.sshd.core"/>
+<plugin id="org.apache.ws.commons.util"/>
+<plugin id="org.apache.xerces"/>
+<plugin id="org.apache.xml.resolver"/>
+<plugin id="org.apache.xml.serializer"/>
+<plugin id="org.apache.xmlrpc"/>
+<plugin id="org.eclipse.ant.core"/>
+<plugin id="org.eclipse.ant.launching"/>
+<plugin id="org.eclipse.compare"/>
+<plugin id="org.eclipse.compare.core"/>
+<plugin id="org.eclipse.core.commands"/>
+<plugin id="org.eclipse.core.contenttype"/>
+<plugin id="org.eclipse.core.databinding"/>
+<plugin id="org.eclipse.core.databinding.beans"/>
+<plugin id="org.eclipse.core.databinding.observable"/>
+<plugin id="org.eclipse.core.databinding.property"/>
+<plugin id="org.eclipse.core.expressions"/>
+<plugin id="org.eclipse.core.externaltools"/>
+<plugin id="org.eclipse.core.filebuffers"/>
+<plugin id="org.eclipse.core.filesystem"/>
+<plugin id="org.eclipse.core.filesystem.java7"/>
+<plugin id="org.eclipse.core.filesystem.macosx"/>
+<plugin id="org.eclipse.core.jobs"/>
+<plugin id="org.eclipse.core.net"/>
+<plugin id="org.eclipse.core.resources"/>
+<plugin id="org.eclipse.core.runtime"/>
+<plugin id="org.eclipse.core.runtime.compatibility"/>
+<plugin id="org.eclipse.core.runtime.compatibility.registry"/>
+<plugin id="org.eclipse.core.variables"/>
+<plugin id="org.eclipse.debug.core"/>
+<plugin id="org.eclipse.emf"/>
+<plugin id="org.eclipse.emf.common"/>
+<plugin id="org.eclipse.emf.ecore"/>
+<plugin id="org.eclipse.emf.ecore.edit"/>
+<plugin id="org.eclipse.emf.ecore.xmi"/>
+<plugin id="org.eclipse.emf.edit"/>
+<plugin id="org.eclipse.emf.mwe.core"/>
+<plugin id="org.eclipse.emf.mwe.utils"/>
+<plugin id="org.eclipse.emf.mwe2.language"/>
+<plugin id="org.eclipse.emf.mwe2.launch"/>
+<plugin id="org.eclipse.emf.mwe2.lib"/>
+<plugin id="org.eclipse.emf.mwe2.runtime"/>
+<plugin id="org.eclipse.emf.validation"/>
+<plugin id="org.eclipse.equinox.app"/>
+<plugin id="org.eclipse.equinox.bidi"/>
+<plugin id="org.eclipse.equinox.cm"/>
+<plugin id="org.eclipse.equinox.common"/>
+<plugin id="org.eclipse.equinox.concurrent"/>
+<plugin id="org.eclipse.equinox.console"/>
+<plugin id="org.eclipse.equinox.console.jaas.fragment"/>
+<plugin id="org.eclipse.equinox.console.ssh"/>
+<plugin id="org.eclipse.equinox.coordinator"/>
+<plugin id="org.eclipse.equinox.device"/>
+<plugin id="org.eclipse.equinox.ds"/>
+<plugin id="org.eclipse.equinox.event"/>
+<plugin id="org.eclipse.equinox.frameworkadmin"/>
+<plugin id="org.eclipse.equinox.frameworkadmin.equinox"/>
+<plugin id="org.eclipse.equinox.http.jetty"/>
+<plugin id="org.eclipse.equinox.http.registry"/>
+<plugin id="org.eclipse.equinox.http.servlet"/>
+<plugin id="org.eclipse.equinox.http.servletbridge"/>
+<plugin id="org.eclipse.equinox.io"/>
+<plugin id="org.eclipse.equinox.ip"/>
+<plugin id="org.eclipse.equinox.jsp.jasper"/>
+<plugin id="org.eclipse.equinox.jsp.jasper.registry"/>
+<plugin id="org.eclipse.equinox.launcher"/>
+<plugin id="org.eclipse.equinox.launcher.cocoa.macosx.x86_64"/>
+<plugin id="org.eclipse.equinox.log"/>
+<plugin id="org.eclipse.equinox.metatype"/>
+<plugin id="org.eclipse.equinox.p2.core"/>
+<plugin id="org.eclipse.equinox.p2.engine"/>
+<plugin id="org.eclipse.equinox.p2.metadata"/>
+<plugin id="org.eclipse.equinox.p2.metadata.repository"/>
+<plugin id="org.eclipse.equinox.p2.repository"/>
+<plugin id="org.eclipse.equinox.preferences"/>
+<plugin id="org.eclipse.equinox.region"/>
+<plugin id="org.eclipse.equinox.registry"/>
+<plugin id="org.eclipse.equinox.security"/>
+<plugin id="org.eclipse.equinox.security.macosx"/>
+<plugin id="org.eclipse.equinox.security.ui"/>
+<plugin id="org.eclipse.equinox.servletbridge"/>
+<plugin id="org.eclipse.equinox.simpleconfigurator"/>
+<plugin id="org.eclipse.equinox.simpleconfigurator.manipulator"/>
+<plugin id="org.eclipse.equinox.supplement"/>
+<plugin id="org.eclipse.equinox.transforms.hook"/>
+<plugin id="org.eclipse.equinox.transforms.xslt"/>
+<plugin id="org.eclipse.equinox.useradmin"/>
+<plugin id="org.eclipse.equinox.util"/>
+<plugin id="org.eclipse.equinox.weaving.aspectj"/>
+<plugin id="org.eclipse.equinox.weaving.caching"/>
+<plugin id="org.eclipse.equinox.weaving.caching.j9"/>
+<plugin id="org.eclipse.equinox.weaving.hook"/>
+<plugin id="org.eclipse.equinox.wireadmin"/>
+<plugin id="org.eclipse.help"/>
+<plugin id="org.eclipse.jdt"/>
+<plugin id="org.eclipse.jdt.annotation" version="2.0.0.v20140415-1436"/>
+<plugin id="org.eclipse.jdt.annotation" version="1.1.0.v20140129-1625"/>
+<plugin id="org.eclipse.jdt.apt.core"/>
+<plugin id="org.eclipse.jdt.apt.pluggable.core"/>
+<plugin id="org.eclipse.jdt.compiler.apt"/>
+<plugin id="org.eclipse.jdt.compiler.tool"/>
+<plugin id="org.eclipse.jdt.core"/>
+<plugin id="org.eclipse.jdt.core.manipulation"/>
+<plugin id="org.eclipse.jdt.debug"/>
+<plugin id="org.eclipse.jdt.junit"/>
+<plugin id="org.eclipse.jdt.junit.core"/>
+<plugin id="org.eclipse.jdt.junit.runtime"/>
+<plugin id="org.eclipse.jdt.junit4.runtime"/>
+<plugin id="org.eclipse.jdt.launching"/>
+<plugin id="org.eclipse.jdt.launching.macosx"/>
+<plugin id="org.eclipse.jdt.ui"/>
+<plugin id="org.eclipse.jetty.ajp"/>
+<plugin id="org.eclipse.jetty.annotations"/>
+<plugin id="org.eclipse.jetty.client"/>
+<plugin id="org.eclipse.jetty.continuation" version="8.1.16.v20140903"/>
+<plugin id="org.eclipse.jetty.deploy"/>
+<plugin id="org.eclipse.jetty.http" version="8.1.16.v20140903"/>
+<plugin id="org.eclipse.jetty.io" version="8.1.16.v20140903"/>
+<plugin id="org.eclipse.jetty.jaspi"/>
+<plugin id="org.eclipse.jetty.jmx"/>
+<plugin id="org.eclipse.jetty.jndi"/>
+<plugin id="org.eclipse.jetty.monitor"/>
+<plugin id="org.eclipse.jetty.nested"/>
+<plugin id="org.eclipse.jetty.nosql"/>
+<plugin id="org.eclipse.jetty.osgi.boot"/>
+<plugin id="org.eclipse.jetty.osgi.boot.jsp"/>
+<plugin id="org.eclipse.jetty.osgi.boot.warurl"/>
+<plugin id="org.eclipse.jetty.osgi.httpservice"/>
+<plugin id="org.eclipse.jetty.plus"/>
+<plugin id="org.eclipse.jetty.policy"/>
+<plugin id="org.eclipse.jetty.rewrite"/>
+<plugin id="org.eclipse.jetty.security" version="8.1.16.v20140903"/>
+<plugin id="org.eclipse.jetty.server" version="8.1.16.v20140903"/>
+<plugin id="org.eclipse.jetty.servlet" version="8.1.16.v20140903"/>
+<plugin id="org.eclipse.jetty.servlets"/>
+<plugin id="org.eclipse.jetty.util" version="8.1.16.v20140903"/>
+<plugin id="org.eclipse.jetty.webapp"/>
+<plugin id="org.eclipse.jetty.websocket"/>
+<plugin id="org.eclipse.jetty.xml"/>
+<plugin id="org.eclipse.jgit"/>
+<plugin id="org.eclipse.jgit.archive"/>
+<plugin id="org.eclipse.jsch.core"/>
+<plugin id="org.eclipse.ltk.core.refactoring"/>
+<plugin id="org.eclipse.osgi"/>
+<plugin id="org.eclipse.osgi.compatibility.state"/>
+<plugin id="org.eclipse.osgi.services"/>
+<plugin id="org.eclipse.osgi.util"/>
+<plugin id="org.eclipse.paho.client.mqttv3"/>
+<plugin id="org.eclipse.platform"/>
+<plugin id="org.eclipse.text"/>
+<plugin id="org.eclipse.update.configurator"/>
+<plugin id="org.eclipse.xpand"/>
+<plugin id="org.eclipse.xtend"/>
+<plugin id="org.eclipse.xtend.lib"/>
+<plugin id="org.eclipse.xtend.lib.macro"/>
+<plugin id="org.eclipse.xtend.typesystem.emf"/>
+<plugin id="org.eclipse.xtend2.lib"/>
+<plugin id="org.eclipse.xtext"/>
+<plugin id="org.eclipse.xtext.builder"/>
+<plugin id="org.eclipse.xtext.common.types"/>
+<plugin id="org.eclipse.xtext.common.types.edit"/>
+<plugin id="org.eclipse.xtext.common.types.shared"/>
+<plugin id="org.eclipse.xtext.common.types.shared.jdt38"/>
+<plugin id="org.eclipse.xtext.ecore"/>
+<plugin id="org.eclipse.xtext.generator"/>
+<plugin id="org.eclipse.xtext.junit4"/>
+<plugin id="org.eclipse.xtext.logging"/>
+<plugin id="org.eclipse.xtext.util"/>
+<plugin id="org.eclipse.xtext.xbase.lib"/>
+<plugin id="org.hamcrest.core"/>
+<plugin id="org.jboss.netty"/>
+<plugin id="org.junit" version="4.11.0.v201303080030"/>
+<plugin id="org.junit" version="3.8.2.v3_8_2_v20100427-1100"/>
+<plugin id="org.objectweb.asm" version="3.3.1.v201105211655"/>
+<plugin id="org.objectweb.asm" version="5.0.1.v201404251740"/>
+<plugin id="org.objectweb.asm.tree"/>
+<plugin id="org.slf4j.api"/>
+<plugin id="osgi.cmpn"/>
+<plugin id="osgi.core"/>
+</includeBundles>
+<environment>
+<os>macosx</os>
+<ws>cocoa</ws>
+<arch>x86_64</arch>
+<nl>en_US</nl>
+</environment>
+<launcherArgs>
+<vmArgs>-Dosgi.requiredJavaVersion=1.6 -XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts -XX:MaxPermSize=256m -Xms40m -Xmx2048m -Xdock:icon=../Resources/Eclipse.icns -XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts</vmArgs>
+</launcherArgs>
+</target>

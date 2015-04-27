@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -14,11 +15,14 @@ import no.hal.eclipsky.services.editor.impl.JavaSourceProject;
 import no.hal.eclipsky.services.emfs.EmfsService;
 import no.hal.eclipsky.services.workspace.WorkspaceService;
 import no.hal.eclipsky.services.workspace.http.util.EmfsUtil;
+import no.hal.emfs.EmfsFile;
 import no.hal.emfs.EmfsPackage;
 import no.hal.emfs.EmfsResource;
 import no.hal.emfs.util.ImportHelperOptions;
 
+import org.eclipse.emf.common.util.TreeIterator;
 import org.eclipse.emf.common.util.URI;
+import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
@@ -61,16 +65,9 @@ public class SourceProjectManagerImpl implements SourceProjectManager {
 		SourceProject sourceProject = new JavaSourceProject(projectRef);
 		sourceProjects.put(projectRef, sourceProject);
 		if (emfsResource != null) {
-			Collection<EmfsResource> importResources = emfsService.importResources(Arrays.asList(emfsResource), projectName, importHelperOptions, null);
-			for (EmfsResource importedResource : importResources) {
-				EmfsResource sourceFolder = EmfsUtil.getEmfsContainer(importedResource.getContainer(), EmfsUtil::isSourceFolder);
-				if (sourceFolder != null) {
-					String packageName = EmfsUtil.getFullName(importedResource.getContainer(), EmfsUtil::isSourceFolder, ".");
-					ResourceRef resourceRef = new ResourceRef(projectRef, packageName, importedResource.getName());
-					emfsResources.put(resourceRef, importedResource);
-				}
-			}
 			emfsResources.put(projectRef, emfsResource);
+			Collection<EmfsResource> importResources = emfsService.importResources(Arrays.asList(emfsResource), projectName, importHelperOptions, null);
+			registerEmfsSourceResources(importResources.iterator(), projectRef);
 			// create XMI resource
 			Resource emfsModel = EmfsUtil.createEmfsResource(createProjectEmfsUri(projectName), "emfs");
 			// move contents
@@ -83,6 +80,24 @@ public class SourceProjectManagerImpl implements SourceProjectManager {
 		}
 	}
 
+	private void registerEmfsSourceResources(Iterator<? extends EObject> iterator, ProjectRef projectRef) {
+		while (iterator.hasNext()) {
+			EObject next = iterator.next();
+			if (next instanceof EmfsFile) {
+				EmfsFile emfsFile = (EmfsFile) next;
+				EmfsResource sourceFolder = EmfsUtil.getEmfsContainer(emfsFile.getContainer(), EmfsUtil::isSourceFolder);
+				if (sourceFolder != null) {
+					String packageName = EmfsUtil.getFullName(emfsFile.getContainer(), EmfsUtil::isSourceFolder, ".");
+					ResourceRef resourceRef = new ResourceRef(projectRef, packageName, emfsFile.getName());
+					emfsResources.put(resourceRef, emfsFile);
+				}
+			} else if (next instanceof EmfsResource);
+			else if (iterator instanceof TreeIterator<?>) {
+				((TreeIterator<?>) iterator).prune();
+			}
+		}
+	}
+	
 	private URI createProjectEmfsUri(String projectName) {
 		return URI.createPlatformResourceURI("/" + projectName + "/" + projectName, true);
 	}
@@ -110,6 +125,7 @@ public class SourceProjectManagerImpl implements SourceProjectManager {
 				SourceProject sourceProject = new JavaSourceProject(projectRef);
 				sourceProjects.put(projectRef, sourceProject);
 				emfsResources.put(projectRef, emfsResource);
+				registerEmfsSourceResources(emfsResource.eAllContents(), projectRef);
 				return sourceProject;
 			}
 		} catch (IOException e1) {

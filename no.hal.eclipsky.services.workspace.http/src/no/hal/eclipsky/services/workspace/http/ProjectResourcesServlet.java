@@ -7,6 +7,8 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.osgi.service.component.ComponentContext;
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
@@ -26,6 +28,12 @@ public class ProjectResourcesServlet extends AbstractProjectServiceServlet imple
 		super.setProjectService(projectService);
 	}
 
+	@Activate
+	@Override
+	protected void activate(ComponentContext context) {
+		super.activate(context);
+	}
+	
 	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		ProjectRef projectRef = getProjectRef(request);
