@@ -50,7 +50,8 @@ var connector = (function() {
 	};
 	
 	function sendWSdata(data) {
-		var wsData = data.op + "\n" + data.body;
+		var wsData = data.op + (data.body !== undefined ? 
+								"\n" + data.body : '');
 		webSocket.send(wsData);
 	};
 	

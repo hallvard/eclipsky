@@ -8,13 +8,13 @@ var editor = (function(ace, con, cookies) {
 		editorName,
 		currentId = 0,
 
-		RUN_KEY = 'F9',
+		RUN_KEY = 'R',
 	   
 		completionCallback = null,
 		saveDelay = 500,
 		saveTimer = null,
 		
-		logging = false,
+		logging = true,
 		c = (logging ? console : {log : function(){}});
    
 	function initialize(editorId, editorPrefs) {
@@ -22,7 +22,6 @@ var editor = (function(ace, con, cookies) {
 		ace.require("ace/ext/language_tools"); // Required for auto completion
 		_editor = ace.edit(editorId);
 		_editor.setTheme("ace/theme/monokai");
-		_editor.getSession().setMode("ace/mode/" + editorPrefs.language);
 	   
 		// Enable auto completion
 		_editor.completers = [createCompleter()];
@@ -40,7 +39,7 @@ var editor = (function(ace, con, cookies) {
 	   
 		// Custom event for when contents change
 		_editor.getSession().on('change', function(ev) {
-			if (ev.data.action === "insertText" && ev.data.text.length < 3) {
+			if (ev.data.action === "insertText" && ev.data.text.length < 3 || ev.data.action === 'removeText') {
 				ev.delay = true;
 				changed(ev);
 			}
@@ -88,6 +87,10 @@ var editor = (function(ace, con, cookies) {
    
 	function run(ev) {		
 		con.send('run ' + editorName);
+	};
+
+	function test(ev) {		
+		con.send('test ' + editorName);
 	};
    
    
@@ -137,12 +140,13 @@ var editor = (function(ace, con, cookies) {
 					break;
 				case 'refresh':
 					var session = _editor.getSession();
-					session.setMode(editors[currentId].language);
 					session.setValue(data.code);
+					session.setMode("ace/mode/" + editors[currentId].language);
+					_editor.moveCursorToPosition(editors[currentId].pos);
+					_editor.focus();
 					break;
-				case 'ready':
-					refreshEditor();
-					break;
+				case 'close':
+					con.send('run');
 			}
 		}
 	};
@@ -187,19 +191,26 @@ var editor = (function(ace, con, cookies) {
 	function refreshEditor() {
 		con.send('refresh ' + editorName);
 	};
+
+	function getNamedEditors() {
+		var namedEditors = [];
+		for (var i = 0; i < editors.length; i++) {
+			var fileName = editors[i].resourceRef.split('/')[1];
+			namedEditors[i] = {id: i, name: fileName};
+		}
+		
+		return namedEditors;
+	}
    
 	return {
-		init : function(el, baseUrl, id, editorArray) {
+		init : function(el, baseUrl, id, editorArray, startIndex) {
 			// Configure current editor
 			editors = editorArray;
 			projectId = id;
 			
 			// Check if user had a previous editor in this project
-			var storedId = cookies.getCookie(projectId);
-			if (storedId) {
-				currentId = storedId;
-			}
-			
+			currentId = startIndex;
+
 			initialize(el, editors[currentId]);
 			editorName = editors[currentId].resourceRef;
 		   
@@ -218,26 +229,46 @@ var editor = (function(ace, con, cookies) {
 			handleResponse(event);
 		},
 	   
+	   	// Store info by closing current editor, and refresh with new content
 		switchEditor : function(id) {
-			// Store info and refresh editor
-			currentId = id;
+			// Store current position
+			editors[currentId].pos = _editor.getCursorPosition();
+
+			// Close current editor before finding the new editor name
+			con.send('close ' + editorName);
+			if (isNaN(id)) {
+				var namedEditors = getNamedEditors();
+				for (var i = namedEditors.length - 1; i >= 0; i--) {
+					if (id === namedEditors[i].name) {
+						currentId = i;
+					}
+				}
+			} else {
+				currentId = id;
+			}
 			editorName = editors[currentId].resourceRef;
 			cookies.setCookie(projectId, id, 180);
 			refreshEditor();
 		},
 		
 		getEditors : function() {
-			var namedEditors = [];
-			for (var i = 0; i < editors.length; i++) {
-				var fileName = editors[i].projectRef.split('/')[1];
-				namedEditors[i] = {id: i, name: fileName};
-			}
-			
-			return namedEditors;
+			return getNamedEditors();
+		},
+
+		getCurrentIndex : function() {
+			return currentId;
 		},
 		
 		refresh : function() {
 			refreshEditor();
+		},
+
+		run : function() {
+			con.send('run');
+		},
+
+		getAce : function() {
+			return _editor;
 		}
 		   
 	};
