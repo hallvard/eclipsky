@@ -5,6 +5,9 @@ import java.util.Dictionary;
 import no.hal.eclipsky.services.monitoring.AbstractServiceLogger;
 import no.hal.eclipsky.services.monitoring.ServiceLogger;
 
+import org.eclipse.paho.client.mqttv3.IMqttActionListener;
+import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
+import org.eclipse.paho.client.mqttv3.IMqttToken;
 import org.eclipse.paho.client.mqttv3.MqttAsyncClient;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttPersistenceException;
@@ -58,7 +61,20 @@ public class MqttLogger extends AbstractServiceLogger implements ServiceLogger {
 		}
 		if (mqttClient != null && (! mqttClient.isConnected())) {
 			try {
-				mqttClient.connect().waitForCompletion();
+				IMqttToken connectToken = mqttClient.connect();
+//				connectToken.setActionCallback(new IMqttActionListener() {
+//					@Override
+//					public void onSuccess(IMqttToken arg0) {
+//						System.out.println("Connection success!");
+//						System.out.flush();
+//					}
+//					@Override
+//					public void onFailure(IMqttToken arg0, Throwable arg1) {
+//						System.out.println("Connection failed!");
+//						System.out.flush();
+//					}
+//				});
+				connectToken.waitForCompletion();
 			} catch (MqttException e) {
 				e.printStackTrace();
 			}
@@ -88,7 +104,20 @@ public class MqttLogger extends AbstractServiceLogger implements ServiceLogger {
 	protected void publishServiceUri(String serviceUri) {
 		try {
 			byte[] payload = serviceUri != null ? serviceUri.getBytes() : new byte[0];
+//			IMqttDeliveryToken publishToken =
 			getMqttClient().publish(getTopicKey("serviceUri"), payload, 0, true);
+//			publishToken.setActionCallback(new IMqttActionListener() {
+//				@Override
+//				public void onSuccess(IMqttToken arg0) {
+//					System.out.println("publish (ServiceUri) success!");
+//					System.out.flush();
+//				}
+//				@Override
+//				public void onFailure(IMqttToken arg0, Throwable arg1) {
+//					System.out.println("publish (ServiceUri) failed!");
+//					System.out.flush();
+//				}
+//			});
 		} catch (MqttException e) {
 			e.printStackTrace();
 		}

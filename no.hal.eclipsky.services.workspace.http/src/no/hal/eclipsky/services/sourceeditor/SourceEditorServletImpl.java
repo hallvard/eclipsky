@@ -189,7 +189,6 @@ public class SourceEditorServletImpl extends WebSocketServlet implements SourceE
 
 			@Override
 			public void onMessage(String message) {
-				System.out.println("Message to SourceEditorService: " + message);
 				int pos = message.indexOf('\n');
 				String op = message, contents = null;
 				ResourceRef resourceRef = new ResourceRef(projectRef, null, null);
@@ -204,7 +203,6 @@ public class SourceEditorServletImpl extends WebSocketServlet implements SourceE
 				}
 				EditorServiceRequest editorServiceRequest = new EditorServiceRequest(op, resourceRef, "json");
 				CharSequence response = invokeEditorServiceOperation(editorServiceRequest, contents);
-				System.out.println("Response from SourceEditorService: " + response);
 				try {
 					connection.sendMessage(response != null ? response.toString() : EMPTY_EDITOR_SERVLET_SERVICE_RESPONSE);
 				} catch (IOException e) {
