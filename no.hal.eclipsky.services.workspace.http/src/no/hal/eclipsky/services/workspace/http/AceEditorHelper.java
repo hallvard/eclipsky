@@ -44,7 +44,7 @@ public class AceEditorHelper {
                         for (int i = 0; i < options.resourceRefs.length; i++) {
                                 String resourceName = options.resourceRefs[i].getResourceName();
                                 writer.println("\t\t\t\t<li" + (i == options.startIndex ? " class=\"active\"" : "")
-                                		+ "><a href=\"#" + i + "\">" + resourceName + "</a></li>");
+                                		+ "><a href=\"#" + resourceName + "\">" + resourceName + "</a></li>");
                         }
                 }
                 writer.println("\t\t\t</ul>\n" +
@@ -115,7 +115,7 @@ public class AceEditorHelper {
                                 if (language != null) {
                                         writer.print("', language: '" + language + "'");
                                 }
-                                writer.println("}");
+                                writer.println(", pos: {row: 0, column: 0}}");
                         }
                 }
                 writer.println("];\n" +

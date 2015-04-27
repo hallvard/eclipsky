@@ -56,8 +56,8 @@ var interfacer = (function(con) {
 
 	};
 
-	function handleMessage(data) {
-		var data = JSON.parse(event.data);
+	function handleMessage(message) {
+		var data = JSON.parse(message.data);
 		if (!(data instanceof Array)) {			
 			var type = data.type;
 			switch(type) {
@@ -102,7 +102,7 @@ var interfacer = (function(con) {
 	}
 
 	function getHashId() {
-		return parseInt(window.location.hash.substr(-1))
+		return window.location.hash.substr(1);
 	};
 
 	return {

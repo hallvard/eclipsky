@@ -88,6 +88,10 @@ var editor = (function(ace, con, cookies) {
 	function run(ev) {		
 		con.send('run ' + editorName);
 	};
+
+	function test(ev) {		
+		con.send('test ' + editorName);
+	};
    
    
 	/**
@@ -138,6 +142,8 @@ var editor = (function(ace, con, cookies) {
 					var session = _editor.getSession();
 					session.setValue(data.code);
 					session.setMode("ace/mode/" + editors[currentId].language);
+					_editor.moveCursorToPosition(editors[currentId].pos);
+					_editor.focus();
 					break;
 				case 'close':
 					con.send('run');
@@ -185,6 +191,16 @@ var editor = (function(ace, con, cookies) {
 	function refreshEditor() {
 		con.send('refresh ' + editorName);
 	};
+
+	function getNamedEditors() {
+		var namedEditors = [];
+		for (var i = 0; i < editors.length; i++) {
+			var fileName = editors[i].resourceRef.split('/')[1];
+			namedEditors[i] = {id: i, name: fileName};
+		}
+		
+		return namedEditors;
+	}
    
 	return {
 		init : function(el, baseUrl, id, editorArray, startIndex) {
@@ -215,21 +231,28 @@ var editor = (function(ace, con, cookies) {
 	   
 	   	// Store info by closing current editor, and refresh with new content
 		switchEditor : function(id) {
-			currentId = id;
+			// Store current position
+			editors[currentId].pos = _editor.getCursorPosition();
+
+			// Close current editor before finding the new editor name
 			con.send('close ' + editorName);
+			if (isNaN(id)) {
+				var namedEditors = getNamedEditors();
+				for (var i = namedEditors.length - 1; i >= 0; i--) {
+					if (id === namedEditors[i].name) {
+						currentId = i;
+					}
+				}
+			} else {
+				currentId = id;
+			}
 			editorName = editors[currentId].resourceRef;
 			cookies.setCookie(projectId, id, 180);
 			refreshEditor();
 		},
 		
 		getEditors : function() {
-			var namedEditors = [];
-			for (var i = 0; i < editors.length; i++) {
-				var fileName = editors[i].projectRef.split('/')[1];
-				namedEditors[i] = {id: i, name: fileName};
-			}
-			
-			return namedEditors;
+			return getNamedEditors();
 		},
 
 		getCurrentIndex : function() {
@@ -242,6 +265,10 @@ var editor = (function(ace, con, cookies) {
 
 		run : function() {
 			con.send('run');
+		},
+
+		getAce : function() {
+			return _editor;
 		}
 		   
 	};
