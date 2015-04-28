@@ -20,10 +20,11 @@ public abstract class AbstractServiceLogger implements ServiceLogger {
 	
 	private static class RequestData {
 		public final String logKey;
-		public final long timestamp;
+		public final long start;
+		public long end;
 		public RequestData(String logKey, long timestamp) {
 			this.logKey = logKey;
-			this.timestamp = timestamp;
+			this.start = timestamp;
 		}
 	}
 	
@@ -38,17 +39,35 @@ public abstract class AbstractServiceLogger implements ServiceLogger {
 		requestData.put(requestKey, new RequestData(logKey, timestamp));
 	}
 
-	@Override
-	public void serviceResponded(Object requestKey, String payload, long timestamp) {
-		if (timestamp < 0) {
-			timestamp = System.currentTimeMillis();
-		}
+	private RequestData popRequestData(Object requestKey, long timestamp) {
 		if (requestData != null) {
 			RequestData data = requestData.get(requestKey);
 			requestData.remove(requestKey);
-			serviceCompleted(data.logKey, payload, data.timestamp, timestamp);
+			data.end = (timestamp >= 0 ? timestamp : System.currentTimeMillis());
+			return data;
+		}
+		return null;
+	}
+	
+	@Override
+	public void serviceResponded(Object requestKey, String payload, long timestamp) {
+		RequestData data = popRequestData(requestKey, timestamp);
+		if (data != null) {
+			serviceCompleted(data.logKey, payload, data.start, data.end);
+		}
+	}
+
+	@Override
+	public void serviceException(Object requestKey, Throwable e, long timestamp) {
+		RequestData data = popRequestData(requestKey, timestamp);
+		if (data != null) {
+			serviceException(data.logKey, e, data.start, data.end);
 		}
 	}
 
 	protected abstract void serviceCompleted(String logKey, String payload, long start, long end);
+
+	protected void serviceException(String logKey, Throwable e, long start, long end) {
+		serviceCompleted(logKey, e.getMessage(), start, end);
+	}
 }

@@ -168,12 +168,13 @@ public class SourceEditorServletImpl extends WebSocketServlet implements SourceE
 		SourceEditorServletService editorService = editorServices.get(request.op);
 		CharSequence response = null;
 		if (editorService != null) {
-			if (! compositeServiceLogger.isEmpty()) {
-				compositeServiceLogger.serviceRequested(request, request.op, -1);
-			}
-			response = editorService.doSourceEditorServletService(request, requestBody);
-			if (! compositeServiceLogger.isEmpty()) {
+			compositeServiceLogger.serviceRequested(request, request.op, -1);
+			try {
+				response = editorService.doSourceEditorServletService(request, requestBody);
 				compositeServiceLogger.serviceResponded(request, request.resourceRef.toPath(), -1);
+			} catch (Exception e) {
+				compositeServiceLogger.serviceException(request, e, -1);
+				throw e;
 			}
 		}
 		if (response == null || response.length() == 0) {

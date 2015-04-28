@@ -20,7 +20,7 @@ public class ResourceRef extends ProjectRef {
 
 	@Override
 	public String toPath() {
-		return super.toPath() +  "/" + packageName.replace('.', '/') + "/" + resourceName;
+		return super.toPath() +  "/" + (packageName != null ? packageName.replace('.', '/') : "?") + "/" + (resourceName != null ? resourceName : "?");
 	}
 	
 	public String getPackageName() {
