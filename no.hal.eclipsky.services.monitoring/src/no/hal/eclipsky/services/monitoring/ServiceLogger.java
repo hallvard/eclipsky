@@ -23,4 +23,12 @@ public interface ServiceLogger {
 	 * @param timestamp the time the response was ready, or -1 to indicate it is now
 	 */
 	public void serviceResponded(Object requestKey, String payload, long timestamp);
+	
+	/**
+	 * Notify that a request resulted in an exceptiom
+	 * @param requestKey the key that identifies the original request
+	 * @param payload data to store in the log entry, may be null
+	 * @param timestamp the time the response was ready, or -1 to indicate it is now
+	 */
+	public void serviceException(Object requestKey, Throwable e, long timestamp);
 }

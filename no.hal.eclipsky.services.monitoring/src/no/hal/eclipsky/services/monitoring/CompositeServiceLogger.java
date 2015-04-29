@@ -59,4 +59,13 @@ public class CompositeServiceLogger implements ServiceLogger {
 			}
 		}
 	}
+	
+	@Override
+	public void serviceException(Object requestKey, Throwable e, long timestamp) {
+		if (serviceLoggers != null) {
+			for (ServiceLogger serviceLogger : serviceLoggers) {
+				serviceLogger.serviceException(requestKey, e, timestamp);
+			}
+		}
+	}
 }

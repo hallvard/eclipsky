@@ -18,4 +18,13 @@ public class ConsoleLogger extends AbstractServiceLogger implements ServiceLogge
 		}
 		System.out.println();
 	}
+
+	@Override
+	protected void serviceException(String logKey, Throwable e, long start, long end) {
+		System.out.print(logKey + " service exception after " + (end - start) + "ms");
+		if (e != null) {
+			System.out.print(": " + e);
+		}
+		System.out.println();
+	}
 }
