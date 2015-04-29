@@ -86,7 +86,7 @@ public class AceEditorHelper {
                                 + "\t\t</div>\n");
                
                 writer.println("\t\t<div id=\"console\">\n"
-                                + "\t\t\t<textarea></textarea>\n"
+                                + "\t\t\t<textarea readonly></textarea>\n"
                                 + "\t\t</div>\n");
                
                 writer.println(

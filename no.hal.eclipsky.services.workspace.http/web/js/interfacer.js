@@ -6,6 +6,7 @@ var interfacer = (function(con) {
 	var ed,
 		isFetching = false,
 		isRunning = false,
+		startId = 0,
 
 		logging = true,
 		c = (logging ? console : {log : function(){}}),
@@ -56,17 +57,18 @@ var interfacer = (function(con) {
 
 	};
 
-	function handleMessage(message) {
-		var data = JSON.parse(message.data);
+	function handleMessage(data) {
 		if (!(data instanceof Array)) {			
 			var type = data.type;
 			switch(type) {
 				case 'run':
 					isRunning = false;
 					if (data.error === "") {
-						$console.val(data.console);
+						$($console).removeClass('error');
+						$console.innerHTML = data.console;
 					} else {
-						$console.val(data.error);
+						$($console).addClass('error');
+						$console.innerHTML = data.error;
 					}
 					break;
 				case 'refresh':
@@ -77,27 +79,48 @@ var interfacer = (function(con) {
 					// TODO
 					break;
 				case 'ready':
-					var currentId = ed.getCurrentIndex();
-					window.location.hash = "#" + currentId;
-					switchEditor(currentId); 
+					startId = getHashId() || startId;
+					window.location.hash = "#" + startId;
+					switchResource(startId, true);
 					break;
 			}
 		}
 	};
 
-	function switchEditor(id) {
+	function switchResource(id, isFirst) {
+		var correctedId = id;
 		if (isFetching)
 			return;
 
-		$editor.css({'opacity': '0.8'});
+		$editor.css({'opacity': '1.0'});
 		isFetching = true;
-		ed.switchEditor(id);
-		for (var i = $tabs.length - 1; i >= 0; i--) {
-			if (i != id) {
-				$($tabs[i]).parent().removeClass('active');
-			} else {
-				$($tabs[i]).parent().addClass('active');
+
+		if (isNaN(id)) {
+			var tabName;
+			for (var i = $tabs.length - 1; i >= 0; i--) {
+				tabName = $tabs[i].innerHTML;
+				if (tabName != id) {
+					$($tabs[i]).parent().removeClass('active');
+				} else {
+					correctedId = i;
+					$($tabs[i]).parent().addClass('active');
+				}
 			}
+		} else {
+			correctedId = parseInt(id);
+			for (var i = $tabs.length - 1; i >= 0; i--) {
+				if (i != correctedId) {
+					$($tabs[i]).parent().removeClass('active');
+				} else {
+					$($tabs[i]).parent().addClass('active');
+				}
+			}
+		}
+
+		if (isFirst) {
+			ed.setFirstResource(correctedId);
+		} else {
+			ed.switchResource(correctedId);
 		}
 	}
 
@@ -112,15 +135,23 @@ var interfacer = (function(con) {
 
 			$(window).on('hashchange', function() {
 				var hashId = getHashId();
-				c.log('hash changed to ' + hashId);
-				switchEditor(hashId);
+				switchResource(hashId);
 			});
 
 			initialize();
+
+			// Force first connection if no websocket.
+			if (!connector.usesWebSocket()) {
+				handleMessage({type: 'ready'});
+			}
 		},
 
 		notify : function(message) {
 			handleMessage(message);
+		},
+
+		getHash : function() {
+			return getHashId();
 		}
 	};
 

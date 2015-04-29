@@ -171,3 +171,7 @@ nav#tabs ul {
 	width: 60%;
 	min-height: 120px;
 }
+
+#console textarea.error {
+  color: darkred;
+}
