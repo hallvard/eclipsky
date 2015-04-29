@@ -46,7 +46,7 @@ public class JavaSourceProject extends GenericSourceProject {
 		ILaunchManager launchManager = DebugPlugin.getDefault().getLaunchManager();
 		ILaunchConfigurationType launchConfigurationType = launchManager.getLaunchConfigurationType(launchConfigurationTypeId);
 		ILaunchConfigurationWorkingCopy workingCopy = launchConfigurationType.newInstance(null, configName);
-		workingCopy.setAttribute(IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME, resourceRef.getProjectName());
+		workingCopy.setAttribute(IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME, projectRef.getProjectName());
 		workingCopy.setAttribute(IJavaLaunchConfigurationConstants.ATTR_MAIN_TYPE_NAME, getQualifiedClassName(resourceRef));
 		return workingCopy.doSave();
 	}

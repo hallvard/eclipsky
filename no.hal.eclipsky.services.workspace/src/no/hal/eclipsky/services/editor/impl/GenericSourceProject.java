@@ -66,6 +66,7 @@ public abstract class GenericSourceProject implements SourceProject {
 				runResult = launch(resourceRef, launchConfig);
 			}
 		} catch (Exception e) {
+			e.printStackTrace();
 		}
 		return runResult;
 	}
@@ -79,7 +80,7 @@ public abstract class GenericSourceProject implements SourceProject {
 
 	@Override
 	public RunResult run(ResourceRef resourceRef) {
-		return launch(resourceRef, getRunLaunchKey(), "Run Main");
+		return launch(resourceRef, getRunLaunchKey(), "Run Main (" + resourceRef.getResourceName() + ")");
 	}
 
 	@Override
@@ -97,6 +98,7 @@ public abstract class GenericSourceProject implements SourceProject {
 			return null;
 		}*/
 		launch = launchConfiguration.launch(ILaunchManager.RUN_MODE, null);
+		
 		StringBuilder outputBuffer = new StringBuilder(), errorBuffer = new StringBuilder();
 		IProcess[] processes = launch.getProcesses();
 		for (IProcess process : processes) {
@@ -117,12 +119,14 @@ public abstract class GenericSourceProject implements SourceProject {
 				}
 			});
 		}
+		
 		while (! launch.isTerminated()) {
 			try {
 				Thread.sleep(100);
 			} catch (InterruptedException ie) {
 			}
 		}
+		
 		RunResult runResult = new RunResult(launchConfiguration.getAttribute(IJavaLaunchConfigurationConstants.ATTR_MAIN_TYPE_NAME, getQualifiedClassName(resourceRef)));
 		runResult.setConsoleOutput(outputBuffer.toString());
 		runResult.setErrorOutput(errorBuffer.toString());
