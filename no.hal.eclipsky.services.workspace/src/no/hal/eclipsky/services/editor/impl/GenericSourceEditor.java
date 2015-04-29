@@ -10,7 +10,7 @@ import no.hal.eclipsky.services.common.SourceFileMarker;
 import no.hal.eclipsky.services.editor.SourceEditor;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.NullProgressMonitor;
 
 public class GenericSourceEditor implements SourceEditor {
 
@@ -66,6 +66,6 @@ public class GenericSourceEditor implements SourceEditor {
 	protected void addCompletionProposals(int pos, Collection<Proposal> completions) throws NullPointerException{
 	}
 	@Override
-	public void close(IProgressMonitor monitor) {
+	public void close(NullProgressMonitor monitor) {
 	}
 }

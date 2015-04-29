@@ -7,7 +7,7 @@ import no.hal.eclipsky.services.common.ResourceRef;
 import no.hal.eclipsky.services.common.SourceFileMarker;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jdt.core.CompletionProposal;
 import org.eclipse.jdt.core.CompletionRequestor;
 import org.eclipse.jdt.core.ICompilationUnit;
@@ -86,14 +86,19 @@ public class JavaSourceEditor extends GenericSourceEditor {
 	}
 	
 	@Override
-	public void close(IProgressMonitor monitor) {
+	public void close(NullProgressMonitor monitor) {
 		if (workingCopy != null) {
 			try {
-				workingCopy.commitWorkingCopy(true, monitor);
-				workingCopy.discardWorkingCopy();
+				if (workingCopy.hasUnsavedChanges()) {
+					workingCopy.commitWorkingCopy(true, monitor);
+				} else {
+					monitor.done();
+				}
 			} catch (JavaModelException e) {
+				e.printStackTrace();
 			}
-			workingCopy = null;
+		} else {
+			monitor.done();
 		}
 		super.close(monitor);
 	}

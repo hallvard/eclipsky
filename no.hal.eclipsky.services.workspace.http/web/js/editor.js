@@ -3,21 +3,24 @@ var connector = connector || {};
 var test;
 var editor = (function(ace, con, cookies) {
 	var _editor,
-		editors,
+		resources,
 		projectId,
-		editorName,
-		currentId = 0,
+		resourceName,
+		currentId = -1,
 
 		RUN_KEY = 'R',
 	   
 		completionCallback = null,
+		offset = -1,
+
 		saveDelay = 500,
 		saveTimer = null,
+		switchingResource = false,
 		
 		logging = true,
 		c = (logging ? console : {log : function(){}});
    
-	function initialize(editorId, editorPrefs) {
+	function initialize(editorId) {
 		// Configure the basics
 		ace.require("ace/ext/language_tools"); // Required for auto completion
 		_editor = ace.edit(editorId);
@@ -38,59 +41,52 @@ var editor = (function(ace, con, cookies) {
 		});
 	   
 		// Custom event for when contents change
-		_editor.getSession().on('change', function(ev) {
-			if (ev.data.action === "insertText" && ev.data.text.length < 3 || ev.data.action === 'removeText') {
-				ev.delay = true;
-				changed(ev);
+		_editor.getSession().on('change', function(event) {
+			if (switchingResource) {
+				return;
+			}
+			var data = event.data;
+
+			if (data.action === "insertText" || data.action === 'removeText') {
+				event.delay = true;
+				changed(event);
 			}
 		});
 		
 		return _editor;
 	};
        
-	// Handles the changes in the editor
-	function changed(ev) {
-		/*
-		 * Update on a '.', in order for auto completion
-		 * to (maybe) be able to respond with the correct
-		 * suggestion derived from a correct, local document
-		 */
-		if (ev.type === 'textEvent' && ev.text === '.') {
-			clearTimeout(saveTimer);
-			sendAllContent();
-			return;
-			   
-		/*
-		 * Sets a delay of 'saveDelay' after last typing
-		 * before sending all content to the connector
-		 */
-		} else {
-			if (ev.delay) {
-				if (saveTimer != null) {
-					clearTimeout(saveTimer);
-				}
-				ev.delay = false;
-				con.invalidate();
-				saveTimer = setTimeout(function() {changed(ev);}, saveDelay);
-			} else {
-				saveTimer = null;
-				sendAllContent();
+	/*
+	 * Sets a delay of 'saveDelay' after last typing
+	 * before sending all content to the connector
+	 */
+	function changed(event) {
+		if (event.delay) {
+			if (saveTimer != null) {
+				clearTimeout(saveTimer);
 			}
+			event.delay = false;
+			con.invalidate();
+			saveTimer = setTimeout(function() {changed(event);}, saveDelay);
+		} else {
+			saveTimer = null;
+			sendAllContent();
 		}
+		
 	};
 
-	function sendAllContent() {
-		var content = _editor.getSession().getValue();
-		con.send('update ' + editorName, content);
+	function sendAllContent(content) {
+		content = content || _editor.getSession().getValue();
+		con.send('update ' + resourceName, content);
 	};
    
    
 	function run(ev) {		
-		con.send('run ' + editorName);
+		con.send('run ' + resourceName);
 	};
 
 	function test(ev) {		
-		con.send('test ' + editorName);
+		con.send('test ' + resourceName);
 	};
    
    
@@ -100,8 +96,18 @@ var editor = (function(ace, con, cookies) {
 	function createCompleter(){
 		return {
 			getCompletions: function(currEditor, session, pos, prefix, callback) {
-				var offset = calculateOffset(session.getValue(), pos);
-				con.send('completion ' + editorName, offset);
+				var content = session.getValue();
+				offset = calculateOffset(content, pos);
+				
+				// Save current state to get accurate completions
+				if (saveTimer) {
+					clearTimeout(saveTimer);
+					sendAllContent(content);
+					_editor.setReadOnly(true);
+				} else {
+					_editor.setReadOnly(true);
+					con.send('completion ' + resourceName, offset);
+				}
 									   
 				completionCallback = callback;
 			}
@@ -111,8 +117,7 @@ var editor = (function(ace, con, cookies) {
 	/**
 	*	Handling responses from requests to the server
 	*/
-	function handleResponse(event) {
-		var data = JSON.parse(event.data);
+	function handleResponse(data) {
 		if (data instanceof Array) {
 			if (data.length === 0) {
 				_editor.getSession().clearAnnotations();
@@ -122,31 +127,50 @@ var editor = (function(ace, con, cookies) {
 			switch(type) {
 				case 'problem':
 					updateMarkers(data);
+					if (_editor.getReadOnly()) {
+						con.send('completion ' + resourceName, offset);
+					}
 					break;
 				case 'completion':
 					completionCallback(null, data);
+					completionCallback = null;
+					_editor.setReadOnly(false);
 					break;
 			}
 		} else {			
 			var type = data.type;
 			switch(type) {
-				case 'run':
-					_editor.getSession().clearAnnotations();
-					if (data.error === "") {
-						alert(data.console);
-					} else {
-						alert(data.error);
-					}
-					break;
-				case 'refresh':
-					var session = _editor.getSession();
-					session.setValue(data.code);
-					session.setMode("ace/mode/" + editors[currentId].language);
-					_editor.moveCursorToPosition(editors[currentId].pos);
-					_editor.focus();
-					break;
-				case 'close':
-					con.send('run');
+			case 'refresh':
+				// Ignore other resources
+				if (data.resource !== resourceName) {
+					return;
+				}
+
+				// Get the most appropriate position
+				var newPos;
+				if (switchingResource) {
+					newPos = resources[currentId].pos;
+				} else {
+					newPos = _editor.getCursorPosition();
+				}
+
+				// Load the current session and replace content
+				switchingResource = true;
+				var session = _editor.getSession();
+				session.setValue(data.code);
+				session.setMode("ace/mode/" + resources[currentId].language);
+				_editor.moveCursorToPosition(newPos);
+				_editor.focus();
+
+				switchingResource = false;
+				break;
+			case 'close':
+				refreshResource();
+				break;
+			case 'connectionClosed':
+				if (_editor.getReadOnly()) {
+					_editor.setReadOnly(false);
+				}
 			}
 		}
 	};
@@ -188,71 +212,73 @@ var editor = (function(ace, con, cookies) {
 		}
 	};
    
-	function refreshEditor() {
-		con.send('refresh ' + editorName);
+	function refreshResource() {
+		con.send('refresh ' + resourceName);
 	};
 
-	function getNamedEditors() {
-		var namedEditors = [];
-		for (var i = 0; i < editors.length; i++) {
-			var fileName = editors[i].resourceRef.split('/')[1];
-			namedEditors[i] = {id: i, name: fileName};
+	function getNamedResources() {
+		var namedResources = [];
+		for (var i = 0; i < resources.length; i++) {
+			var fileName = resources[i].resourceRef.split('/')[1];
+			namedResources[i] = {id: i, name: fileName};
 		}
 		
-		return namedEditors;
+		return namedResources;
 	}
    
 	return {
-		init : function(el, baseUrl, id, editorArray, startIndex) {
+		init : function(el, baseUrl, id, editorArray) {
 			// Configure current editor
-			editors = editorArray;
+			resources = editorArray;
 			projectId = id;
-			
-			// Check if user had a previous editor in this project
-			currentId = startIndex;
+			initialize(el);
 
-			initialize(el, editors[currentId]);
-			editorName = editors[currentId].resourceRef;
-		   
 			// Set up connector
 			var connectionConfig = {
 				url : baseUrl + "?projectName=" + projectId
 			};
 			con.init(connectionConfig);
 			con.subscribe(this);
-		   
-			// Refresh editor content 
+
+			// Return handle 
 			return this;
 		},
 	   
 		notify : function(event) {
 			handleResponse(event);
 		},
+
+		setFirstResource: function(id) {
+			currentId = id;
+			resourceName = resources[id].resourceRef;
+			switchingResource = true;
+
+			// Need to force a connection first time if no websocket
+			refreshResource();
+		},
 	   
 	   	// Store info by closing current editor, and refresh with new content
-		switchEditor : function(id) {
-			// Store current position
-			editors[currentId].pos = _editor.getCursorPosition();
-
-			// Close current editor before finding the new editor name
-			con.send('close ' + editorName);
-			if (isNaN(id)) {
-				var namedEditors = getNamedEditors();
-				for (var i = namedEditors.length - 1; i >= 0; i--) {
-					if (id === namedEditors[i].name) {
-						currentId = i;
-					}
-				}
-			} else {
-				currentId = id;
+		switchResource : function(id) {
+			if (id === currentId) {
+				return false;
 			}
-			editorName = editors[currentId].resourceRef;
+
+			// Store current position
+			switchingResource = true;
+			resources[currentId].pos = _editor.getCursorPosition();
+
+			// Close current editor before setting the new resource name
+			con.send('close ' + resourceName);
+
+			// Update settings
+			currentId = id;
+			resourceName = resources[currentId].resourceRef;
 			cookies.setCookie(projectId, id, 180);
-			refreshEditor();
+			return true;
 		},
 		
-		getEditors : function() {
-			return getNamedEditors();
+		getresources : function() {
+			return getNamedresources();
 		},
 
 		getCurrentIndex : function() {
@@ -264,7 +290,7 @@ var editor = (function(ace, con, cookies) {
 		},
 
 		run : function() {
-			con.send('run');
+			con.send('run ' + resourceName);
 		},
 
 		getAce : function() {

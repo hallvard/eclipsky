@@ -2,8 +2,9 @@ package no.hal.eclipsky.services.sourceeditor;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintWriter;
+import java.util.concurrent.CompletableFuture;
 
-import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.osgi.service.component.ComponentContext;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
@@ -36,56 +37,27 @@ public class CloseEditorServletService extends AbstractSourceEditorServletServic
 	@Override
 	public String doSourceEditorServletService(EditorServiceRequest request, String requestBody) {
 		SourceEditor editor = getSourceEditor(request);
-		final String[] output = new String[1];
-		editor.close(new IProgressMonitor() {
-			@Override
-			public void worked(int work) {
-			}
-			
-			@Override
-			public void subTask(String name) {
-			}
-			
-			@Override
-			public void setTaskName(String name) {
-			}
-			
-			@Override
-			public void setCanceled(boolean value) {
-			}
-			
-			@Override
-			public boolean isCanceled() {
-				output[0] = "canceled";
-				return false;
-			}
-			
-			@Override
-			public void internalWorked(double work) {
-			}
-			
+		return closeEditorResponse(closeEditorResponse(editor), request.responseFormat);
+	}
+	
+	public static String closeEditorResponse(SourceEditor editor) {
+		CompletableFuture<Boolean> future = new CompletableFuture<Boolean>();
+		editor.close(new NullProgressMonitor() {			
 			@Override
 			public void done() {
-				output[0] = "saved";
-			}
-			
-			@Override
-			public void beginTask(String name, int totalWork) {
+				future.complete(! isCanceled());
 			}
 		});
-
-		// Wait for the execution to finish
-		long startTime = System.currentTimeMillis(), currentTime = startTime;
-		while (output[0] == null && 
-				currentTime - startTime < 1000) {
-			try {
-				Thread.sleep(100);
-			} catch (InterruptedException e) {
-			}
-			currentTime = System.currentTimeMillis();
+		String result = "canceled";
+		try {
+			boolean get = future.get();
+	        if (get) {
+        		result = "saved";
+	        }
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
-		
-		return closeEditorResponse(output[0], request.responseFormat);
+		return result;
 	}
 	
 	public static String closeEditorResponse(String response, String protocol) {

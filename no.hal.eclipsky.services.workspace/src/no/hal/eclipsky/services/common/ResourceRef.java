@@ -113,4 +113,8 @@ public class ResourceRef extends ProjectRef {
 		}
 		return new ResourceRef(projectName, packageName, resourceName);
 	}
+	
+	public String getQualifiedName() {
+		return packageName + "/" + resourceName;
+	}
 }
