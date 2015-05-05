@@ -7,7 +7,7 @@ import no.hal.eclipsky.services.common.ResourceRef;
 import no.hal.eclipsky.services.common.SourceFileMarker;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.core.CompletionProposal;
 import org.eclipse.jdt.core.CompletionRequestor;
 import org.eclipse.jdt.core.ICompilationUnit;
@@ -40,7 +40,7 @@ public class JavaSourceEditor extends GenericSourceEditor {
 	}
 	
 	@Override
-	public SourceFileMarker[] update(String stringContent, boolean markers, boolean commit) {
+	public SourceFileMarker[] update(String stringContent, boolean markers, IProgressMonitor monitor) {
 		ensureWorkingCopy();
 		if (workingCopy != null) {
 			try {
@@ -53,7 +53,7 @@ public class JavaSourceEditor extends GenericSourceEditor {
 					public IProblemRequestor getProblemRequestor(ICompilationUnit workingCopy) {
 						return sourceFileMarkersProvider;
 					}
-				}, null);
+				}, monitor);
 				try {
 					SourceFileMarker[] sourceFileMarkers = sourceFileMarkersProvider.getSourceFileMarkersFuture().get();
 					return sourceFileMarkers;
@@ -63,7 +63,20 @@ public class JavaSourceEditor extends GenericSourceEditor {
 			}
 			return null;
 		}
-		return super.update(stringContent, markers, commit);
+		return super.update(stringContent, markers, monitor);
+	}
+	
+	@Override
+	public CharSequence getWorkingCopyContents() {
+		ensureWorkingCopy();
+		if (workingCopy != null) {
+			try {
+				return workingCopy.getBuffer().getContents();
+			} catch (JavaModelException e) {
+			}
+			return "";
+		}
+		return super.getWorkingCopyContents();
 	}
 
 	@Override
@@ -86,11 +99,13 @@ public class JavaSourceEditor extends GenericSourceEditor {
 	}
 	
 	@Override
-	public void close(NullProgressMonitor monitor) {
+	public void close(IProgressMonitor monitor) {
 		if (workingCopy != null) {
 			try {
 				if (workingCopy.hasUnsavedChanges()) {
 					workingCopy.commitWorkingCopy(true, monitor);
+					workingCopy.discardWorkingCopy();
+					workingCopy = null;
 				} else {
 					monitor.done();
 				}

@@ -53,7 +53,7 @@ public class RefreshUpdateEditorServletService extends AbstractSourceEditorServl
 				editableStringContents.setStringContent(requestBody);
 				requestBody = ((StringContentProvider) ((EmfsFile) emfsResource).getContentProvider()).getStringContent();
 			}
-			SourceFileMarker[] sourceFileMarkers = getSourceEditor(request).update(requestBody, markersDefault, false);
+			SourceFileMarker[] sourceFileMarkers = getSourceEditor(request).update(requestBody, markersDefault, null);
 			CharacterPosition offset = computeResourceOffset(getSourceProjectManager().getEmfsResource(request.resourceRef));
 			return MarkersEditorServletService.markersResponse(sourceFileMarkers, request.responseFormat, offset);
 		}
@@ -64,7 +64,7 @@ public class RefreshUpdateEditorServletService extends AbstractSourceEditorServl
 		} else if (requestBody != null){
 			stringContents = requestBody;
 		} else {
-			stringContents = sourceEditor.getSourceFileContents();
+			stringContents = sourceEditor.getWorkingCopyContents();
 		} 
 		return refreshResponse(stringContents, request.responseFormat, resource);
 	}

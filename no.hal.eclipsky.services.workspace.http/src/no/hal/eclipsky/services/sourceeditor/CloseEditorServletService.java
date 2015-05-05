@@ -65,6 +65,7 @@ public class CloseEditorServletService extends AbstractSourceEditorServletServic
 		PrintWriter output = new PrintWriter(buffer);
 		writeCloseEditorResponse(protocol, output, response);
 		output.close();
+		System.out.println("Buffer : " + buffer.toString());
 		return buffer.toString();
 	}
 

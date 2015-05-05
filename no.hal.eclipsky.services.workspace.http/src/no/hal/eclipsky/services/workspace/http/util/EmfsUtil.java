@@ -59,7 +59,7 @@ public class EmfsUtil {
 	}
 	
 	public static boolean isRunnable(EmfsResource emfsResource) {
-		return emfsResource instanceof EmfsFile && hasTags(emfsResource, "java", "application");
+		return emfsResource instanceof EmfsFile; // && hasTags(emfsResource, "java", "application");
 	}
 
 	public static boolean isTestable(EmfsResource emfsResource) {

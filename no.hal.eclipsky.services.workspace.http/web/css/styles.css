@@ -71,8 +71,8 @@ nav#tabs ul {
 		height:100%;
 		z-index: 1000;
 		float: right;
-		width: 6px;
-		margin-left: -6px;
+		width: 20px;
+		margin-left: -20px;
 		cursor: col-resize;
 	}
 
@@ -86,23 +86,106 @@ nav#tabs ul {
 	float: right;
 	background: white;
 	height: 500px;
-	overflow: hidden;
 	z-index: 1000;
 }
 
 #tests h1 {
 	margin-left: 10px;
-	
 }
-#tests ul {
+
+#tests div {
+	width: 100%;
+	overflow-y: scroll;
+	height: 370px;
+}
+
+ul#test_result {
 	font-family: "Lucida Console", Monaco, monospace;
+	padding: 0px 5px;
+}
+
+ul#test_result li {
+	list-style-type: none;
+	line-height: 20px;
+	font-size: 12px;
+	margin: 3px 0px;
+	padding: 10px 5px 5px 5px;
+	background: #DDD;
+	border: 1px solid #E6E6E6;
+	border-radius: 1px;
+}
+
+/* <details> and <summary> are block level elements */
+details, summary { display: block; }
+
+details {
+	overflow: hidden;
+}
+
+details textarea {
+	background: #eee;
+	border: none;
+	margin-top: 5px;
+	padding: 5px;
+	min-width: 100%;
+	max-width: 100%;
+  	min-height: 50px;
+  	font-size: 12px;
+	font-family: monospace;
+}
+
+.no-details summary:hover, .no-details summary:focus { background: #ddd; }
+.no-details details summary { display: block; }
+
+summary {
+	cursor: pointer;
+	white-space: nowrap;
+	outline:none;
+	color: #010101;
+}
+
+summary.ok {
+	cursor: auto;
+}
+
+summary:active {
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+}
+
+summary::-webkit-details-marker {
+  display: none
+}
+
+summary:before {
+	float: left;
+	margin-right: 6px;
+	height: 20px;
+	width: 20px;
+	border-radius: 50%;
+	content: " ";
+}
+
+summary.error:before {
+	background: orange;
+}
+
+summary.failed:before {
+	background: yellow;
+}
+
+summary.ok:before {
+	background: green;
 }
 
 #btn_test {
   	position: absolute;
 	vertical-align: top;
 	height: 50px;
-	bottom: -5px;
+	bottom: -4px;
 	left: 0;
 	right: 0;
 	width: 100%;

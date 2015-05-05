@@ -1,7 +1,7 @@
 var connector = connector || {},
 	editor = editor || {};
 
-var testInt;
+var test;
 var interfacer = (function(con) {
 	var ed,
 		isFetching = false,
@@ -11,19 +11,42 @@ var interfacer = (function(con) {
 		logging = true,
 		c = (logging ? console : {log : function(){}}),
 
+		startWidthPerc = 0.8,
+		startWidth,
+		suggestedWidthPerc = 0.65,
+		suggestedWidth,
+		startDragging = null,
+		dragTimeLimit = 200,
+
 		$navbar,
 		$editor,
 		$console,
+		$dragbar,
+		$editorWrapper,
 		$btnRun,
+		$btnTest,
 		$test,
+		$test_list,
+		$test_tmpl,
 		$tabs;
 
 	function initialize() {
-		$navbar = $('#tabs');
-		$test = $('#tests');
-		$editor = $('#main_editor');
-		$console = $('#console').children()[0];
-		$btnRun = $('#btn_run');
+		$navbar = $('#tabs'),
+		$test = $('#tests'),
+		$editor = $('#main_editor'),
+		$editorWrapper = $('#editor_wrapper');
+		$console = $('#console').children()[0],
+		$dragbar = $('#dragbar'),
+		$btnRun = $('#btn_run'),
+		$btnTest = $('#btn_test'),
+		$test_list = $('#test_result'),
+		$test_tmpl = $('#test_tmpl');
+
+		// Adjust CSS in Firefox
+		if (navigator.userAgent.toLowerCase().indexOf('firefox') != -1) {
+			$dragbar.css('top', 0);
+			$test.css('top', 36);
+		}
 
 		// Handle navbar
 		$tabs = $navbar.find('a');
@@ -34,7 +57,6 @@ var interfacer = (function(con) {
 
 		// Handle 'run'-button
 		$btnRun.on('click', function() {
-			c.log('run clicked', isRunning);
 			if (isRunning) {
 				event.preventDefault();
 			} else {
@@ -43,49 +65,201 @@ var interfacer = (function(con) {
 			}
 		});
 
-		// Handle resizing
-		$('#dragbar').mousedown(function(e){       
+		// Handle 'test'-button
+		$btnTest.on('click', function() {
+			if (isRunning) {
+				event.preventDefault();
+			} else {
+				ed.test();
+				isRunning = true;
+			}
+		});
+
+		// Handle moving dragbar
+		$dragbar.mousedown(function(e){       
 			e.preventDefault();
+			var pageWidth = $('body').width();
+			startDragging = new Date();
 			$(document).mousemove(function(e){
-				$('#editor_wrapper').css("width",e.pageX+2);
-				$('#tests').css("left",e.pageX+2);
+				if (e.pageX + 100 < pageWidth && e.pageX - 100 > 0) {
+					$editorWrapper.css('width',e.pageX+10);
+					$test.css('left',e.pageX+10);
+				}
 			})
 	    });
+
+		// Handling letting go of dragbar
 	    $(document).mouseup(function(e){
-	       $(document).unbind('mousemove');
+	    	$(document).unbind('mousemove');
+
+	    	// Verify that it's not a default mousemove
+	    	if (startDragging == null) {
+	    		return;
+	    	}
+
+	    	// Check if the "drag" actually was a "click"
+	      	var stopDragging = new Date();
+	       	if (stopDragging - startDragging < dragTimeLimit) {
+	       		var currentWidth = $editorWrapper.width(),
+	       			suggestedDelta = Math.abs(currentWidth - suggestedWidth),
+	       			startDelta = Math.abs(currentWidth - startWidth);
+
+	       		if (startDelta > suggestedDelta) {
+	       			setDragPosition(startWidth);
+	       		} else {
+	       			setDragPosition(suggestedWidth);
+	       		}
+	       	}
+
+	       	startDragging = null;
 	    });
 
-	};
+	    // Handle window resizing
+	    var resizeTimer;
+	    $(window).resize(function(e) {
+	    	clearTimeout(resizeTimer);
+    		resizeTimer = setTimeout(function() {
+    			var pageWidth = $('body').width();
+       			suggestedWidth = suggestedWidthPerc * pageWidth;
+       			startWidth = startWidthPerc * pageWidth;
+
+       			setDragPosition(startWidth);
+    		}, 100);
+	    })
+
+	    // Store initial meassurements
+	    startWidth = $(window).trigger('resize');
+
+	}
 
 	function handleMessage(data) {
 		if (!(data instanceof Array)) {			
 			var type = data.type;
 			switch(type) {
-				case 'run':
-					isRunning = false;
-					if (data.error === "") {
-						$($console).removeClass('error');
-						$console.innerHTML = data.console;
-					} else {
-						$($console).addClass('error');
-						$console.innerHTML = data.error;
-					}
-					break;
-				case 'refresh':
-					isFetching = false;
-					$editor.css({'opacity': '1'});
-					break;
-				case 'test':
-					// TODO
-					break;
-				case 'ready':
-					startId = getHashId() || startId;
-					window.location.hash = "#" + startId;
-					switchResource(startId, true);
-					break;
+			case 'run':
+				isRunning = false;
+				if (data.error === "") {
+					$($console).removeClass('error');
+					$console.innerHTML = data.console;
+				} else {
+					$($console).addClass('error');
+					$console.innerHTML = data.error;
+				}
+				break;
+			case 'refresh':
+				isFetching = false;
+				$editor.css('opacity', 1);
+				break;
+			case 'ready':
+				startId = getHashId() || startId;
+				window.location.hash = "#" + startId;
+				switchResource(startId, true);
+				break;
+			}
+		} else {
+			if (data.length == 0) {
+				isRunning = false;
+				return;
+			}
+			var type = data[0].type;
+			switch(type) {
+			case 'test':
+				isRunning = false;
+				fillTests(data);
+				$test_list.show();
+				break;
 			}
 		}
-	};
+	}
+
+	function fillTests(testResults) {
+		var newElemLength = testResults.length,
+			children = $test_list.children(),
+			oldElemLength = children.length;
+
+		// Clear exessive elements
+		if (newElemLength < oldElemLength) {
+			for (var i = oldElemLength - 1; i >= newElemLength; i--) {
+				children[i].remove();
+			}
+		}
+
+		// Alter existing
+		var detailsList = [];
+		for (var i = 0; i < oldElemLength; i++) {
+			var t = testResults[i];
+			$listEl = children[i];
+
+			$summary = $($listEl).find('summary');
+			$summary.text(t.name);
+			$summary.removeClass();
+			$summary.addClass(getStatusClass(t.status));
+
+			// Only show textarea if not okay
+			var $textarea = $($listEl).find('textarea');
+			if (t.status === 'O') {
+				$textarea.hide();
+			} else {
+				detailsList.push($summary.parent());
+				$textarea.show().text(t.exception);
+			}
+		}
+
+		// Optionally add new elements
+		for (var i = oldElemLength; i < newElemLength; i++) {
+			var $listEl = createListItem(testResults[i], detailsList)[0];
+			$listEl.setAttribute('id', 'test_result_' + i);
+			$test_list.append($listEl);
+		}
+
+		setDragPosition(suggestedWidth);
+
+		// Polyfill if needed
+		$(detailsList).details();
+	}
+
+	function setDragPosition(pos) {
+		$editorWrapper.css('width', pos);
+		$test.css('left', pos);
+	}
+
+	function createListItem(test, detailsList) {
+		var $listEl = $('<li />'),
+			$details = $('<details />'),
+			$summary = $('<summary />'),
+			$textarea = $('<textarea />');
+
+		// Set summary info
+		$summary.text(test.name);
+		$summary.removeClass();
+		$summary.addClass(getStatusClass(test.status));
+	
+		// Build structure
+		$details.append($summary)
+		$listEl.append($details);
+		$details.append($textarea);
+
+		// Only show textarea if status is E or F
+		if (test.status === 'O') {
+			$textarea.hide();
+		} else {
+			detailsList.push($details);
+			$textarea.text(test.exception);
+		}
+
+		return $listEl;
+	}
+
+	function getStatusClass(status) {
+		switch (status) {
+		case 'E':
+			return 'error';
+		case 'F':
+			return 'failed';
+		case 'O':
+			return 'ok';
+		}
+	}
 
 	function switchResource(id, isFirst) {
 		var correctedId = id;
@@ -121,12 +295,14 @@ var interfacer = (function(con) {
 			ed.setFirstResource(correctedId);
 		} else {
 			ed.switchResource(correctedId);
+			$test_list.hide();
+			$console.innerHTML = '';
 		}
 	}
 
 	function getHashId() {
 		return window.location.hash.substr(1);
-	};
+	}
 
 	return {
 		init : function(editor) {
@@ -135,7 +311,7 @@ var interfacer = (function(con) {
 
 			$(window).on('hashchange', function() {
 				var hashId = getHashId();
-				switchResource(hashId);
+				switchResource(hashId, false);
 			});
 
 			initialize();

@@ -148,29 +148,16 @@ public class SourceEditorServletImpl extends WebSocketServlet implements SourceE
 
 	@Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		String  op = request.getParameter("op"), 
-				packageName = null,
-				resourceName = null;
-		int pos = op.indexOf(' ');
-		if (pos >= 0) {
-			packageName = op.substring(pos + 1);
-			op = op.substring(0, pos);
-			
-			pos = packageName.indexOf('/');
-			resourceName = packageName.substring(pos + 1);
-			packageName = packageName.substring(0, pos);
+		String op = request.getParameter("op");
+		if (op == null) {
+			op = "refresh";
 		}
 		PrintWriter writer = response.getWriter();
-		doEditorServiceOperation(op, packageName, resourceName, request, writer);
+		doEditorServiceOperation(op, request, writer);
 	}
 
-	protected void doEditorServiceOperation(String op, String packageName, String resourceName, HttpServletRequest request, PrintWriter writer) {
-		ResourceRef resourceRef;
-		if (packageName == null && resourceName == null) {
-			resourceRef = AbstractServiceServlet.getResourceRef(request);
-		} else {
-			resourceRef = AbstractServiceServlet.getResourceRef(request, packageName, resourceName);
-		}
+	protected void doEditorServiceOperation(String op, HttpServletRequest request, PrintWriter writer) {
+		ResourceRef resourceRef = AbstractServiceServlet.getResourceRef(request);
 		EditorServiceRequest editorServiceRequest = new EditorServiceRequest(op, resourceRef, AbstractServiceServlet.getResponseFormat(request));
 		try {
 			CharSequence response = invokeEditorServiceOperation(editorServiceRequest, request.getParameter("body"));
@@ -234,6 +221,8 @@ public class SourceEditorServletImpl extends WebSocketServlet implements SourceE
 				EditorServiceRequest editorServiceRequest = new EditorServiceRequest(op, resourceRef, "json");
 				CharSequence response = invokeEditorServiceOperation(editorServiceRequest, contents);
 				String responseString = response != null ? response.toString() : EMPTY_EDITOR_SERVLET_SERVICE_RESPONSE;
+				
+				System.out.println(responseString);
 				
 				// Notify all connections on an update 
 				if ("update".equals(editorServiceRequest.op)) {

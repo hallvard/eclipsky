@@ -8,6 +8,7 @@ import no.hal.eclipsky.services.common.ResourceRef;
 import no.hal.eclipsky.services.editor.RunResult;
 import no.hal.eclipsky.services.editor.SourceEditor;
 import no.hal.eclipsky.services.editor.SourceProject;
+import no.hal.eclipsky.services.editor.TestResult;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunch;
@@ -52,15 +53,26 @@ public abstract class GenericSourceProject implements SourceProject {
 
 	//
 	
-	protected Map<ResourceRef, ILaunchConfiguration> launchConfigs = new HashMap<ResourceRef, ILaunchConfiguration>();
+	protected Map<ResourceRef, ILaunchConfiguration> mainLaunchConfigs = new HashMap<>();
+	protected Map<ResourceRef, ILaunchConfiguration> testLaunchConfigs = new HashMap<>();
 
-	protected RunResult launch(ResourceRef resourceRef, String launchKey, String launchName) {
+	protected RunResult launch(ResourceRef resourceRef, String launchName, boolean isTest) {
 		RunResult runResult = null;
+		ILaunchConfiguration launchConfig;
+		if (isTest) {
+			launchConfig = testLaunchConfigs.get(resourceRef);
+		} else {
+			launchConfig = mainLaunchConfigs.get(resourceRef);
+		}
 		try {
-			ILaunchConfiguration launchConfig = launchConfigs.get(resourceRef);
 			if (launchConfig == null) {
-				launchConfig = createLaunchConfiguration(resourceRef, launchKey, launchName);
-				launchConfigs.put(resourceRef, launchConfig);
+				launchConfig = createLaunchConfiguration(resourceRef, launchName, isTest);
+
+				if (isTest) {
+					testLaunchConfigs.put(resourceRef, launchConfig);
+				} else {
+					mainLaunchConfigs.put(resourceRef, launchConfig);
+				}
 			}
 			if (launchConfig != null) {
 				runResult = launch(resourceRef, launchConfig);
@@ -71,21 +83,18 @@ public abstract class GenericSourceProject implements SourceProject {
 		return runResult;
 	}
 	
-	protected ILaunchConfiguration createLaunchConfiguration(ResourceRef resourceRef, String launchKey, String launchName) throws Exception {
+	protected ILaunchConfiguration createLaunchConfiguration(ResourceRef resourceRef, String launchKey, boolean isTest) throws Exception {
 		return null;
 	}
 
-	protected abstract String getRunLaunchKey();
-	protected abstract String getTestLaunchKey();
-
 	@Override
 	public RunResult run(ResourceRef resourceRef) {
-		return launch(resourceRef, getRunLaunchKey(), "Run Main (" + resourceRef.getResourceName() + ")");
+		return launch(resourceRef, "Run Main (" + resourceRef.getResourceName() + ")", false);
 	}
 
 	@Override
 	public RunResult test(ResourceRef resourceRef) {
-		return launch(resourceRef, getTestLaunchKey(), "Run Tests");
+		return launch(resourceRef, "Run Tests (" + resourceRef.getResourceName() + ")", true);
 	}
 
 	// launching
@@ -97,10 +106,10 @@ public abstract class GenericSourceProject implements SourceProject {
 		if (launch != null) {
 			return null;
 		}*/
-		launch = launchConfiguration.launch(ILaunchManager.RUN_MODE, null);
-		
+		launch = launchConfiguration.launch(ILaunchManager.RUN_MODE, null);		
 		StringBuilder outputBuffer = new StringBuilder(), errorBuffer = new StringBuilder();
 		IProcess[] processes = launch.getProcesses();
+		
 		for (IProcess process : processes) {
 			process.getStreamsProxy().getOutputStreamMonitor().addListener(new IStreamListener() {
 				
@@ -120,6 +129,7 @@ public abstract class GenericSourceProject implements SourceProject {
 			});
 		}
 		
+		// Wait for process to finish
 		while (! launch.isTerminated()) {
 			try {
 				Thread.sleep(100);
@@ -127,9 +137,19 @@ public abstract class GenericSourceProject implements SourceProject {
 			}
 		}
 		
-		RunResult runResult = new RunResult(launchConfiguration.getAttribute(IJavaLaunchConfigurationConstants.ATTR_MAIN_TYPE_NAME, getQualifiedClassName(resourceRef)));
+		// If any arguments have been passed in, assume test class
+		String arguments = launchConfiguration.getAttribute(IJavaLaunchConfigurationConstants.ATTR_PROGRAM_ARGUMENTS, "");
+		String qualifiedName = launchConfiguration.getAttribute(IJavaLaunchConfigurationConstants.ATTR_MAIN_TYPE_NAME, getQualifiedClassName(resourceRef));
+		
+		RunResult runResult;
+		String error = errorBuffer.toString();
+		if (!arguments.isEmpty() && error.isEmpty()) {
+			runResult = new TestResult(qualifiedName);
+		} else {
+			runResult = new RunResult(qualifiedName);
+		}		 
 		runResult.setConsoleOutput(outputBuffer.toString());
-		runResult.setErrorOutput(errorBuffer.toString());
+		runResult.setErrorOutput(error);
 		return runResult;
 	}
 	

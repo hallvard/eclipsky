@@ -38,14 +38,14 @@ public class RunEditorServletService extends AbstractSourceEditorServletService 
 	}
 
 	@Override
-	public String doSourceEditorServletService(EditorServiceRequest request, String requestBody) {		
+	public String doSourceEditorServletService(EditorServiceRequest request, String requestBody) {
 		EmfsResource emfsResource = EmfsUtil.findEmfsResource(getSourceProjectManager().getEmfsResource(new ProjectRef(request.resourceRef)), EmfsUtil::isRunnable);
 		if (emfsResource != null) {	
 			SourceEditor editor = getSourceEditor(request);
 			CloseEditorServletService.closeEditorResponse(editor);			
 			ResourceRef resourceRef = request.resourceRef;
 			ResourceRef combinedRef = new ResourceRef(
-					EmfsUtil.createResourceRef(emfsResource),
+					request.resourceRef.getProjectName(),
 					resourceRef.getPackageName(),
 					resourceRef.getResourceName()
 			);
@@ -55,7 +55,7 @@ public class RunEditorServletService extends AbstractSourceEditorServletService 
 		return null;
 	}
 	
-	protected String runResponse(RunResult result, String protocol) {
+	public static String runResponse(RunResult result, String protocol) {
 		ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 		PrintWriter output = new PrintWriter(buffer);
 		writeRunResponse(protocol, output, result);

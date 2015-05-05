@@ -47,7 +47,7 @@ var editor = (function(ace, con, cookies) {
 			}
 			var data = event.data;
 
-			if (data.action === "insertText" || data.action === 'removeText') {
+			if (data.action === 'insertText' || data.action === 'removeText') {
 				event.delay = true;
 				changed(event);
 			}
@@ -77,16 +77,16 @@ var editor = (function(ace, con, cookies) {
 
 	function sendAllContent(content) {
 		content = content || _editor.getSession().getValue();
-		con.send('update ' + resourceName, content);
+		con.send('update', resourceName, content);
 	};
    
    
 	function run(ev) {		
-		con.send('run ' + resourceName);
+		con.send('run', resourceName);
 	};
 
 	function test(ev) {		
-		con.send('test ' + resourceName);
+		con.send('test', resourceName);
 	};
    
    
@@ -106,7 +106,7 @@ var editor = (function(ace, con, cookies) {
 					_editor.setReadOnly(true);
 				} else {
 					_editor.setReadOnly(true);
-					con.send('completion ' + resourceName, offset);
+					con.send('completion', resourceName, offset);
 				}
 									   
 				completionCallback = callback;
@@ -121,6 +121,9 @@ var editor = (function(ace, con, cookies) {
 		if (data instanceof Array) {
 			if (data.length === 0) {
 				_editor.getSession().clearAnnotations();
+				if (_editor.getReadOnly()) {
+					_editor.setReadOnly(false);
+				}
 				return;
 			}
 			var type = data[0].type;
@@ -128,7 +131,7 @@ var editor = (function(ace, con, cookies) {
 				case 'problem':
 					updateMarkers(data);
 					if (_editor.getReadOnly()) {
-						con.send('completion ' + resourceName, offset);
+						con.send('completion', resourceName, offset);
 					}
 					break;
 				case 'completion':
@@ -213,7 +216,7 @@ var editor = (function(ace, con, cookies) {
 	};
    
 	function refreshResource() {
-		con.send('refresh ' + resourceName);
+		con.send('refresh', resourceName);
 	};
 
 	function getNamedResources() {
@@ -267,13 +270,11 @@ var editor = (function(ace, con, cookies) {
 			switchingResource = true;
 			resources[currentId].pos = _editor.getCursorPosition();
 
-			// Close current editor before setting the new resource name
-			con.send('close ' + resourceName);
-
 			// Update settings
 			currentId = id;
 			resourceName = resources[currentId].resourceRef;
 			cookies.setCookie(projectId, id, 180);
+			con.send('refresh', resourceName);
 			return true;
 		},
 		
@@ -290,7 +291,11 @@ var editor = (function(ace, con, cookies) {
 		},
 
 		run : function() {
-			con.send('run ' + resourceName);
+			con.send('run', resourceName);
+		},
+
+		test : function() {
+			con.send('test', resourceName);
 		},
 
 		getAce : function() {

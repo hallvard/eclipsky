@@ -54,8 +54,8 @@ var connector = (function() {
 		if (connectionClosed) {
 			initializeWebsocket(url);
 		}
-		var wsData = data.op + (data.body !== undefined ? 
-								"\n" + data.body : '');
+		var wsData = data.op + ' ' + data.resourceRef +
+					(data.body !== undefined ? "\n" + data.body : '');
 		webSocket.send(wsData);
 	};
 	
@@ -65,7 +65,7 @@ var connector = (function() {
 			type: 'POST',
 			url: url + postfix,
 			data: data,
-			dataType: 'json'
+			dataType: 'json',
 		}).done(function(response) {
 			pop();
 			publish(response);
@@ -111,8 +111,8 @@ var connector = (function() {
 			}
 		},
 
-		send : function(operation, content) {
-			push({op: operation, body: content});
+		send : function(operation, resource, content) {
+			push({op: operation, resourceRef: resource, body: content});
 		},
 		
 		subscribe : function(subscriber) {
