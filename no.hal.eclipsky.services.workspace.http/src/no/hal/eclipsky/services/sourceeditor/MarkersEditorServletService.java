@@ -34,7 +34,7 @@ public class MarkersEditorServletService extends AbstractSourceEditorServletServ
 	
 	@Override
 	public String doSourceEditorServletService(EditorServiceRequest request, String requestBody) {
-		SourceFileMarker[] sourceFileMarkers = getSourceEditor(request).update(null, true, false);
+		SourceFileMarker[] sourceFileMarkers = getSourceEditor(request).update(null, true, null);
 		CharacterPosition offset = computeResourceOffset(getSourceProjectManager().getEmfsResource(request.resourceRef));
 		return markersResponse(sourceFileMarkers, request.responseFormat, offset);
 	}

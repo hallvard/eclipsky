@@ -9,7 +9,9 @@ import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
 import no.hal.eclipsky.services.common.ProjectRef;
+import no.hal.eclipsky.services.common.ResourceRef;
 import no.hal.eclipsky.services.editor.RunResult;
+import no.hal.eclipsky.services.editor.SourceEditor;
 import no.hal.eclipsky.services.sourceeditor.SourceEditorServlet.EditorServiceRequest;
 import no.hal.eclipsky.services.workspace.http.AbstractServiceServlet;
 import no.hal.eclipsky.services.workspace.http.SourceProjectManager;
@@ -38,14 +40,22 @@ public class RunEditorServletService extends AbstractSourceEditorServletService 
 	@Override
 	public String doSourceEditorServletService(EditorServiceRequest request, String requestBody) {
 		EmfsResource emfsResource = EmfsUtil.findEmfsResource(getSourceProjectManager().getEmfsResource(new ProjectRef(request.resourceRef)), EmfsUtil::isRunnable);
-		if (emfsResource != null) {
-			RunResult result = getSourceProject(request).run(EmfsUtil.createResourceRef(emfsResource));
+		if (emfsResource != null) {	
+			SourceEditor editor = getSourceEditor(request);
+			CloseEditorServletService.closeEditorResponse(editor);			
+			ResourceRef resourceRef = request.resourceRef;
+			ResourceRef combinedRef = new ResourceRef(
+					request.resourceRef.getProjectName(),
+					resourceRef.getPackageName(),
+					resourceRef.getResourceName()
+			);
+			RunResult result = getSourceProject(request).run(combinedRef);
 			return runResponse(result, request.responseFormat);
 		}
 		return null;
 	}
 	
-	protected String runResponse(RunResult result, String protocol) {
+	public static String runResponse(RunResult result, String protocol) {
 		ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 		PrintWriter output = new PrintWriter(buffer);
 		writeRunResponse(protocol, output, result);

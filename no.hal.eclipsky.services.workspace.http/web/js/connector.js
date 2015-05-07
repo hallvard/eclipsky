@@ -1,8 +1,9 @@
 var connector = (function() {
 	var webSocket = null,
+		connectionClosed = true;
 		
 		// Set logging
-		logging = false,
+		logging = true,
 		c = (logging ? console : {log : function(){}});
 		
 		// All subscribers need to implement a 'notify()'-function
@@ -42,7 +43,7 @@ var connector = (function() {
 		}
 		
 		c.log('Sending data: ', data);
-		if (webSocket.readyState === webSocket.OPEN) {
+		if (webSocket && webSocket.readyState === webSocket.OPEN) {
 			sendWSdata(data);
 		} else {
 			sendXHRdata(data);
@@ -50,33 +51,27 @@ var connector = (function() {
 	};
 	
 	function sendWSdata(data) {
-		var wsData = data.op + (data.body !== undefined ? 
-								"\n" + data.body : '');
+		if (connectionClosed) {
+			initializeWebsocket(url);
+		}
+		var wsData = data.op + ' ' + data.resourceRef +
+					(data.body !== undefined ? "\n" + data.body : '');
 		webSocket.send(wsData);
 	};
 	
 	// Private function for sending XHR requests
 	function sendXHRdata(data) {
-		var xmlHttp = getXmlHTTP();
-		xmlHttp.open("POST", url + postfix, true);
-		var startTime = new Date();
-		xmlHttp.onreadystatechange = function () {
-			if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
-				pop();
-				publish(xmlHttp.responseText);
-			}
-		}
-		xmlHttp.send(data);
+		$.ajax({
+			type: 'POST',
+			url: url + postfix,
+			data: data,
+			dataType: 'json',
+		}).done(function(response) {
+			pop();
+			publish(response);
+		});		
 	};
 	
-	// Compatibility
-	function getXmlHTTP() {
-        if (window.XMLHttpRequest) {
-            return new XMLHttpRequest();
-        } else {
-            return new ActiveXObject('Microsoft.XMLHTTP');
-        }
-    };
 	
 	function initializeWebsocket(url) {
 		var link = document.createElement('a');
@@ -84,6 +79,7 @@ var connector = (function() {
 		link.href = url;
 		link.protocol = "ws";
 	    webSocket = new WebSocket(link.href, "json");
+	    connectionClosed = false;
 
 	    webSocket.onerror = function(event) {
 			// TODO: Reconnect?
@@ -92,14 +88,17 @@ var connector = (function() {
 	    };
 
 	    webSocket.onclose = function(event) {
-	    	// TODO: Notify?
+	    	connectionClosed = true;
 	        c.log('ws close', event);
-	        // publish(event);
+
+	        var response = {type : 'connectionClosed', event: event};
+	        publish(response);
 	    };
 
 	    webSocket.onmessage = function(event) {
 			pop();
-	    	publish(event);
+			var data = JSON.parse(event.data);
+	    	publish(data);
 	    }
 	};
 	
@@ -107,11 +106,13 @@ var connector = (function() {
 	return {
 		init : function(config) {
 			url = config.url;
-			initializeWebsocket(url);
+			if (window.WebSocket) {
+				initializeWebsocket(url);
+			}
 		},
 
-		send : function(operation, content) {
-			push({op: operation, body: content});
+		send : function(operation, resource, content) {
+			push({op: operation, resourceRef: resource, body: content});
 		},
 		
 		subscribe : function(subscriber) {
@@ -130,6 +131,14 @@ var connector = (function() {
 		// Emptying the queue
 		invalidate : function() {
 			queue = [];
+		},
+
+		reconnect : function() {
+			initializeWebsocket(url);
+		},
+
+		usesWebSocket : function() {
+			return webSocket != null;
 		}
 	};
 	

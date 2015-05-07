@@ -3,8 +3,10 @@ package no.hal.eclipsky.services.sourceeditor;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.servlet.ServletException;
@@ -24,6 +26,7 @@ import no.hal.eclipsky.services.workspace.http.util.ResponseFormatter;
 import no.hal.emfs.EmfsResource;
 
 import org.eclipse.jetty.websocket.WebSocket;
+import org.eclipse.jetty.websocket.WebSocket.Connection;
 import org.eclipse.jetty.websocket.WebSocketServlet;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
@@ -54,7 +57,8 @@ public class SourceEditorServletImpl extends WebSocketServlet implements SourceE
 		this.sourceProjectManager = sourceProjectManager;
 	}
 
-	private Map<String, SourceEditorServletService> editorServices = new HashMap<String, SourceEditorServletService>();
+	private Map<String, SourceEditorServletService> editorServices = new HashMap<>();
+	private Map<ProjectRef, List<Connection>> projectConnections = new HashMap<>();
 	
 	@Reference(
 		cardinality = ReferenceCardinality.MULTIPLE,
@@ -74,6 +78,8 @@ public class SourceEditorServletImpl extends WebSocketServlet implements SourceE
 			editorServices.remove(op);
 		}
 	}
+
+
 
 	private final CompositeServiceLogger compositeServiceLogger = new CompositeServiceLogger();
 	
@@ -142,7 +148,6 @@ public class SourceEditorServletImpl extends WebSocketServlet implements SourceE
 
 	@Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		response.setContentType("text/plain");
 		String op = request.getParameter("op");
 		if (op == null) {
 			op = "refresh";
@@ -185,15 +190,15 @@ public class SourceEditorServletImpl extends WebSocketServlet implements SourceE
 	
 	@Override
 	public WebSocket doWebSocketConnect(HttpServletRequest request, final String protocol) {
-
 		final ProjectRef projectRef = AbstractServiceServlet.getProjectRef(request);
-
-		return new WebSocket.OnTextMessage() {
+		
+		WebSocket ws = new WebSocket.OnTextMessage() {
 
 			private Connection connection;
 
 			@Override
 			public void onClose(int closeCode, String message) {
+				removeFromList();
 				// TODO: Notify GIT exporter
 //				project.editor.close(null);
 			}
@@ -212,12 +217,23 @@ public class SourceEditorServletImpl extends WebSocketServlet implements SourceE
 					resourceRef = ResourceRef.valueOf(op.substring(pos + 1), projectRef);
 					op = op.substring(0, pos);
 				}
+				
 				EditorServiceRequest editorServiceRequest = new EditorServiceRequest(op, resourceRef, "json");
 				CharSequence response = invokeEditorServiceOperation(editorServiceRequest, contents);
-				try {
-					connection.sendMessage(response != null ? response.toString() : EMPTY_EDITOR_SERVLET_SERVICE_RESPONSE);
-				} catch (IOException e) {
+				String responseString = response != null ? response.toString() : EMPTY_EDITOR_SERVLET_SERVICE_RESPONSE;
+				
+				System.out.println(responseString);
+				
+				// Notify all connections on an update 
+				if ("update".equals(editorServiceRequest.op)) {
+					editorServiceRequest.op = "refresh";
+					CharSequence refreshResponse = invokeEditorServiceOperation(editorServiceRequest, contents);
+					notifyAllConnections(refreshResponse.toString());
 				}
+				try { 
+					connection.sendMessage(responseString); 
+				} catch (IOException e) {}
+								
 			}
 			
 			@Override
@@ -228,10 +244,47 @@ public class SourceEditorServletImpl extends WebSocketServlet implements SourceE
 					} catch (IOException e) {
 					e.printStackTrace();
 				}
+				
+				addToList();
+				
+				/*
 				try {
 					connection.sendMessage(EMPTY_EDITOR_SERVLET_SERVICE_RESPONSE);
 				} catch (IOException e) {
 					e.printStackTrace();
+				}*/
+			}
+			
+			private void addToList() {
+				List<Connection> connections;
+				if (projectConnections.containsKey(projectRef)) {
+					connections = projectConnections.get(projectRef);
+					connections.add(connection);
+				} else {
+					connections = new ArrayList<>();
+					connections.add(connection);
+					projectConnections.put(projectRef, connections);
+				}
+			}
+			
+			private void removeFromList() {
+				List<Connection> connections;
+				if (projectConnections.containsKey(projectRef)) {
+					connections = projectConnections.get(projectRef);
+					connections.remove(connection);
+				}
+			}
+			
+			private void notifyAllConnections(String response) {
+				if (projectConnections.containsKey(projectRef)) {
+					List<Connection> connections = projectConnections.get(projectRef);
+					connections.parallelStream()
+								.filter(con -> con != connection)
+								.forEach(con -> {
+						try { 
+							con.sendMessage(response); 
+						} catch (IOException e) {}
+					});
 				}
 			}
 			
@@ -260,5 +313,7 @@ public class SourceEditorServletImpl extends WebSocketServlet implements SourceE
 				return buffer.toString();
 			}
 		};
+		
+		return ws;
 	}
 }

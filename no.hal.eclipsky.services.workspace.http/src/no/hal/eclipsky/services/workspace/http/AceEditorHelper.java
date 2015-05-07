@@ -69,8 +69,8 @@ public class AceEditorHelper {
                 </div>
                  */
                 writer.println("\t\t<div id=\"tests\">\n"
-                                + "\t\t\t<h1>Tests</h1\n"
-                                + "\t\t\t<ul id=\"test_result\"></ul>\n"
+                                + "\t\t\t<h1>Tests</h1>\n"
+                                + "\t\t\t<div><ul id=\"test_result\"></ul></div>\n"
                                 + "\t\t\t<button name=\"test\" id=\"btn_test\">Test</button>\n"
                                 + "\t\t</div>\n"
                                 + "\t</div>\n");
@@ -86,7 +86,7 @@ public class AceEditorHelper {
                                 + "\t\t</div>\n");
                
                 writer.println("\t\t<div id=\"console\">\n"
-                                + "\t\t\t<textarea></textarea>\n"
+                                + "\t\t\t<textarea readonly></textarea>\n"
                                 + "\t\t</div>\n");
                
                 writer.println(
@@ -96,7 +96,8 @@ public class AceEditorHelper {
                                 "\t\t\t<script src=\"/js/cookiemanager.js\" type=\"text/javascript\" charset=\"utf-8\"></script>\n" +
                                 "\t\t\t<script src=\"/js/editor.js\" type=\"text/javascript\" charset=\"utf-8\"></script>\n" +
                                 "\t\t\t<script src=\"/js/interfacer.js\" type=\"text/javascript\" charset=\"utf-8\"></script>\n" +
-                                "\t\t\t<script src=\"https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js\"></script>\n"
+                                "\t\t\t<script src=\"https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js\"></script>\n" +
+                                "\t\t\t<script src=\"/js/lib/jquery.details.min.js\" type=\"text/javascript\" charset=\"utf-8\"></script>\n"
                 );
                 writer.println("\t\t\t<script>\n" +
                                 "\t\t\tvar editors = [");

@@ -188,6 +188,10 @@ public abstract class AbstractServiceServlet extends HttpServlet implements Serv
 		return new ProjectRef(request.getParameter(PROJECT_NAME_REQUEST_PARAMETER));
 	}
 	
+	public static ResourceRef getResourceRef(HttpServletRequest request, String packageName, String resourceName) {	
+		return new ResourceRef(request.getParameter(PROJECT_NAME_REQUEST_PARAMETER), packageName, resourceName);
+	}
+	
 	public static ProjectRef getProjectRef(String projectName) {
 		return new ProjectRef(projectName);
 	}

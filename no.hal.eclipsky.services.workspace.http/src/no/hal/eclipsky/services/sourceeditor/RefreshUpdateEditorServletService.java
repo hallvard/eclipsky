@@ -53,28 +53,31 @@ public class RefreshUpdateEditorServletService extends AbstractSourceEditorServl
 				editableStringContents.setStringContent(requestBody);
 				requestBody = ((StringContentProvider) ((EmfsFile) emfsResource).getContentProvider()).getStringContent();
 			}
-			SourceFileMarker[] sourceFileMarkers = getSourceEditor(request).update(requestBody, markersDefault, false);
+			SourceFileMarker[] sourceFileMarkers = getSourceEditor(request).update(requestBody, markersDefault, null);
 			CharacterPosition offset = computeResourceOffset(getSourceProjectManager().getEmfsResource(request.resourceRef));
 			return MarkersEditorServletService.markersResponse(sourceFileMarkers, request.responseFormat, offset);
 		}
 		CharSequence stringContents = null;
+		String resource = sourceEditor.getResourceRef().getQualifiedName();
 		if (editableStringContents != null) {
 			stringContents = editableStringContents.getStringContent();
+		} else if (requestBody != null){
+			stringContents = requestBody;
 		} else {
-			stringContents = sourceEditor.getSourceFileContents();
-		}
-		return refreshResponse(stringContents, request.responseFormat);
+			stringContents = sourceEditor.getWorkingCopyContents();
+		} 
+		return refreshResponse(stringContents, request.responseFormat, resource);
 	}
 
-	public static String refreshResponse(CharSequence fileContent, String protocol) {
+	public static String refreshResponse(CharSequence fileContent, String protocol, String resourceName) {
 		ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 		PrintWriter output = new PrintWriter(buffer);
-		writeRefreshResponse(protocol, output, fileContent);
+		writeRefreshResponse(protocol, output, fileContent, resourceName);
 		output.close();
 		return buffer.toString();
 	}
 
-	private static void writeRefreshResponse(String responseFormat, PrintWriter writer, CharSequence fileContent) {
+	private static void writeRefreshResponse(String responseFormat, PrintWriter writer, CharSequence fileContent, String resourceName) {
 		ResponseFormatter formatter = AbstractServiceServlet.getResponseFormatter(responseFormat, writer);
 		if (formatter != null) {
 			formatter.startEntities("refresh", false);
@@ -86,7 +89,10 @@ public class RefreshUpdateEditorServletService extends AbstractSourceEditorServl
 		}
 
 		if (formatter != null) {
-			formatter.entity("refresh", "code", fileContent).endEntity();
+			formatter.entity("refresh", 
+							"code", fileContent,
+							"resource", resourceName
+							).endEntity();
 		} else {
 			// TODO: Write a proper result display
 			writer.println("\t\t\t<textarea>" + fileContent + "</textarea>");

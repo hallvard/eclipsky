@@ -10,7 +10,8 @@ public interface SourceEditor {
 	public ResourceRef getResourceRef();
 	public CharSequence getSourceFileContents();
 	public byte[] getResourceFileContents();
-	public SourceFileMarker[] update(String stringContent, boolean markers, boolean commit);
+	public SourceFileMarker[] update(String stringContent, boolean markers, IProgressMonitor monitor);
 	public Proposal[] complete(int pos);
 	public void close(IProgressMonitor monitor);
+	public CharSequence getWorkingCopyContents();
 }
