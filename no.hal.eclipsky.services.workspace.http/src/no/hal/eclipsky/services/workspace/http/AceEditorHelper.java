@@ -90,13 +90,13 @@ public class AceEditorHelper {
                                 + "\t\t</div>\n");
                
                 writer.println(
+                				"\t\t\t<script src=\"https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js\"></script>\n" +
                                 "\t\t\t<script src=\"/ace/ace.js\" type=\"text/javascript\" charset=\"utf-8\"></script>\n" +
                                 "\t\t\t<script src=\"/ace/ext-language_tools.js\" type=\"text/javascript\" charset=\"utf-8\"></script>\n" +
                                 "\t\t\t<script src=\"/js/connector.js\" type=\"text/javascript\" charset=\"utf-8\"></script>\n" +
                                 "\t\t\t<script src=\"/js/cookiemanager.js\" type=\"text/javascript\" charset=\"utf-8\"></script>\n" +
                                 "\t\t\t<script src=\"/js/editor.js\" type=\"text/javascript\" charset=\"utf-8\"></script>\n" +
                                 "\t\t\t<script src=\"/js/interfacer.js\" type=\"text/javascript\" charset=\"utf-8\"></script>\n" +
-                                "\t\t\t<script src=\"https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js\"></script>\n" +
                                 "\t\t\t<script src=\"/js/lib/jquery.details.min.js\" type=\"text/javascript\" charset=\"utf-8\"></script>\n"
                 );
                 writer.println("\t\t\t<script>\n" +
