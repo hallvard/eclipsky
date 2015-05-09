@@ -33,7 +33,7 @@ public class TestResult extends RunResult {
 				status = lines[++i].charAt(0);
 				
 				exception = lines[++i];
-				while(lines[i+1].charAt(0) != '*') {
+				while(i+1 < lines.length && !"*".equals(lines[i+1])) {
 					exception += "\n" + lines[++i];
 				}
 			}

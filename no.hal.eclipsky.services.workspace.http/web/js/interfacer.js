@@ -149,6 +149,13 @@ var interfacer = (function(con) {
 			case 'refresh':
 				isFetching = false;
 				$editor.css('opacity', 1);
+				var prevResult = ed.getPreviousTests();
+				if (prevResult) {
+					c.log('prevResult', prevResult);
+					$test_list.show();
+					fillTests(prevResult.tests);
+					$test_list.find('details').removeAttr('open');
+				}
 				break;
 			case 'ready':
 				startId = getHashId() || startId;
@@ -186,8 +193,10 @@ var interfacer = (function(con) {
 
 		// Alter existing
 		var detailsList = [];
-		for (var i = 0; i < oldElemLength; i++) {
+		c.log('old: ', oldElemLength);
+		for (var i = 0; i < oldElemLength && i < newElemLength; i++) {
 			var t = testResults[i];
+			c.log('elem', t);
 			$listEl = children[i];
 
 			$summary = $($listEl).find('summary');
@@ -214,7 +223,8 @@ var interfacer = (function(con) {
 
 		setDragPosition(suggestedWidth);
 
-		// Polyfill if needed
+		// Disable old polyfill and add new if needed
+		$('summary').off('click');
 		$(detailsList).details();
 	}
 
