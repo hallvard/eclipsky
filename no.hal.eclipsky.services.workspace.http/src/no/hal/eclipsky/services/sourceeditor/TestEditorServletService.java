@@ -53,7 +53,7 @@ public class TestEditorServletService extends RunEditorServletService implements
 					resourceRef.getResourceName()
 			);
 			RunResult result = getSourceProject(request).test(combinedRef);
-			// Return a test result of the project was compiled, otherwise return a run response with the error message
+			// Return a test result of the project when compiled, otherwise return a run response with the error message
 			if (result instanceof TestResult) {
 				TestResult testResult = (TestResult)result;
 				return testResponse(testResult, request.responseFormat);

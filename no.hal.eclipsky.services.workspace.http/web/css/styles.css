@@ -72,7 +72,7 @@ nav#tabs ul {
 		z-index: 1000;
 		float: right;
 		width: 20px;
-		margin-left: -20px;
+		margin-left: 20px;
 		cursor: col-resize;
 	}
 
@@ -120,6 +120,10 @@ details, summary { display: block; }
 
 details {
 	overflow: hidden;
+    -webkit-animation-play-state: paused;
+    -webkit-animation-fill-mode: forwards;
+    -webkit-animation-duration: 0.5s;
+    -webkit-animation-iteration-count: 1;
 }
 
 details textarea {
@@ -153,7 +157,6 @@ summary:active {
 	-khtml-user-select: none;
 	-moz-user-select: none;
 	-ms-user-select: none;
-	user-select: none;
 }
 
 summary::-webkit-details-marker {
@@ -163,22 +166,70 @@ summary::-webkit-details-marker {
 summary:before {
 	float: left;
 	margin-right: 6px;
-	height: 20px;
-	width: 20px;
-	border-radius: 50%;
-	content: " ";
+	height: 0;
+	width: 0;
+	border-left: 10px solid transparent;
+	border-top: 15px solid;
+	border-right: 10px solid transparent;
+	content: "";    
+
+    animation-play-state: paused;
+    animation-fill-mode: forwards;
+    animation-duration: 0.5s;
+    animation-iteration-count: 1;
+
+    -webkit-animation-play-state: paused;
+    -webkit-animation-fill-mode: forwards;
+    -webkit-animation-duration: 0.5s;
+    -webkit-animation-iteration-count: 1;
+}
+
+summary.open:before {
+    animation-name: rotateUp;	
+	animation-play-state: running;
+
+    -webkit-animation-name: flipUp;
+    -webkit-animation-play-state: running;
+}
+
+summary.closed:before {
+	animation-name: flipDown;	
+	animation-play-state: running;
+
+	-webkit-animation-name: flipDown;	
+	-webkit-animation-play-state: running;
 }
 
 summary.error:before {
-	background: orange;
+	border-top-color: orange;
 }
 
 summary.failed:before {
-	background: yellow;
+	border-top-color: yellow;
 }
 
 summary.ok:before {
+	width: 20px;
+	height: 20px;
+	border: none;
+	border-radius: 50%;
 	background: green;
+}
+
+summary.ok.open:before {
+	animation-name: flipDown;
+    animation-play-state: running;
+
+    -webkit-animation-name: flipDown;
+    -webkit-animation-play-state: running;
+}
+
+summary.ok.closed:before {
+	animation-name: flipUp;	
+	animation-play-state: running;
+
+	-webkit-animation-name: flipUp;	
+	-webkit-animation-play-state: running;
 }
 
 #btn_test {
@@ -257,4 +308,66 @@ summary.ok:before {
 
 #console textarea.error {
   color: darkred;
+}
+
+/* Firefox / IE */
+@keyframes rotateUp {
+	from {	
+    	-ms-transform: rotate(0deg);
+    	transform: rotate(0deg);
+    }
+
+    to {
+    	-ms-transform: rotate(-180deg);
+    	transform: rotate(-180deg)
+    }
+}
+
+@keyframes flipDown {
+	from {	
+		-ms-transform: rotateX(-180deg);
+    	transform: rotateX(-180deg);
+    }
+
+    to {	
+		-ms-transform: rotateX(0deg);
+    	transform: rotateX(0deg);
+    }
+}
+
+@keyframes flipUp {
+	from {	
+		-ms-transform: rotateX(0deg);
+    	transform: rotateX(0deg);
+    }
+
+    to {	
+		-ms-transform: rotateX(-180deg);
+    	transform: rotateX(-180deg);
+    }
+}
+
+/* Chrome/Safari animation */
+
+@-webkit-keyframes rotateUp {
+	from { -webkit-transform: rotate(0deg); }
+    to { -webkit-transform: rotate(-180deg); }
+}
+
+@-webkit-keyframes flipDown {
+	from { 
+		-webkit-transform: rotateX(-180deg);
+	}
+    to { 
+    	-webkit-transform: rotateX(0deg); 
+    }
+}
+
+@-webkit-keyframes flipUp {
+	from { 
+		-webkit-transform: rotateX(0deg); 
+	}
+    to { 
+    	-webkit-transform: rotateX(180deg); 
+    }
 }
