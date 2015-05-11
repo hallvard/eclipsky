@@ -154,7 +154,15 @@ var interfacer = (function(con) {
 					c.log('prevResult', prevResult);
 					$test_list.show();
 					fillTests(prevResult.tests);
-					$test_list.find('details').removeAttr('open');
+					var details = $test_list.find('details');
+					details.removeAttr('open');
+
+					var summary = details.find('summary');
+					test = summary;
+					summary.removeClass('open');
+					for (var i = summary.length - 1; i >= 0; i--) {
+						summary[i].setAttribute('aria-expanded', 'false');
+					}
 				}
 				break;
 			case 'ready':
@@ -193,10 +201,8 @@ var interfacer = (function(con) {
 
 		// Alter existing
 		var detailsList = [];
-		c.log('old: ', oldElemLength);
 		for (var i = 0; i < oldElemLength && i < newElemLength; i++) {
 			var t = testResults[i];
-			c.log('elem', t);
 			$listEl = children[i];
 
 			$summary = $($listEl).find('summary');
@@ -226,6 +232,29 @@ var interfacer = (function(con) {
 		// Disable old polyfill and add new if needed
 		$('summary').off('click');
 		$(detailsList).details();
+
+		// Show indicator/direction
+		$('summary').on('click', function(event) {
+			var $this = $(this);
+
+
+			var isOpen = this.getAttribute('aria-expanded');
+			c.log(isOpen === 'true');
+			if (isOpen) {
+				isOpen = (isOpen === 'true');
+			} else {
+				var parent = $this.parent()[0];
+				isOpen = parent.getAttribute('open') == undefined;
+			}
+			
+			if (isOpen) {
+				$this.addClass('open');
+				$this.removeClass('closed');
+			} else {
+				$this.addClass('closed');
+				$this.removeClass('open');
+			}
+		})
 	}
 
 	function setDragPosition(pos) {
@@ -316,6 +345,13 @@ var interfacer = (function(con) {
 
 	return {
 		init : function(editor) {
+			var ev = new $.Event('style'),
+		        orig = $.fn.css;
+		    $.fn.css = function() {
+		        $(this).trigger(ev);
+		        return orig.apply(this, arguments);
+		    }
+
 			ed = editor;
 			connector.subscribe(this);
 
@@ -330,6 +366,7 @@ var interfacer = (function(con) {
 			if (!connector.usesWebSocket()) {
 				handleMessage({type: 'ready'});
 			}
+			
 		},
 
 		notify : function(message) {
