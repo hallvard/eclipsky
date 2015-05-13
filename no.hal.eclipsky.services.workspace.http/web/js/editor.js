@@ -139,6 +139,11 @@ var editor = (function(ace, con, cookies) {
 					completionCallback = null;
 					_editor.setReadOnly(false);
 					break;
+				case 'test':
+					resources[currentId].testResults = {
+						stamp : new Date(), 
+						tests : data
+					};
 			}
 		} else {			
 			var type = data.type;
@@ -218,16 +223,6 @@ var editor = (function(ace, con, cookies) {
 	function refreshResource() {
 		con.send('refresh', resourceName);
 	};
-
-	function getNamedResources() {
-		var namedResources = [];
-		for (var i = 0; i < resources.length; i++) {
-			var fileName = resources[i].resourceRef.split('/')[1];
-			namedResources[i] = {id: i, name: fileName};
-		}
-		
-		return namedResources;
-	}
    
 	return {
 		init : function(el, baseUrl, id, editorArray) {
@@ -278,8 +273,8 @@ var editor = (function(ace, con, cookies) {
 			return true;
 		},
 		
-		getresources : function() {
-			return getNamedresources();
+		getPreviousTests : function() {
+			return resources[currentId].testResults;
 		},
 
 		getCurrentIndex : function() {

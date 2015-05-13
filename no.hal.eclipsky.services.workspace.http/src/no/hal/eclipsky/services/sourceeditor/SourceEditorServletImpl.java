@@ -58,7 +58,6 @@ public class SourceEditorServletImpl extends WebSocketServlet implements SourceE
 	}
 
 	private Map<String, SourceEditorServletService> editorServices = new HashMap<>();
-	private Map<ProjectRef, List<Connection>> projectConnections = new HashMap<>();
 	
 	@Reference(
 		cardinality = ReferenceCardinality.MULTIPLE,
@@ -198,7 +197,6 @@ public class SourceEditorServletImpl extends WebSocketServlet implements SourceE
 
 			@Override
 			public void onClose(int closeCode, String message) {
-				removeFromList();
 				// TODO: Notify GIT exporter
 //				project.editor.close(null);
 			}
@@ -221,15 +219,7 @@ public class SourceEditorServletImpl extends WebSocketServlet implements SourceE
 				EditorServiceRequest editorServiceRequest = new EditorServiceRequest(op, resourceRef, "json");
 				CharSequence response = invokeEditorServiceOperation(editorServiceRequest, contents);
 				String responseString = response != null ? response.toString() : EMPTY_EDITOR_SERVLET_SERVICE_RESPONSE;
-				
-				System.out.println(responseString);
-				
-				// Notify all connections on an update 
-				if ("update".equals(editorServiceRequest.op)) {
-					editorServiceRequest.op = "refresh";
-					CharSequence refreshResponse = invokeEditorServiceOperation(editorServiceRequest, contents);
-					notifyAllConnections(refreshResponse.toString());
-				}
+
 				try { 
 					connection.sendMessage(responseString); 
 				} catch (IOException e) {}
@@ -243,48 +233,6 @@ public class SourceEditorServletImpl extends WebSocketServlet implements SourceE
 					connection.sendMessage(getReadyResponse(protocol));
 					} catch (IOException e) {
 					e.printStackTrace();
-				}
-				
-				addToList();
-				
-				/*
-				try {
-					connection.sendMessage(EMPTY_EDITOR_SERVLET_SERVICE_RESPONSE);
-				} catch (IOException e) {
-					e.printStackTrace();
-				}*/
-			}
-			
-			private void addToList() {
-				List<Connection> connections;
-				if (projectConnections.containsKey(projectRef)) {
-					connections = projectConnections.get(projectRef);
-					connections.add(connection);
-				} else {
-					connections = new ArrayList<>();
-					connections.add(connection);
-					projectConnections.put(projectRef, connections);
-				}
-			}
-			
-			private void removeFromList() {
-				List<Connection> connections;
-				if (projectConnections.containsKey(projectRef)) {
-					connections = projectConnections.get(projectRef);
-					connections.remove(connection);
-				}
-			}
-			
-			private void notifyAllConnections(String response) {
-				if (projectConnections.containsKey(projectRef)) {
-					List<Connection> connections = projectConnections.get(projectRef);
-					connections.parallelStream()
-								.filter(con -> con != connection)
-								.forEach(con -> {
-						try { 
-							con.sendMessage(response); 
-						} catch (IOException e) {}
-					});
 				}
 			}
 			

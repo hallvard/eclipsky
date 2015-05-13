@@ -33,10 +33,11 @@ public class TestResult extends RunResult {
 				status = lines[++i].charAt(0);
 				
 				exception = lines[++i];
-				while(lines[i+1].charAt(0) != '*') {
+				while(i+1 < lines.length && !lines[i+1].isEmpty() && lines[i+1].charAt(0) != '*') {
 					exception += "\n" + lines[++i];
 				}
 			}
+			
 			t = new Test(testName, status, exception);
 			
 			allTests.add(t);
