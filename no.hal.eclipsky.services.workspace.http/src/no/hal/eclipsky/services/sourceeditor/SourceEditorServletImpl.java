@@ -25,9 +25,8 @@ import no.hal.eclipsky.services.workspace.http.util.EmfsUtil;
 import no.hal.eclipsky.services.workspace.http.util.ResponseFormatter;
 import no.hal.emfs.EmfsResource;
 
-import org.eclipse.jetty.websocket.WebSocket;
-import org.eclipse.jetty.websocket.WebSocket.Connection;
-import org.eclipse.jetty.websocket.WebSocketServlet;
+import org.eclipse.jetty.websocket.servlet.WebSocketServlet;
+import org.eclipse.jetty.websocket.servlet.WebSocketServletFactory;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
@@ -187,81 +186,12 @@ public class SourceEditorServletImpl extends WebSocketServlet implements SourceE
 		return response;
 	}
 	
+
+
 	@Override
-	public WebSocket doWebSocketConnect(HttpServletRequest request, final String protocol) {
-		final ProjectRef projectRef = AbstractServiceServlet.getProjectRef(request);
-		
-		WebSocket ws = new WebSocket.OnTextMessage() {
-
-			private Connection connection;
-
-			@Override
-			public void onClose(int closeCode, String message) {
-				// TODO: Notify GIT exporter
-//				project.editor.close(null);
-			}
-
-			@Override
-			public void onMessage(String message) {
-				int pos = message.indexOf('\n');
-				String op = message, contents = null;
-				ResourceRef resourceRef = new ResourceRef(projectRef, null, null);
-				if (pos >= 0) {
-					op = op.substring(0, pos);
-					contents = message.substring(pos + 1);
-				}
-				pos = op.indexOf(' ');
-				if (pos >= 0) {
-					resourceRef = ResourceRef.valueOf(op.substring(pos + 1), projectRef);
-					op = op.substring(0, pos);
-				}
-				
-				EditorServiceRequest editorServiceRequest = new EditorServiceRequest(op, resourceRef, "json");
-				CharSequence response = invokeEditorServiceOperation(editorServiceRequest, contents);
-				String responseString = response != null ? response.toString() : EMPTY_EDITOR_SERVLET_SERVICE_RESPONSE;
-
-				try { 
-					connection.sendMessage(responseString); 
-				} catch (IOException e) {}
-								
-			}
-			
-			@Override
-			public void onOpen(Connection connection) {
-				this.connection = connection;
-				try {
-					connection.sendMessage(getReadyResponse(protocol));
-					} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
-			
-			private String getReadyResponse(String protocol) {
-				ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-				PrintWriter writer = new PrintWriter(buffer);
-				ResponseFormatter formatter = AbstractServiceServlet.getResponseFormatter(protocol, writer);
-				if (formatter != null) {
-					formatter.startEntities("ready", false);
-				} else {
-					writer.println("<html>\n"
-							+ "\t<head><title>Refresh</title></head>\n"
-							+ "\t<body>");
-					writer.println("\t\t<h1>Refresh</h1>\n\t\t");
-				}
-				if (formatter != null) {
-					formatter.entity("ready").endEntity();
-				} else {
-					// TODO: Write a proper result display
-					writer.println("\t\t\t<p>Ready</p>");
-				}
-				if (formatter == null) {
-					writer.println("\t</body>\n</html>");
-				}
-				writer.close();
-				return buffer.toString();
-			}
-		};
-		
-		return ws;
+	public void configure(WebSocketServletFactory factory) {
+		factory.setCreator(new EditorWebSocketCreator(this));
 	}
+
+
 }
