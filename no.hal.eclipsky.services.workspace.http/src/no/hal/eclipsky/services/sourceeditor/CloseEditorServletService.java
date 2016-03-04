@@ -4,17 +4,17 @@ import java.io.ByteArrayOutputStream;
 import java.io.PrintWriter;
 import java.util.concurrent.CompletableFuture;
 
-import org.eclipse.core.runtime.NullProgressMonitor;
-import org.osgi.service.component.ComponentContext;
-import org.osgi.service.component.annotations.Activate;
-import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Reference;
-
 import no.hal.eclipsky.services.editor.SourceEditor;
 import no.hal.eclipsky.services.sourceeditor.SourceEditorServlet.EditorServiceRequest;
 import no.hal.eclipsky.services.workspace.http.AbstractServiceServlet;
 import no.hal.eclipsky.services.workspace.http.SourceProjectManager;
 import no.hal.eclipsky.services.workspace.http.util.ResponseFormatter;
+
+import org.eclipse.core.runtime.NullProgressMonitor;
+import org.osgi.service.component.ComponentContext;
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
 @Component(
 		immediate = true,
@@ -27,6 +27,9 @@ public class CloseEditorServletService extends AbstractSourceEditorServletServic
 	public synchronized void setSourceProjectManager(SourceProjectManager sourceProjectManager) {
 		super.setSourceProjectManager(sourceProjectManager);
 	}
+	public synchronized void unsetSourceProjectManager(SourceProjectManager sourceProjectManager) {
+		super.setSourceProjectManager(null);
+	}
 
 	@Activate
 	@Override
@@ -37,12 +40,8 @@ public class CloseEditorServletService extends AbstractSourceEditorServletServic
 	@Override
 	public String doSourceEditorServletService(EditorServiceRequest request, String requestBody) {
 		SourceEditor editor = getSourceEditor(request);
-		return closeEditorResponse(closeEditorResponse(editor), request.responseFormat);
-	}
-	
-	public static String closeEditorResponse(SourceEditor editor) {
 		CompletableFuture<Boolean> future = new CompletableFuture<Boolean>();
-		editor.close(new NullProgressMonitor() {			
+		editor.close(new NullProgressMonitor() {
 			@Override
 			public void done() {
 				future.complete(! isCanceled());
@@ -50,16 +49,14 @@ public class CloseEditorServletService extends AbstractSourceEditorServletServic
 		});
 		String result = "canceled";
 		try {
-			boolean get = future.get();
-	        if (get) {
-        		result = "saved";
-	        }
+			if (future.get()) {
+				result = "saved";
+			}
 		} catch (Exception e) {
-			e.printStackTrace();
 		}
-		return result;
+		return closeEditorResponse(result, request.responseFormat);
 	}
-	
+
 	public static String closeEditorResponse(String response, String protocol) {
 		ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 		PrintWriter output = new PrintWriter(buffer);
