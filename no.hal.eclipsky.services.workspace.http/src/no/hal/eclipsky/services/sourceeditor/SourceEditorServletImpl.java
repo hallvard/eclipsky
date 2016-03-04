@@ -1,29 +1,15 @@
 package no.hal.eclipsky.services.sourceeditor;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import no.hal.eclipsky.services.common.ProjectRef;
-import no.hal.eclipsky.services.common.ResourceRef;
-import no.hal.eclipsky.services.monitoring.CompositeServiceLogger;
-import no.hal.eclipsky.services.monitoring.ServiceLogger;
-import no.hal.eclipsky.services.workspace.http.AbstractServiceServlet;
-import no.hal.eclipsky.services.workspace.http.AceEditorHelper;
-import no.hal.eclipsky.services.workspace.http.SourceProjectManager;
-import no.hal.eclipsky.services.workspace.http.util.EmfsUtil;
-import no.hal.eclipsky.services.workspace.http.util.ResponseFormatter;
-import no.hal.emfs.EmfsResource;
 
 import org.eclipse.jetty.websocket.servlet.WebSocketServlet;
 import org.eclipse.jetty.websocket.servlet.WebSocketServletFactory;
@@ -34,6 +20,16 @@ import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.service.component.annotations.ReferencePolicy;
 import org.osgi.service.http.HttpService;
+
+import no.hal.eclipsky.services.common.ProjectRef;
+import no.hal.eclipsky.services.common.ResourceRef;
+import no.hal.eclipsky.services.monitoring.CompositeServiceLogger;
+import no.hal.eclipsky.services.monitoring.ServiceLogger;
+import no.hal.eclipsky.services.workspace.http.AbstractServiceServlet;
+import no.hal.eclipsky.services.workspace.http.AceEditorHelper;
+import no.hal.eclipsky.services.workspace.http.SourceProjectManager;
+import no.hal.eclipsky.services.workspace.http.util.EmfsUtil;
+import no.hal.emfs.EmfsResource;
 
 @Component(
 	immediate = true,
@@ -48,12 +44,19 @@ public class SourceEditorServletImpl extends WebSocketServlet implements SourceE
 	public synchronized void setHttpService(HttpService httpService) {
 		this.httpService = httpService;
 	}
+	public synchronized void unsetHttpService(HttpService httpService) {
+		setHttpService(null);
+	}
 
 	private SourceProjectManager sourceProjectManager;
 	
 	@Reference
 	public synchronized void setSourceProjectManager(SourceProjectManager sourceProjectManager) {
 		this.sourceProjectManager = sourceProjectManager;
+	}
+	@Reference
+	public synchronized void unsetSourceProjectManager(SourceProjectManager sourceProjectManager) {
+		setSourceProjectManager(null);
 	}
 
 	private Map<String, SourceEditorServletService> editorServices = new HashMap<>();

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<?pde version="3.8"?><target name="Luna SR1-based OSGi headless runtime" sequenceNumber="168">
+<?pde version="3.8"?><target name="Luna SR1-based OSGi headless runtime" sequenceNumber="176">
 <locations>
 <location path="${eclipse_home}" type="Profile"/>
 </locations>
@@ -10,53 +10,40 @@
 <plugin id="com.google.gson"/>
 <plugin id="com.google.guava"/>
 <plugin id="com.google.inject"/>
-<plugin id="com.google.inject.multibindings"/>
-<plugin id="com.google.protobuf"/>
 <plugin id="com.ibm.icu"/>
 <plugin id="com.jcraft.jsch"/>
 <plugin id="com.sun.el"/>
 <plugin id="javaewah"/>
-<plugin id="javax.activation"/>
 <plugin id="javax.annotation"/>
 <plugin id="javax.el"/>
 <plugin id="javax.inject"/>
-<plugin id="javax.mail"/>
-<plugin id="javax.persistence"/>
-<plugin id="javax.security.auth.message"/>
 <plugin id="javax.servlet"/>
 <plugin id="javax.servlet.jsp"/>
-<plugin id="javax.transaction"/>
-<plugin id="javax.wsdl"/>
 <plugin id="javax.xml"/>
-<plugin id="lpg.runtime.java"/>
-<plugin id="net.sourceforge.lpg.lpgjavaruntime"/>
 <plugin id="org.antlr.runtime"/>
 <plugin id="org.apache.ant"/>
+<plugin id="org.apache.aries.spifly.dynamic.bundle"/>
+<plugin id="org.apache.aries.util"/>
 <plugin id="org.apache.commons.cli"/>
 <plugin id="org.apache.commons.codec"/>
 <plugin id="org.apache.commons.compress"/>
-<plugin id="org.apache.commons.httpclient"/>
 <plugin id="org.apache.commons.io"/>
+<plugin id="org.apache.commons.jxpath"/>
 <plugin id="org.apache.commons.lang"/>
 <plugin id="org.apache.commons.lang3"/>
 <plugin id="org.apache.commons.logging"/>
-<plugin id="org.apache.commons.math"/>
-<plugin id="org.apache.commons.pool"/>
 <plugin id="org.apache.felix.gogo.command"/>
 <plugin id="org.apache.felix.gogo.runtime"/>
 <plugin id="org.apache.felix.gogo.shell"/>
-<plugin id="org.apache.httpcomponents.httpclient"/>
+<plugin id="org.apache.httpcomponents.httpclient" version="4.3.6.v201511171540"/>
 <plugin id="org.apache.httpcomponents.httpcore"/>
 <plugin id="org.apache.jasper.glassfish"/>
 <plugin id="org.apache.log4j"/>
 <plugin id="org.apache.mina.core"/>
-<plugin id="org.apache.solr.client.solrj"/>
 <plugin id="org.apache.sshd.core"/>
-<plugin id="org.apache.ws.commons.util"/>
 <plugin id="org.apache.xerces"/>
 <plugin id="org.apache.xml.resolver"/>
 <plugin id="org.apache.xml.serializer"/>
-<plugin id="org.apache.xmlrpc"/>
 <plugin id="org.eclipse.ant.core"/>
 <plugin id="org.eclipse.ant.launching"/>
 <plugin id="org.eclipse.compare"/>
@@ -77,10 +64,9 @@
 <plugin id="org.eclipse.core.net"/>
 <plugin id="org.eclipse.core.resources"/>
 <plugin id="org.eclipse.core.runtime"/>
-<plugin id="org.eclipse.core.runtime.compatibility"/>
-<plugin id="org.eclipse.core.runtime.compatibility.registry"/>
 <plugin id="org.eclipse.core.variables"/>
 <plugin id="org.eclipse.debug.core"/>
+<plugin id="org.eclipse.e4.emf.xpath"/>
 <plugin id="org.eclipse.emf"/>
 <plugin id="org.eclipse.emf.common"/>
 <plugin id="org.eclipse.emf.ecore"/>
@@ -93,7 +79,6 @@
 <plugin id="org.eclipse.emf.mwe2.launch"/>
 <plugin id="org.eclipse.emf.mwe2.lib"/>
 <plugin id="org.eclipse.emf.mwe2.runtime"/>
-<plugin id="org.eclipse.emf.validation"/>
 <plugin id="org.eclipse.equinox.app"/>
 <plugin id="org.eclipse.equinox.bidi"/>
 <plugin id="org.eclipse.equinox.cm"/>
@@ -139,15 +124,12 @@
 <plugin id="org.eclipse.equinox.transforms.xslt"/>
 <plugin id="org.eclipse.equinox.useradmin"/>
 <plugin id="org.eclipse.equinox.util"/>
-<plugin id="org.eclipse.equinox.weaving.aspectj"/>
 <plugin id="org.eclipse.equinox.weaving.caching"/>
 <plugin id="org.eclipse.equinox.weaving.caching.j9"/>
 <plugin id="org.eclipse.equinox.weaving.hook"/>
 <plugin id="org.eclipse.equinox.wireadmin"/>
 <plugin id="org.eclipse.help"/>
 <plugin id="org.eclipse.jdt"/>
-<plugin id="org.eclipse.jdt.annotation" version="2.0.0.v20140415-1436"/>
-<plugin id="org.eclipse.jdt.annotation" version="1.1.0.v20140129-1625"/>
 <plugin id="org.eclipse.jdt.apt.core"/>
 <plugin id="org.eclipse.jdt.apt.pluggable.core"/>
 <plugin id="org.eclipse.jdt.compiler.apt"/>
@@ -162,34 +144,17 @@
 <plugin id="org.eclipse.jdt.launching"/>
 <plugin id="org.eclipse.jdt.launching.macosx"/>
 <plugin id="org.eclipse.jdt.ui"/>
-<plugin id="org.eclipse.jetty.ajp"/>
-<plugin id="org.eclipse.jetty.annotations"/>
-<plugin id="org.eclipse.jetty.client"/>
-<plugin id="org.eclipse.jetty.continuation" version="8.1.16.v20140903"/>
-<plugin id="org.eclipse.jetty.deploy"/>
-<plugin id="org.eclipse.jetty.http" version="8.1.16.v20140903"/>
-<plugin id="org.eclipse.jetty.io" version="8.1.16.v20140903"/>
-<plugin id="org.eclipse.jetty.jaspi"/>
-<plugin id="org.eclipse.jetty.jmx"/>
-<plugin id="org.eclipse.jetty.jndi"/>
-<plugin id="org.eclipse.jetty.monitor"/>
-<plugin id="org.eclipse.jetty.nested"/>
-<plugin id="org.eclipse.jetty.nosql"/>
-<plugin id="org.eclipse.jetty.osgi.boot"/>
-<plugin id="org.eclipse.jetty.osgi.boot.jsp"/>
-<plugin id="org.eclipse.jetty.osgi.boot.warurl"/>
-<plugin id="org.eclipse.jetty.osgi.httpservice"/>
-<plugin id="org.eclipse.jetty.plus"/>
-<plugin id="org.eclipse.jetty.policy"/>
-<plugin id="org.eclipse.jetty.rewrite"/>
-<plugin id="org.eclipse.jetty.security" version="8.1.16.v20140903"/>
-<plugin id="org.eclipse.jetty.server" version="8.1.16.v20140903"/>
-<plugin id="org.eclipse.jetty.servlet" version="8.1.16.v20140903"/>
-<plugin id="org.eclipse.jetty.servlets"/>
-<plugin id="org.eclipse.jetty.util" version="8.1.16.v20140903"/>
-<plugin id="org.eclipse.jetty.webapp"/>
-<plugin id="org.eclipse.jetty.websocket"/>
-<plugin id="org.eclipse.jetty.xml"/>
+<plugin id="org.eclipse.jetty.continuation"/>
+<plugin id="org.eclipse.jetty.http"/>
+<plugin id="org.eclipse.jetty.io"/>
+<plugin id="org.eclipse.jetty.security"/>
+<plugin id="org.eclipse.jetty.server"/>
+<plugin id="org.eclipse.jetty.servlet"/>
+<plugin id="org.eclipse.jetty.util"/>
+<plugin id="org.eclipse.jetty.websocket.api"/>
+<plugin id="org.eclipse.jetty.websocket.common"/>
+<plugin id="org.eclipse.jetty.websocket.server"/>
+<plugin id="org.eclipse.jetty.websocket.servlet"/>
 <plugin id="org.eclipse.jgit"/>
 <plugin id="org.eclipse.jgit.archive"/>
 <plugin id="org.eclipse.jsch.core"/>
@@ -218,18 +183,14 @@
 <plugin id="org.eclipse.xtext.generator"/>
 <plugin id="org.eclipse.xtext.junit4"/>
 <plugin id="org.eclipse.xtext.logging"/>
+<plugin id="org.eclipse.xtext.smap"/>
 <plugin id="org.eclipse.xtext.util"/>
 <plugin id="org.eclipse.xtext.xbase.lib"/>
 <plugin id="org.hamcrest.core"/>
-<plugin id="org.jboss.netty"/>
-<plugin id="org.junit" version="4.11.0.v201303080030"/>
-<plugin id="org.junit" version="3.8.2.v3_8_2_v20100427-1100"/>
-<plugin id="org.objectweb.asm" version="3.3.1.v201105211655"/>
-<plugin id="org.objectweb.asm" version="5.0.1.v201404251740"/>
-<plugin id="org.objectweb.asm.tree"/>
+<plugin id="org.objectweb.asm"/>
+<plugin id="org.objectweb.asm.all"/>
 <plugin id="org.slf4j.api"/>
-<plugin id="osgi.cmpn"/>
-<plugin id="osgi.core"/>
+<plugin id="org.tukaani.xz"/>
 </includeBundles>
 <environment>
 <os>macosx</os>
