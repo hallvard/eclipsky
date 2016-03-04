@@ -4,5 +4,5 @@
    <service>
       <provide interface="no.hal.eclipsky.services.emfs.EmfsService"/>
    </service>
-   <reference bind="addImportSupport" cardinality="0..n" interface="ImportSupport" name="ImportSupport" policy="dynamic" unbind="removeImportSupport"/>
+   <reference bind="addExportSupport" cardinality="0..n" interface="no.hal.emfs.exporter.ExportSupport" name="ExportSupport" policy="dynamic" unbind="removeExportSupport"/>
 </scr:component>
