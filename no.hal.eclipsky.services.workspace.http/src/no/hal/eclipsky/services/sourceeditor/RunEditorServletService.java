@@ -28,6 +28,9 @@ public class RunEditorServletService extends AbstractSourceEditorServletService 
 	public synchronized void setSourceProjectManager(SourceProjectManager sourceProjectManager) {
 		super.setSourceProjectManager(sourceProjectManager);
 	}
+	public synchronized void unsetSourceProjectManager(SourceProjectManager sourceProjectManager) {
+		super.setSourceProjectManager(null);
+	}
 
 	@Activate
 	@Override

@@ -2,18 +2,19 @@ package no.hal.eclipsky.services.sourceeditor;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintWriter;
-
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.osgi.service.component.ComponentContext;
-import org.osgi.service.component.annotations.Activate;
-import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Reference;
+import java.util.concurrent.CompletableFuture;
 
 import no.hal.eclipsky.services.editor.SourceEditor;
 import no.hal.eclipsky.services.sourceeditor.SourceEditorServlet.EditorServiceRequest;
 import no.hal.eclipsky.services.workspace.http.AbstractServiceServlet;
 import no.hal.eclipsky.services.workspace.http.SourceProjectManager;
 import no.hal.eclipsky.services.workspace.http.util.ResponseFormatter;
+
+import org.eclipse.core.runtime.NullProgressMonitor;
+import org.osgi.service.component.ComponentContext;
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
 @Component(
 		immediate = true,
@@ -26,6 +27,9 @@ public class CloseEditorServletService extends AbstractSourceEditorServletServic
 	public synchronized void setSourceProjectManager(SourceProjectManager sourceProjectManager) {
 		super.setSourceProjectManager(sourceProjectManager);
 	}
+	public synchronized void unsetSourceProjectManager(SourceProjectManager sourceProjectManager) {
+		super.setSourceProjectManager(null);
+	}
 
 	@Activate
 	@Override
@@ -36,56 +40,21 @@ public class CloseEditorServletService extends AbstractSourceEditorServletServic
 	@Override
 	public String doSourceEditorServletService(EditorServiceRequest request, String requestBody) {
 		SourceEditor editor = getSourceEditor(request);
-		final String[] output = new String[1];
-		editor.close(new IProgressMonitor() {
-			@Override
-			public void worked(int work) {
-			}
-			
-			@Override
-			public void subTask(String name) {
-			}
-			
-			@Override
-			public void setTaskName(String name) {
-			}
-			
-			@Override
-			public void setCanceled(boolean value) {
-			}
-			
-			@Override
-			public boolean isCanceled() {
-				output[0] = "canceled";
-				return false;
-			}
-			
-			@Override
-			public void internalWorked(double work) {
-			}
-			
+		CompletableFuture<Boolean> future = new CompletableFuture<Boolean>();
+		editor.close(new NullProgressMonitor() {
 			@Override
 			public void done() {
-				output[0] = "saved";
-			}
-			
-			@Override
-			public void beginTask(String name, int totalWork) {
+				future.complete(! isCanceled());
 			}
 		});
-
-		// Wait for the execution to finish
-		long startTime = System.currentTimeMillis(), currentTime = startTime;
-		while (output[0] == null && 
-				currentTime - startTime < 1000) {
-			try {
-				Thread.sleep(100);
-			} catch (InterruptedException e) {
+		String result = "canceled";
+		try {
+			if (future.get()) {
+				result = "saved";
 			}
-			currentTime = System.currentTimeMillis();
+		} catch (Exception e) {
 		}
-		
-		return closeEditorResponse(output[0], request.responseFormat);
+		return closeEditorResponse(result, request.responseFormat);
 	}
 	
 	public static String closeEditorResponse(String response, String protocol) {

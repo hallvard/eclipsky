@@ -23,6 +23,9 @@ public class TestEditorServletService extends RunEditorServletService implements
 	public synchronized void setSourceProjectManager(SourceProjectManager sourceProjectManager) {
 		super.setSourceProjectManager(sourceProjectManager);
 	}
+	public synchronized void unsetSourceProjectManager(SourceProjectManager sourceProjectManager) {
+		super.unsetSourceProjectManager(sourceProjectManager);
+	}
 
 	@Activate
 	@Override

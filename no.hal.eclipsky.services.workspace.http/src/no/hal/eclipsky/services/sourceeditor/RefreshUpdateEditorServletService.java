@@ -31,6 +31,9 @@ public class RefreshUpdateEditorServletService extends AbstractSourceEditorServl
 	public synchronized void setSourceProjectManager(SourceProjectManager sourceProjectManager) {
 		super.setSourceProjectManager(sourceProjectManager);
 	}
+	public synchronized void unsetSourceProjectManager(SourceProjectManager sourceProjectManager) {
+		super.setSourceProjectManager(null);
+	}
 
 	@Activate
 	protected void activate(ComponentContext context) {
