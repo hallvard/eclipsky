@@ -11,4 +11,5 @@ Require-Bundle: org.eclipse.core.resources;bundle-version="3.9.0",
 Export-Package: no.hal.eclipsky.services.emfs
 Service-Component: OSGI-INF/no.hal.eclipsky.services.emfs.impl.EmfsServiceImpl.xml
 Bundle-ActivationPolicy: lazy
-Import-Package: org.osgi.service.component.annotations;version="1.2.0"
+Import-Package: no.hal.emfs.xtext,
+ org.osgi.service.component.annotations;version="1.2.0"

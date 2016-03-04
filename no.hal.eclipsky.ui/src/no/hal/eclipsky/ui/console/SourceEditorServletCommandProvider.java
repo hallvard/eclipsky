@@ -13,9 +13,12 @@ public class SourceEditorServletCommandProvider implements CommandProvider {
 	
 	private SourceEditorServlet sourceEditorServlet;
 	
-	@Reference
+	@Reference(unbind="unsetSourceEditorServlet")
 	public synchronized void setSourceEditorServlet(SourceEditorServlet sourceEditorServlet) {
 		this.sourceEditorServlet = sourceEditorServlet;
+	}
+	public synchronized void unsetSourceEditorServlet(SourceEditorServlet sourceEditorServlet) {
+		setSourceEditorServlet(null);
 	}
 
 	public void _sec(CommandInterpreter ci) {

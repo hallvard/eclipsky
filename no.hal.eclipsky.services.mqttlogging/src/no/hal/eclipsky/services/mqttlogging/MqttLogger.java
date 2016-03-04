@@ -5,8 +5,6 @@ import java.util.Dictionary;
 import no.hal.eclipsky.services.monitoring.AbstractServiceLogger;
 import no.hal.eclipsky.services.monitoring.ServiceLogger;
 
-import org.eclipse.paho.client.mqttv3.IMqttActionListener;
-import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.IMqttToken;
 import org.eclipse.paho.client.mqttv3.MqttAsyncClient;
 import org.eclipse.paho.client.mqttv3.MqttException;
