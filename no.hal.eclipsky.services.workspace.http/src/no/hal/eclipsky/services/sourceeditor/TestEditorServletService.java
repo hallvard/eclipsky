@@ -9,11 +9,9 @@ import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
 import no.hal.eclipsky.services.common.ProjectRef;
-import no.hal.eclipsky.services.common.Proposal;
 import no.hal.eclipsky.services.common.ResourceRef;
 import no.hal.eclipsky.services.common.Test;
 import no.hal.eclipsky.services.editor.RunResult;
-import no.hal.eclipsky.services.editor.SourceEditor;
 import no.hal.eclipsky.services.editor.TestResult;
 import no.hal.eclipsky.services.sourceeditor.SourceEditorServlet.EditorServiceRequest;
 import no.hal.eclipsky.services.workspace.http.AbstractServiceServlet;
@@ -47,8 +45,7 @@ public class TestEditorServletService extends RunEditorServletService implements
 	public String doSourceEditorServletService(EditorServiceRequest request, String requestBody) {
 		EmfsResource emfsResource = EmfsUtil.findEmfsResource(getSourceProjectManager().getEmfsResource(new ProjectRef(request.resourceRef)), EmfsUtil::isTestable);
 		if (emfsResource != null) {	
-			SourceEditor editor = getSourceEditor(request);
-			CloseEditorServletService.closeEditorResponse(editor);			
+			CloseEditorServletService.closeEditorResponse("saved", request.responseFormat);
 			ResourceRef resourceRef = request.resourceRef;
 			ResourceRef combinedRef = new ResourceRef(
 					request.resourceRef.getProjectName(),

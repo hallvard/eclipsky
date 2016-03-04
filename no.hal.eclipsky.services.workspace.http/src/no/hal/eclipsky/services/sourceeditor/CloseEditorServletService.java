@@ -56,7 +56,7 @@ public class CloseEditorServletService extends AbstractSourceEditorServletServic
 		}
 		return closeEditorResponse(result, request.responseFormat);
 	}
-
+	
 	public static String closeEditorResponse(String response, String protocol) {
 		ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 		PrintWriter output = new PrintWriter(buffer);
