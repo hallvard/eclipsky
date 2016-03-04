@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<?pde version="3.8"?><target name="Luna SR1-based OSGi headless runtime" sequenceNumber="176">
+<?pde version="3.8"?><target name="Neon SR1-based OSGi headless runtime" sequenceNumber="180">
 <locations>
 <location path="${eclipse_home}" type="Profile"/>
 </locations>
@@ -187,7 +187,6 @@
 <plugin id="org.eclipse.xtext.util"/>
 <plugin id="org.eclipse.xtext.xbase.lib"/>
 <plugin id="org.hamcrest.core"/>
-<plugin id="org.objectweb.asm"/>
 <plugin id="org.objectweb.asm.all"/>
 <plugin id="org.slf4j.api"/>
 <plugin id="org.tukaani.xz"/>
