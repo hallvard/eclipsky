@@ -43,8 +43,10 @@ public class MqttLogger extends AbstractServiceLogger implements ServiceLogger {
 	private String clientId;
 	
 	protected String getClientId() {
+		String serviceUri = getServiceUri();
 		if (clientId == null) {
-			clientId = getServiceUri().replaceAll("[^\\w]", "_");
+			clientId = (serviceUri != null ? serviceUri : this.getClass().getName())
+						.replaceAll("[^\\w]", "_");
 		}
 		return clientId;
 	}
