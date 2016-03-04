@@ -29,6 +29,9 @@ public class WorkspaceHttpServiceImpl {
 	public synchronized void setHttpService(HttpService httpService) {
 		this.httpService = httpService;
 	}
+	public synchronized void unsetHttpService(HttpService httpService) {
+		setHttpService(null);
+	}
 	
 	private Collection<ServiceServlet> serviceServlets = new ArrayList<ServiceServlet>();
 	

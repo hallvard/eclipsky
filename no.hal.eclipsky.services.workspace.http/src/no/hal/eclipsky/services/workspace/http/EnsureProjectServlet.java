@@ -40,6 +40,9 @@ public class EnsureProjectServlet extends ProjectListServlet implements ServiceS
 	public synchronized void setWorkspaceService(WorkspaceService workspaceService) {
 		super.setWorkspaceService(workspaceService);
 	}
+	public synchronized void unsetWorkspaceService(WorkspaceService workspaceService) {
+		super.unsetWorkspaceService(workspaceService);
+	}
 
 	@Activate
 	@Override
@@ -52,6 +55,9 @@ public class EnsureProjectServlet extends ProjectListServlet implements ServiceS
 	@Reference
 	public synchronized void setSourceProjectManager(SourceProjectManager sourceProjectManager) {
 		this.sourceProjectManager = sourceProjectManager;
+	}
+	public synchronized void unsetSourceProjectManager(SourceProjectManager sourceProjectManager) {
+		setSourceProjectManager(null);
 	}
 	
 	@Override

@@ -3,7 +3,7 @@
    <implementation class="no.hal.eclipsky.services.git.impl.GitServiceImpl"/>
    <service>
       <provide interface="no.hal.eclipsky.services.git.GitService"/>
-      <provide interface="no.hal.emfs.util.ImportSupport"/>
+      <provide interface="ImportSupport"/>
    </service>
    <property name="git.directory" value="git"/>
 </scr:component>

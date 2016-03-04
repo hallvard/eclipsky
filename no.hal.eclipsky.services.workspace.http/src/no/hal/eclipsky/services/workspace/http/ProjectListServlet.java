@@ -25,6 +25,9 @@ public class ProjectListServlet extends AbstractWorkspaceServiceServlet implemen
 	public synchronized void setWorkspaceService(WorkspaceService workspaceService) {
 		super.setWorkspaceService(workspaceService);
 	}
+	public synchronized void unsetWorkspaceService(WorkspaceService workspaceService) {
+		super.setWorkspaceService(null);
+	}
 
 	@Activate
 	@Override

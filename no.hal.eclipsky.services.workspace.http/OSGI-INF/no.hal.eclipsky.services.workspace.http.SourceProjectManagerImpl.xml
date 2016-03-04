@@ -4,6 +4,6 @@
    <service>
       <provide interface="no.hal.eclipsky.services.workspace.http.SourceProjectManager"/>
    </service>
-   <reference bind="setEmfsService" cardinality="1..1" interface="no.hal.eclipsky.services.emfs.EmfsService" name="EmfsService" policy="static"/>
-   <reference bind="setWorkspaceService" cardinality="1..1" interface="no.hal.eclipsky.services.workspace.WorkspaceService" name="WorkspaceService" policy="static"/>
+   <reference bind="setEmfsService" cardinality="1..1" interface="no.hal.eclipsky.services.emfs.EmfsService" name="EmfsService" policy="static" unbind="unsetEmfsService"/>
+   <reference bind="setWorkspaceService" cardinality="1..1" interface="no.hal.eclipsky.services.workspace.WorkspaceService" name="WorkspaceService" policy="static" unbind="unsetWorkspaceService"/>
 </scr:component>

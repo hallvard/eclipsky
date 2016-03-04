@@ -5,5 +5,5 @@
       <provide interface="no.hal.eclipsky.services.sourceeditor.SourceEditorServletService"/>
    </service>
    <property name="operations" value="completion"/>
-   <reference bind="setSourceProjectManager" cardinality="1..1" interface="no.hal.eclipsky.services.workspace.http.SourceProjectManager" name="SourceProjectManager" policy="static"/>
+   <reference bind="setSourceProjectManager" cardinality="1..1" interface="no.hal.eclipsky.services.workspace.http.SourceProjectManager" name="SourceProjectManager" policy="static" unbind="unsetSourceProjectManager"/>
 </scr:component>

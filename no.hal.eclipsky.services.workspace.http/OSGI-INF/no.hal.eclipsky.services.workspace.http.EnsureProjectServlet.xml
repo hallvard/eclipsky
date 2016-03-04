@@ -6,6 +6,6 @@
    </service>
    <property name="servlet.alias" value="ensureProject"/>
    <property name="resource.alias.ensureProjectForm.html" value="/html/ensureProjectForm.html"/>
-   <reference bind="setSourceProjectManager" cardinality="1..1" interface="no.hal.eclipsky.services.workspace.http.SourceProjectManager" name="SourceProjectManager" policy="static"/>
-   <reference bind="setWorkspaceService" cardinality="1..1" interface="no.hal.eclipsky.services.workspace.WorkspaceService" name="WorkspaceService" policy="static"/>
+   <reference bind="setSourceProjectManager" cardinality="1..1" interface="no.hal.eclipsky.services.workspace.http.SourceProjectManager" name="SourceProjectManager" policy="static" unbind="unsetSourceProjectManager"/>
+   <reference bind="setWorkspaceService" cardinality="1..1" interface="no.hal.eclipsky.services.workspace.WorkspaceService" name="WorkspaceService" policy="static" unbind="unsetWorkspaceService"/>
 </scr:component>

@@ -5,5 +5,5 @@
       <provide interface="no.hal.eclipsky.services.workspace.http.ServiceServlet"/>
    </service>
    <property name="servlet.alias" value="projectResources"/>
-   <reference bind="setProjectService" cardinality="1..1" interface="no.hal.eclipsky.services.workspace.ProjectService" name="ProjectService" policy="static"/>
+   <reference bind="setProjectService" cardinality="1..1" interface="no.hal.eclipsky.services.workspace.ProjectService" name="ProjectService" policy="static" unbind="unsetProjectService"/>
 </scr:component>

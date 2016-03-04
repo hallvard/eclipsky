@@ -27,6 +27,9 @@ public class ProjectResourcesServlet extends AbstractProjectServiceServlet imple
 	public synchronized void setProjectService(ProjectService projectService) {
 		super.setProjectService(projectService);
 	}
+	public synchronized void unsetProjectService(ProjectService projectService) {
+		super.setProjectService(null);
+	}
 
 	@Activate
 	@Override
