@@ -175,7 +175,9 @@ public abstract class AbstractServiceServlet extends HttpServlet implements Serv
 		}
 		
 		protected void visitResource(String packageName, String resourceName) {
-			writer.println("<li>" + resourceName + "</li>");
+			writer.print("<li>");
+			writer.print(resourceName);
+			writer.println("</li>");
 		}
 	}
 	
