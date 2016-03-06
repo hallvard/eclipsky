@@ -11,8 +11,11 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.eclipse.jetty.websocket.server.WebSocketServerFactory;
 import org.eclipse.jetty.websocket.servlet.WebSocketServlet;
 import org.eclipse.jetty.websocket.servlet.WebSocketServletFactory;
+import org.osgi.framework.FrameworkUtil;
+import org.osgi.framework.launch.Framework;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
@@ -80,8 +83,6 @@ public class SourceEditorServletImpl extends WebSocketServlet implements SourceE
 		}
 	}
 
-
-
 	private final CompositeServiceLogger compositeServiceLogger = new CompositeServiceLogger();
 	
 	@Reference(
@@ -98,14 +99,26 @@ public class SourceEditorServletImpl extends WebSocketServlet implements SourceE
 
 	@Activate
 	protected void activate() {
+		ClassLoader ccl = Thread.currentThread().getContextClassLoader();
 		try {
-			httpService.registerServlet("/sourceEditor", (HttpServlet) this, null, null);
+			// Cache the current classloader
+			// Find the classloader used by the bundle providing jetty
+			ClassLoader classLoader = WebSocketServerFactory.class.getClassLoader();
+			// Set the classloader
+			Thread.currentThread().setContextClassLoader(classLoader);
+
+			httpService.registerServlet("/sourceEditor", this, null, null);
 			httpService.registerResources("/ace", "/web/ace-builds/src-noconflict", null);
 			httpService.registerResources("/js", "/web/js", null);
 			httpService.registerResources("/css", "/web/css", null);
 			httpService.registerResources("/img", "/web/img", null);
 			httpService.registerResources("/sourceEditorForm.html", "/web/html/sourceEditorForm.html", null);
+			
+			// Restore the classloader
 		} catch (Exception e) {
+			System.err.println(e);
+		} finally {
+			Thread.currentThread().setContextClassLoader(ccl);			
 		}
 	}
 
