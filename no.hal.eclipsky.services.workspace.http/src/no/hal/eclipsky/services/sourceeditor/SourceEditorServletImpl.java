@@ -11,11 +11,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.eclipse.jetty.websocket.server.WebSocketServerFactory;
-import org.eclipse.jetty.websocket.servlet.WebSocketServlet;
-import org.eclipse.jetty.websocket.servlet.WebSocketServletFactory;
-import org.osgi.framework.FrameworkUtil;
-import org.osgi.framework.launch.Framework;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
@@ -39,7 +34,8 @@ import no.hal.emfs.EmfsResource;
 	property = AbstractServiceServlet.SERVLET_ALIAS_KEY + "=sourceEditor"
 )
 @SuppressWarnings("serial")
-public class SourceEditorServletImpl extends WebSocketServlet implements SourceEditorServlet {
+public class SourceEditorServletImpl extends HttpServlet // WebSocketServlet
+	implements SourceEditorServlet {
 
 	private HttpService httpService;
 	
@@ -99,13 +95,11 @@ public class SourceEditorServletImpl extends WebSocketServlet implements SourceE
 
 	@Activate
 	protected void activate() {
-		ClassLoader ccl = Thread.currentThread().getContextClassLoader();
+		// Cache the current classloader
+//		ClassLoader ccl = Thread.currentThread().getContextClassLoader();
 		try {
-			// Cache the current classloader
 			// Find the classloader used by the bundle providing jetty
-			ClassLoader classLoader = WebSocketServerFactory.class.getClassLoader();
-			// Set the classloader
-			Thread.currentThread().setContextClassLoader(classLoader);
+//			Thread.currentThread().setContextClassLoader(WebSocketServerFactory.class.getClassLoader());
 
 			httpService.registerServlet("/sourceEditor", this, null, null);
 			httpService.registerResources("/ace", "/web/ace-builds/src-noconflict", null);
@@ -118,7 +112,7 @@ public class SourceEditorServletImpl extends WebSocketServlet implements SourceE
 		} catch (Exception e) {
 			System.err.println(e);
 		} finally {
-			Thread.currentThread().setContextClassLoader(ccl);			
+//			Thread.currentThread().setContextClassLoader(ccl);			
 		}
 	}
 
@@ -181,7 +175,7 @@ public class SourceEditorServletImpl extends WebSocketServlet implements SourceE
 		}
 	}
 	
-	private final static String EMPTY_EDITOR_SERVLET_SERVICE_RESPONSE = "[]";
+	final static String EMPTY_EDITOR_SERVLET_SERVICE_RESPONSE = "[]";
 
 	public CharSequence invokeEditorServiceOperation(EditorServiceRequest request, String requestBody) {
 		SourceEditorServletService editorService = editorServices.get(request.op);
@@ -201,13 +195,36 @@ public class SourceEditorServletImpl extends WebSocketServlet implements SourceE
 		}
 		return response;
 	}
-	
 
-
-	@Override
-	public void configure(WebSocketServletFactory factory) {
-		factory.setCreator(new EditorWebSocketCreator(this));
-	}
-
-
+//	@Override
+//	public void configure(WebSocketServletFactory factory) {
+//		factory.setCreator(new WebSocketCreator() {
+//			@Override
+//			public Object createWebSocket(ServletUpgradeRequest request, ServletUpgradeResponse response) {
+//				Object webSocket = null;
+//				final ProjectRef projectRef = AbstractServiceServlet.getProjectRef(request.getHttpServletRequest());
+//				if (projectRef != null) {
+//					List<String> subProtocols = request.getSubProtocols();
+//					String responseFormat = null;
+//					if (subProtocols.contains("json")) {
+//						responseFormat = "json";
+//					} else if (subProtocols.contains("xml")) {
+//						responseFormat = "xml";
+//					}
+//					if (responseFormat != null) {
+//						response.setAcceptedSubProtocol(responseFormat);
+//						System.out.println("createWebSocket: " + responseFormat);
+//						webSocket = new EditorWebSocket(projectRef, responseFormat, SourceEditorServletImpl.this);
+//					}
+//				}
+//				if (webSocket == null) {
+//					try {
+//						response.sendError(HttpServletResponse.SC_NOT_FOUND, "No project");
+//					} catch (IOException e) {
+//					}
+//				}
+//				return webSocket;
+//			}
+//		});
+//	}
 }

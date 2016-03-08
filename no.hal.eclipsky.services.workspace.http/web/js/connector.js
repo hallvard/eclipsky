@@ -78,28 +78,32 @@ var connector = (function() {
 		
 		link.href = url;
 		link.protocol = "ws";
-	    webSocket = new WebSocket(link.href, "json");
-	    connectionClosed = false;
+	    webSocket = new WebSocket(link.href);
+	    if (webSocket.readyState == WebSocket.CLOSING || webSocket.readyState == WebSocket.CLOSED) {
+	    	webSocket = null;
+	    } else {
+	        connectionClosed = false;
 
-	    webSocket.onerror = function(event) {
-			// TODO: Reconnect?
-	    	c.log('ws error', event);
-	    	// publish(event);
-	    };
-
-	    webSocket.onclose = function(event) {
-	    	connectionClosed = true;
-	        c.log('ws close', event);
-
-	        var response = {type : 'connectionClosed', event: event};
-	        publish(response);
-	    };
-
-	    webSocket.onmessage = function(event) {
-			pop();
-			var data = JSON.parse(event.data);
-	    	publish(data);
-	    }
+		    webSocket.onerror = function(event) {
+				// TODO: Reconnect?
+		    	c.log('ws error', event);
+		    	// publish(event);
+		    };
+	
+		    webSocket.onclose = function(event) {
+		    	connectionClosed = true;
+		        c.log('ws close', event);
+	
+		        var response = {type : 'connectionClosed', event: event};
+		        publish(response);
+		    };
+	
+		    webSocket.onmessage = function(event) {
+				pop();
+				var data = JSON.parse(event.data);
+		    	publish(data);
+		    }
+		}
 	};
 	
 	

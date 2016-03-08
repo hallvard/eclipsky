@@ -1,6 +1,5 @@
 package no.hal.eclipsky.services.sourceeditor;
 
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -9,7 +8,10 @@ import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketClose;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketConnect;
+import org.eclipse.jetty.websocket.api.annotations.OnWebSocketError;
+import org.eclipse.jetty.websocket.api.annotations.OnWebSocketFrame;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
+import org.eclipse.jetty.websocket.api.extensions.Frame;
 
 import no.hal.eclipsky.services.common.ProjectRef;
 import no.hal.eclipsky.services.common.ResourceRef;
@@ -17,28 +19,43 @@ import no.hal.eclipsky.services.sourceeditor.SourceEditorServlet.EditorServiceRe
 import no.hal.eclipsky.services.workspace.http.AbstractServiceServlet;
 import no.hal.eclipsky.services.workspace.http.util.ResponseFormatter;
 
-
-@WebSocket(maxTextMessageSize = 64 * 1024)
+@WebSocket // (maxTextMessageSize = 64 * 1024)
 public class EditorWebSocket {
-	private Session session;
-	private String protocol;
-	private ProjectRef projectRef;
-	private SourceEditorServletImpl service;
-	private final static String EMPTY_EDITOR_SERVLET_SERVICE_RESPONSE = "[]";
 
-	public EditorWebSocket(final ProjectRef projectRef, final String protocol, SourceEditorServletImpl service) {
+	private ProjectRef projectRef;
+	private String responseFormat;
+	private SourceEditorServlet sourceEditorServlet;
+
+	public EditorWebSocket(final ProjectRef projectRef, final String responseFormat, SourceEditorServlet sourceEditorServlet) {
 		this.projectRef = projectRef;
-		this.protocol = protocol;
-		this.service = service;
+		this.responseFormat = responseFormat;
+		this.sourceEditorServlet = sourceEditorServlet;
 	}
-	@OnWebSocketClose
-	public void onClose(int closeCode, String message) {
-		// TODO: Notify GIT exporter
-//		project.editor.close(null);
+
+	@OnWebSocketConnect
+	public void onConnect(Session session) {
+		try {
+			String readyResponse = getReadyResponse(responseFormat);
+			System.out.println("EditorWebSocket.onConnect: " + readyResponse);
+			session.getRemote().sendString(readyResponse);
+		} catch (IOException e) {
+			System.err.println("EditorWebSocket.onConnect: " + e);
+		}
+	}
+
+	@OnWebSocketFrame
+	public void onFrameEvent(Session session, Frame frame) {
+		System.out.println("EditorWebSocket.onFrameEvent: " + frame);
+	}
+
+	@OnWebSocketError
+	public void onException(Session session, Throwable exception) {
+		System.out.println("EditorWebSocket.onException: " + exception);
 	}
 
 	@OnWebSocketMessage
-	public void onMessage(String message) {
+	public void onMessage(Session session, String message) {
+		System.out.println("EditorWebSocket.onMessage: " + message);
 		int pos = message.indexOf('\n');
 		String op = message, contents = null;
 		ResourceRef resourceRef = new ResourceRef(projectRef, null, null);
@@ -51,30 +68,30 @@ public class EditorWebSocket {
 			resourceRef = ResourceRef.valueOf(op.substring(pos + 1), projectRef);
 			op = op.substring(0, pos);
 		}
+		System.out.println("EditorWebSocket.onMessage: " + resourceRef + "#" + op);
 		
 		EditorServiceRequest editorServiceRequest = new EditorServiceRequest(op, resourceRef, "json");
-		CharSequence response = service.invokeEditorServiceOperation(editorServiceRequest, contents);
-		String responseString = response != null ? response.toString() : EMPTY_EDITOR_SERVLET_SERVICE_RESPONSE;
+		CharSequence response = sourceEditorServlet.invokeEditorServiceOperation(editorServiceRequest, contents);
+		String responseString = response != null ? response.toString() : SourceEditorServletImpl.EMPTY_EDITOR_SERVLET_SERVICE_RESPONSE;
 
 		try { 
 			session.getRemote().sendString(responseString); 
-		} catch (IOException e) {}
-						
-	}
-	@OnWebSocketConnect
-	public void onOpen(Session session) {
-		this.session = session;
-		try {
-			session.getRemote().sendString((getReadyResponse(protocol)));
-			} catch (IOException e) {
-			e.printStackTrace();
+		} catch (IOException e) {
+			System.err.println("EditorWebSocket.onMessage: " + e);
 		}
 	}
 	
-	private String getReadyResponse(String protocol) {
+	@OnWebSocketClose
+	public void onClose(int closeCode, String message) {
+		System.out.println("EditorWebSocket.onClose: ");
+		// TODO: Notify GIT exporter
+//		project.editor.close(null);
+	}
+	
+	private String getReadyResponse(String responseFormat) {
 		ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 		PrintWriter writer = new PrintWriter(buffer);
-		ResponseFormatter formatter = AbstractServiceServlet.getResponseFormatter(protocol, writer);
+		ResponseFormatter formatter = AbstractServiceServlet.getResponseFormatter(responseFormat, writer);
 		if (formatter != null) {
 			formatter.startEntities("ready", false);
 		} else {
@@ -95,6 +112,4 @@ public class EditorWebSocket {
 		writer.close();
 		return buffer.toString();
 	}
-};
-	
-
+}
