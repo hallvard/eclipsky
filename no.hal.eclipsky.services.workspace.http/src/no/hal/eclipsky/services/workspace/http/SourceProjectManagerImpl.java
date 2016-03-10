@@ -71,7 +71,9 @@ public class SourceProjectManagerImpl implements SourceProjectManager {
 			// create XMI resource
 			Resource emfsModel = EmfsUtil.createEmfsResource(createProjectEmfsUri(projectName), "emfs");
 			// move contents
+			System.out.println("pre work");
 			emfsModel.getContents().addAll(emfsResource.eResource().getContents());
+			System.out.println("postwork");
 			// and serialize
 			try {
 				emfsModel.save(null);
