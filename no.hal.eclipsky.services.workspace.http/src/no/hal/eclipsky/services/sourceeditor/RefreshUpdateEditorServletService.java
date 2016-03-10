@@ -46,6 +46,7 @@ public class RefreshUpdateEditorServletService extends AbstractSourceEditorServl
 	public CharSequence doSourceEditorServletService(EditorServiceRequest request, String requestBody) {
 		EmfsResource emfsResource = getSourceProjectManager().getEmfsResource(request.resourceRef);
 		AbstractStringContents editableStringContents = null;
+		System.out.println();
 		if (emfsResource instanceof EmfsFile) {
 			EmfsFile emfsFile = (EmfsFile) emfsResource;
 			editableStringContents = EmfsUtil.findStringContents(emfsFile, AbstractStringContents::isWriteable);
@@ -64,7 +65,7 @@ public class RefreshUpdateEditorServletService extends AbstractSourceEditorServl
 		String resource = sourceEditor.getResourceRef().getQualifiedName();
 		if (editableStringContents != null) {
 			stringContents = editableStringContents.getStringContent();
-		} else if (requestBody != null){
+		} else if (requestBody != null && requestBody.length() > 0){
 			stringContents = requestBody;
 		} else {
 			stringContents = sourceEditor.getWorkingCopyContents();
