@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<?pde version="3.8"?><target name="Neon SR1-based OSGi runtime" sequenceNumber="192">
+<?pde version="3.8"?><target name="Neon SR1-based OSGi runtime" sequenceNumber="200">
 <locations>
 <location path="${eclipse_home}" type="Profile"/>
 </locations>
@@ -22,8 +22,6 @@
 <plugin id="javax.xml"/>
 <plugin id="org.antlr.runtime"/>
 <plugin id="org.apache.ant"/>
-<plugin id="org.apache.aries.spifly.dynamic.bundle"/>
-<plugin id="org.apache.aries.util"/>
 <plugin id="org.apache.batik.css"/>
 <plugin id="org.apache.batik.util"/>
 <plugin id="org.apache.batik.util.gui"/>
@@ -193,21 +191,13 @@
 <plugin id="org.eclipse.jdt.launching.ui.macosx"/>
 <plugin id="org.eclipse.jdt.ui"/>
 <plugin id="org.eclipse.jetty.continuation"/>
-<plugin id="org.eclipse.jetty.deploy"/>
 <plugin id="org.eclipse.jetty.http"/>
 <plugin id="org.eclipse.jetty.io"/>
-<plugin id="org.eclipse.jetty.osgi-servlet-api"/>
-<plugin id="org.eclipse.jetty.osgi.httpservice"/>
 <plugin id="org.eclipse.jetty.security"/>
 <plugin id="org.eclipse.jetty.server"/>
 <plugin id="org.eclipse.jetty.servlet"/>
 <plugin id="org.eclipse.jetty.util"/>
-<plugin id="org.eclipse.jetty.webapp"/>
 <plugin id="org.eclipse.jetty.websocket.api"/>
-<plugin id="org.eclipse.jetty.websocket.common"/>
-<plugin id="org.eclipse.jetty.websocket.server"/>
-<plugin id="org.eclipse.jetty.websocket.servlet"/>
-<plugin id="org.eclipse.jetty.xml"/>
 <plugin id="org.eclipse.jface"/>
 <plugin id="org.eclipse.jface.databinding"/>
 <plugin id="org.eclipse.jface.text"/>
@@ -281,7 +271,9 @@
 <plugin id="org.eclipse.xtext.xbase.lib"/>
 <plugin id="org.hamcrest.core"/>
 <plugin id="org.junit" version="3.8.2.v3_8_2_v20130308-0410"/>
-<plugin id="org.objectweb.asm.all"/>
+<plugin id="org.junit" version="4.12.0.v201504281640"/>
+<plugin id="org.objectweb.asm"/>
+<plugin id="org.objectweb.asm.tree"/>
 <plugin id="org.sat4j.core"/>
 <plugin id="org.sat4j.pb"/>
 <plugin id="org.slf4j.api"/>
