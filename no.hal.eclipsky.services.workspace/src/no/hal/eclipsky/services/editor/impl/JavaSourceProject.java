@@ -1,27 +1,23 @@
 package no.hal.eclipsky.services.editor.impl;
 
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-
-import no.hal.eclipsky.services.common.ProjectRef;
-import no.hal.eclipsky.services.common.ResourceRef;
-import no.hal.eclipsky.services.editor.RunResult;
-import no.hal.eclipsky.services.editor.SourceEditor;
 
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.core.runtime.Path;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationType;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.debug.core.ILaunchManager;
 import org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants;
-import org.eclipse.jdt.launching.JavaRuntime;
+
+import no.hal.eclipsky.services.common.ProjectRef;
+import no.hal.eclipsky.services.common.ResourceRef;
+import no.hal.eclipsky.services.editor.RunResult;
+import no.hal.eclipsky.services.editor.SourceEditor;
 
 public class JavaSourceProject extends GenericSourceProject {
 
@@ -51,7 +47,6 @@ public class JavaSourceProject extends GenericSourceProject {
 			future.complete(false);
 			e1.printStackTrace();
 		}
-		
 		// Wait for feature to build
 		boolean buildSuccessfull = false;
 		try {
@@ -59,12 +54,16 @@ public class JavaSourceProject extends GenericSourceProject {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
 		return buildSuccessfull;
 	}
 	
+	private void saveAllSourceEditors() {
+		foreachSourceEditor(sourceEditor -> { sourceEditor.close(null);});
+	}
+
 	@Override
 	public RunResult run(ResourceRef resourceRef) {
+		saveAllSourceEditors();
 		if (ensureBuildComplete(resourceRef)) {
 			return super.run(resourceRef);
 		}
@@ -73,6 +72,7 @@ public class JavaSourceProject extends GenericSourceProject {
 
 	@Override
 	public RunResult test(ResourceRef resourceRef) {
+		saveAllSourceEditors();
 		if (ensureBuildComplete(resourceRef)) {
 			return super.test(resourceRef);
 		}

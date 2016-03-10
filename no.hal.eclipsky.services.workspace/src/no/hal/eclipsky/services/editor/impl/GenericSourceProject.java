@@ -2,6 +2,7 @@ package no.hal.eclipsky.services.editor.impl;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Consumer;
 
 import no.hal.eclipsky.services.common.ProjectRef;
 import no.hal.eclipsky.services.common.ResourceRef;
@@ -38,6 +39,10 @@ public abstract class GenericSourceProject implements SourceProject {
 		return new GenericSourceEditor(editable);
 	}
 
+	protected void foreachSourceEditor(Consumer<SourceEditor> fun) {
+		sourceEditors.values().forEach(fun);
+	}
+	
 	@Override
 	public SourceEditor getSourceEditor(ResourceRef resourceRef) {
 		if (sourceEditors == null) {
