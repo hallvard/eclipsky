@@ -1,8 +1,8 @@
 package no.hal.eclipsky.services.workspace.http;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -28,16 +28,11 @@ import no.hal.eclipsky.services.workspace.http.util.EmfsUtil;
 import no.hal.emfs.EmfsFile;
 import no.hal.emfs.EmfsPackage;
 import no.hal.emfs.EmfsResource;
-import no.hal.emfs.exporter.Exporter;
-import no.hal.emfs.importer.Importer;
 
 @Component
 public class SourceProjectManagerImpl implements SourceProjectManager {
 
-	private Exporter exporter;
-	
 	public SourceProjectManagerImpl() {
-		exporter = new Exporter(null);
 	}
 	
 	private WorkspaceService workspaceService;
@@ -71,8 +66,8 @@ public class SourceProjectManagerImpl implements SourceProjectManager {
 		sourceProjects.put(projectRef, sourceProject);
 		if (emfsResource != null) {
 			emfsResources.put(projectRef, emfsResource);
-			Collection<EmfsResource> importResources = emfsService.exportResources(Arrays.asList(emfsResource), projectName, null);
-			registerEmfsSourceResources(importResources.iterator(), projectRef);
+			Collection<EmfsResource> exportedResources = emfsService.exportResources(Collections.singletonList(emfsResource), projectName, null);
+			registerEmfsSourceResources(exportedResources.iterator(), projectRef);
 			// create XMI resource
 			Resource emfsModel = EmfsUtil.createEmfsResource(createProjectEmfsUri(projectName), "emfs");
 			// move contents
