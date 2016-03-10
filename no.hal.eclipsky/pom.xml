@@ -61,10 +61,11 @@
 	</build>
 
 	<modules>
-		<module>no.hal.eclipsky.services.emfs</module>
-		<module>no.hal.eclipsky.services.workspace</module>
-		<module>no.hal.eclipsky.services.git</module>
-		<module>no.hal.eclipsky.services.workspace.http</module>
-		<module>no.hal.eclipsky.services.monitoring</module>
+		<module>../no.hal.eclipsky.services.emfs</module>
+		<module>../no.hal.eclipsky.services.workspace</module>
+		<module>../no.hal.eclipsky.services.git</module>
+		<module>../no.hal.eclipsky.services.workspace.http</module>
+		<module>../no.hal.eclipsky.services.monitoring</module>
+		<module>../no.hal.eclipsky.services.mqttlogging</module>
 	</modules>
 </project>
