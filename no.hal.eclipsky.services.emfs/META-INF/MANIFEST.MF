@@ -7,7 +7,7 @@ Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Require-Bundle: org.eclipse.core.resources;bundle-version="3.9.0",
  org.eclipse.core.runtime;bundle-version="3.10.0",
  no.hal.emfs;bundle-version="0.1.0",
- no.hal.emfs.xtext.runtime;bundle-version="0.1.0";resolution:=optional
+ no.hal.emfs.xtext;bundle-version="0.1.0"
 Export-Package: no.hal.eclipsky.services.emfs
 Service-Component: OSGI-INF/no.hal.eclipsky.services.emfs.impl.EmfsServiceImpl.xml
 Bundle-ActivationPolicy: lazy
