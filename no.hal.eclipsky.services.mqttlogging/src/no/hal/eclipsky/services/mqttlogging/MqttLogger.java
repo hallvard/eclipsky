@@ -2,9 +2,6 @@ package no.hal.eclipsky.services.mqttlogging;
 
 import java.util.Dictionary;
 
-import no.hal.eclipsky.services.monitoring.AbstractServiceLogger;
-import no.hal.eclipsky.services.monitoring.ServiceLogger;
-
 import org.eclipse.paho.client.mqttv3.IMqttToken;
 import org.eclipse.paho.client.mqttv3.MqttAsyncClient;
 import org.eclipse.paho.client.mqttv3.MqttException;
@@ -13,6 +10,9 @@ import org.osgi.service.component.ComponentContext;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
+
+import no.hal.eclipsky.services.monitoring.AbstractServiceLogger;
+import no.hal.eclipsky.services.monitoring.ServiceLogger;
 
 @Component(
 	property = MqttLogger.MQTT_SERVER_URI_KEY + "=" + MqttLogger.DEFAULT_MQTT_SERVER_URI
@@ -103,9 +103,14 @@ public class MqttLogger extends AbstractServiceLogger implements ServiceLogger {
 
 	protected void publishServiceUri(String serviceUri) {
 		try {
-			byte[] payload = serviceUri != null ? serviceUri.getBytes() : new byte[0];
+			byte[] payload = null;
+			if (serviceUri != null) {
+				String message = serviceUri + "@" + formatTimestamp();
+				payload = message.getBytes();
+			}
 //			IMqttDeliveryToken publishToken =
-			getMqttClient().publish(getTopicKey("serviceUri"), payload, 0, true);
+			String topicKey = getTopicKey("serviceUri");
+			getMqttClient().publish(topicKey, (payload != null ? payload : new byte[0]), 0, true);
 //			publishToken.setActionCallback(new IMqttActionListener() {
 //				@Override
 //				public void onSuccess(IMqttToken arg0) {
@@ -124,7 +129,8 @@ public class MqttLogger extends AbstractServiceLogger implements ServiceLogger {
 	}
 
 	protected void log(byte[] payload, String... logKeys) throws MqttException, MqttPersistenceException {
-		getMqttClient().publish(getTopicKey(logKeys), payload, 0, true);
+		String topicKey = getTopicKey(logKeys);
+		getMqttClient().publish(topicKey, payload, 0, true);
 //		System.out.println("Logging to topic " + getTopicKey(logKeys));
 	}
 
@@ -133,7 +139,7 @@ public class MqttLogger extends AbstractServiceLogger implements ServiceLogger {
 	@Override
 	protected void serviceCompleted(String logKey, String payload, long start, long end) {
 		try {
-			log((start + "-" + end).getBytes(), "services", logKey, "time");
+			log(formatTimestampInterval(start, end).getBytes(), "services", logKey, "time");
 			log((payload != null ? payload : DEFAULT_LOG_PAYLOAD).getBytes(), "services", logKey, "details");
 		} catch (MqttException e) {
 			e.printStackTrace();

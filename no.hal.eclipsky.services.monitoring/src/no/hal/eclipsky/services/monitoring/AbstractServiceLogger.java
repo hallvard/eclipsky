@@ -1,5 +1,6 @@
 package no.hal.eclipsky.services.monitoring;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -26,6 +27,17 @@ public abstract class AbstractServiceLogger implements ServiceLogger {
 			this.logKey = logKey;
 			this.start = timestamp;
 		}
+	}
+	
+	protected String formatTimestamp(long timestamp) {
+		return timestamp + "(" + new Date(timestamp) + ")";
+	}
+	protected String formatTimestamp() {
+		return formatTimestamp(System.currentTimeMillis());
+	}
+
+	protected String formatTimestampInterval(long start, long end) {
+		return start + "+" + (end - start) + "=" + end + "(" + new Date(start) + ")";
 	}
 	
 	@Override
