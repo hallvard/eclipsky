@@ -5,7 +5,8 @@ Bundle-SymbolicName: no.hal.eclipsky.ui;singleton:=true
 Bundle-Version: 0.1.0.qualifier
 Bundle-Activator: no.hal.eclipsky.ui.Activator
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
-Import-Package: org.osgi.framework;version="1.3.0"
+Import-Package: no.hal.eclipsky.services.sourceeditor,
+ org.osgi.framework;version="1.3.0"
 Bundle-ActivationPolicy: lazy
 Require-Bundle: org.eclipse.core.runtime;bundle-version="3.10.0",
  org.eclipse.ui;bundle-version="3.106.0",
