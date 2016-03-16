@@ -32,6 +32,11 @@
 			<layout>p2</layout>
 			<url>http://download.eclipse.org/releases/neon</url>
 		</repository>
+		<repository>
+             <id> jetty </id>
+             <layout>p2</layout>
+             <url> http://download.eclipse.org/jetty/updates/jetty-bundles-9.x/9.3.5.v20151012 </url>
+        </repository>
 	</repositories>
 
 	<build>
