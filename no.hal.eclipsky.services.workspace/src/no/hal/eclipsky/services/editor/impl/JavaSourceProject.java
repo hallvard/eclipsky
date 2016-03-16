@@ -58,7 +58,7 @@ public class JavaSourceProject extends GenericSourceProject {
 	}
 	
 	private void saveAllSourceEditors() {
-		foreachSourceEditor(sourceEditor -> { sourceEditor.close(null);});
+		foreachSourceEditor(sourceEditor -> { sourceEditor.close(new NullProgressMonitor());});
 	}
 
 	@Override
