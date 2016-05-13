@@ -1,0 +1,14 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Eclipsky monitoring UI
+Bundle-SymbolicName: no.hal.eclipsky.services.monitoring.ui
+Bundle-Version: 0.1.0.qualifier
+Bundle-Activator: no.hal.eclipsky.services.monitoring.ui.Activator
+Require-Bundle: org.eclipse.ui,
+ org.eclipse.core.runtime,
+ no.hal.emf.ui.utils;bundle-version="0.1.1"
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Bundle-ActivationPolicy: lazy
+Import-Package: no.hal.eclipsky.services.monitoring,
+ no.hal.eclipsky.services.mqttlogging,
+ org.eclipse.paho.client.mqttv3;version="1.0.2"

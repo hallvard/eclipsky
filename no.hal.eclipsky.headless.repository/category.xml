@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<site>
+   <feature url="features/no.hal.eclipsky.headless.dependencies_0.1.0.qualifier.jar" id="no.hal.eclipsky.headless.dependencies" version="0.1.0.qualifier">
+      <category name="no.hal.eclipsky"/>
+   </feature>
+   <feature url="features/no.hal.eclipsky.headless.feature_0.1.0.qualifier.jar" id="no.hal.eclipsky.headless.feature" version="0.1.0.qualifier">
+      <category name="no.hal.eclipsky"/>
+   </feature>
+   <category-def name="no.hal.eclipsky" label="Eclipsky"/>
+</site>

@@ -1,0 +1,87 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<artifactId>no.hal.eclipsky.headless.docker</artifactId>
+	<packaging>pom</packaging>
+
+	<parent>
+		<groupId>no.hal.eclipsky</groupId>
+		<artifactId>no.hal.eclipsky.headless</artifactId>
+		<version>0.1.0-SNAPSHOT</version>
+		<relativePath>../no.hal.eclipsky.headless</relativePath>
+	</parent>
+
+	<properties>
+		<eclipsky.port>49160</eclipsky.port>
+	</properties>
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>io.fabric8</groupId>
+				<artifactId>docker-maven-plugin</artifactId>
+				<version>0.15.1</version>
+				<configuration>
+					<images>
+						<!-- A single's image configuration -->
+						<image>
+							<name>headless/equinox</name>
+							<build>
+								<from>java:8</from>
+								<maintainer>Hallvard Traetteberg</maintainer>
+								<tags>
+									<tag>${project.version}</tag>
+								</tags>
+								<assembly>
+									<basedir>/eclipsky</basedir>
+									<inline>
+										<fileSets>
+											<fileSet>
+												<directory>../no.hal.eclipsky.headless.equinox/target/equinox</directory>
+												<outputDirectory>equinox</outputDirectory>
+												<filtered>false</filtered>
+											</fileSet>
+										</fileSets>
+									</inline>
+								</assembly>
+								<ports>
+									<port>8080</port>
+								</ports>
+								<workdir>eclipsky/equinox</workdir>
+								<cmd>java -jar
+									plugins/org.eclipse.equinox.launcher_1.3.200.v20160318-1642.jar
+									-consoleLog</cmd>
+							</build>
+						</image>
+					</images>
+				</configuration>
+				<!-- Connect start/stop to pre- and post-integration-test phase -->
+				<executions>
+					<execution>
+						<id>build-image-and-start-container</id>
+						<phase>pre-integration-test</phase>
+						<goals>
+							<!-- "build" should be used to create the images with the artifact -->
+							<goal>build</goal>
+							<goal>start</goal>
+						</goals>
+						<configuration>
+							<run>
+								<env>
+									<eclipsky.logDir>logs</eclipsky.logDir>
+								</env>
+								<ports>eclipsky.port:8080</ports>
+							</run>
+						</configuration>
+					</execution>
+					<execution>
+						<id>stop-container</id>
+						<phase>post-integration-test</phase>
+						<goals>
+							<goal>stop</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+</project>

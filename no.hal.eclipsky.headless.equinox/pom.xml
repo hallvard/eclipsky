@@ -1,0 +1,118 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<artifactId>no.hal.eclipsky.headless.equinox</artifactId>
+	<packaging>pom</packaging>
+
+	<parent>
+		<groupId>no.hal.eclipsky</groupId>
+		<artifactId>no.hal.eclipsky.headless</artifactId>
+		<version>0.1.0-SNAPSHOT</version>
+		<relativePath>../no.hal.eclipsky.headless</relativePath>
+	</parent>
+
+	<build>
+		<plugins>
+			<plugin>
+				<artifactId>maven-clean-plugin</artifactId>
+				<version>3.0.0</version>
+				<configuration>
+					<filesets>
+						<fileset>
+							<directory>target/equinox</directory>
+							<followSymlinks>false</followSymlinks>
+						</fileset>
+					</filesets>
+				</configuration>
+				<executions>
+					<!-- clean equinox folder -->
+					<execution>
+						<id>auto-clean</id>
+						<phase>initialize</phase>
+						<goals>
+							<goal>clean</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<artifactId>maven-resources-plugin</artifactId>
+				<version>2.7</version>
+				<executions>
+					<!-- copy equinox folder -->
+					<execution>
+						<id>copy-eclipsky-equinox-template</id>
+						<phase>pre-integration-test</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${basedir}/target/equinox</outputDirectory>
+							<resources>
+								<resource>
+									<directory>equinox</directory>
+									<filtering>false</filtering>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+
+					<!-- copy plugins from repository -->
+					<execution>
+						<id>copy-eclipsky-feature-plugins</id>
+						<phase>pre-integration-test</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${basedir}/target/equinox/plugins</outputDirectory>
+							<resources>
+								<resource>
+									<directory>../no.hal.eclipsky.headless.repository/target/repository/plugins</directory>
+									<filtering>false</filtering>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+
+					<!-- copy workspace -->
+					<execution>
+						<id>copy-eclipsky-workspace-template</id>
+						<phase>pre-integration-test</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${basedir}/target/equinox/workspace/.metadata/.plugins</outputDirectory>
+							<resources>
+								<resource>
+									<directory>workspace/.metadata/.plugins</directory>
+									<filtering>false</filtering>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+
+					<!-- copy jexercisestandalone project -->
+					<execution>
+						<id>copy-eclipsky-jexercisestandalone-project</id>
+						<phase>pre-integration-test</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${basedir}/target/equinox/workspace/jexercisestandalone</outputDirectory>
+							<resources>
+								<resource>
+									<directory>workspace/jexercisestandalone</directory>
+									<filtering>false</filtering>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+</project>

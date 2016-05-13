@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" immediate="true" name="no.hal.eclipsky.services.sourceeditor.RefreshEditorServletService">
+   <implementation class="no.hal.eclipsky.services.sourceeditor.RefreshEditorServletService"/>
+   <service>
+      <provide interface="no.hal.eclipsky.services.sourceeditor.SourceEditorServletService"/>
+   </service>
+   <property name="operations" value="refresh"/>
+   <reference bind="setServiceExecutor" cardinality="1..1" interface="no.hal.eclipsky.services.workspace.IServiceExecutor" name="ServiceExecutor" policy="static" target="(services=*RefreshEditorService*)" unbind="unsetServiceExecutor"/>
+   <reference bind="setServiceFactory" cardinality="1..1" interface="no.hal.eclipsky.services.workspace.model.ModelFactory" name="ServiceFactory" policy="static" unbind="unsetServiceFactory"/>
+</scr:component>

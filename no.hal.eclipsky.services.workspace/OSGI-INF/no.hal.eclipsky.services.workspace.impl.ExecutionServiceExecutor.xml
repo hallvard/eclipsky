@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" activate="activate" immediate="true" name="no.hal.eclipsky.services.workspace.impl.ExecutionServiceExecutor">
+   <property name="services" value="RunEditorService CloseEditorService TestEditorService"/>
+   <service>
+      <provide interface="no.hal.eclipsky.services.workspace.IServiceExecutor"/>
+   </service>
+   <reference bind="setSourceProjectManager" cardinality="1..1" interface="no.hal.eclipsky.services.workspace.SourceProjectManager" name="SourceProjectManager" policy="static" unbind="unsetSourceProjectManager"/>
+   <reference bind="setWorkspaceService" cardinality="1..1" interface="no.hal.eclipsky.services.workspace.WorkspaceService" name="WorkspaceService" policy="static" unbind="unsetWorkspaceService"/>
+   <implementation class="no.hal.eclipsky.services.workspace.impl.ExecutionServiceExecutor"/>
+</scr:component>
