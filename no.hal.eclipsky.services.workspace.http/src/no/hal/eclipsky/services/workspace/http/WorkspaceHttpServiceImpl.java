@@ -7,9 +7,6 @@ import java.util.Collection;
 
 import javax.servlet.http.HttpServlet;
 
-import no.hal.eclipsky.services.monitoring.CompositeServiceLogger;
-import no.hal.eclipsky.services.monitoring.ServiceLogger;
-
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
 import org.osgi.service.component.ComponentContext;
@@ -19,6 +16,10 @@ import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.service.component.annotations.ReferencePolicy;
 import org.osgi.service.http.HttpService;
+
+import no.hal.eclipsky.services.monitoring.CompositeServiceLogger;
+import no.hal.eclipsky.services.monitoring.EclipskyInstance;
+import no.hal.eclipsky.services.monitoring.ServiceLogger;
 
 @Component
 public class WorkspaceHttpServiceImpl {
@@ -99,20 +100,31 @@ public class WorkspaceHttpServiceImpl {
 	public synchronized void removeServiceLogger(ServiceLogger serviceLogger) {
 		compositeServiceLogger.removeServiceLogger(serviceLogger);
 	}
+
+	private EclipskyInstance eclipskyInstance;
 	
+	public EclipskyInstance getEclipskyInstance() {
+		if (eclipskyInstance == null) {
+			eclipskyInstance = new EclipskyInstance();
+			try {
+				eclipskyInstance.setInstanceName(InetAddress.getLocalHost().getHostName().replace(".", "_"));
+				eclipskyInstance.setHostAddress(InetAddress.getLocalHost().getHostAddress());
+			} catch (UnknownHostException e) {
+			}
+		}
+		return eclipskyInstance;
+	}
+
 	@Activate
 	protected void activate(ComponentContext context) {
 		BundleContext bundleContext = context.getBundleContext();
 		ServiceReference<HttpService> httpServiceRef = bundleContext.getServiceReference(HttpService.class);
-		Object property = httpServiceRef.getProperty("org.osgi.service.http.port");
-		if (property == null) {
-			property = httpServiceRef.getProperty("http.port");
+		Object portProperty = httpServiceRef.getProperty("org.osgi.service.http.port");
+		if (portProperty == null) {
+			portProperty = httpServiceRef.getProperty("http.port");
 		}
-		try {
-			InetAddress localHost = InetAddress.getLocalHost();
-			compositeServiceLogger.setServiceUri("http://" + localHost.getHostAddress() + ":" + property);
-		} catch (UnknownHostException e) {
-			e.printStackTrace();
-		}
+		EclipskyInstance eclipskyInstance = getEclipskyInstance();
+		eclipskyInstance.setServiceUri("http://" + eclipskyInstance.getHostAddress() + ":" + portProperty);
+		bundleContext.registerService(EclipskyInstance.class, eclipskyInstance, null);
 	}
 }

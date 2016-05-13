@@ -3,12 +3,6 @@ package no.hal.eclipsky.services.monitoring;
 public interface ServiceLogger {
 
 	/**
-	 * Sets the service Uri, typically host and address, that this logger logs for.
-	 * @param serviceUri The service URI
-	 */
-	public void setServiceUri(String serviceUri);
-
-	/**
 	 * Notify that a request has been received and processing initiated
 	 * @param requestKey the key that identifies the request, so it can be matched with the response
 	 * @param logKey the key for the log entry

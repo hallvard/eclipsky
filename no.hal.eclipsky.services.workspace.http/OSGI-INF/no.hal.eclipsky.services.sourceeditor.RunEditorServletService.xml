@@ -5,5 +5,6 @@
       <provide interface="no.hal.eclipsky.services.sourceeditor.SourceEditorServletService"/>
    </service>
    <property name="operations" value="run"/>
-   <reference bind="setSourceProjectManager" cardinality="1..1" interface="no.hal.eclipsky.services.workspace.http.SourceProjectManager" name="SourceProjectManager" policy="static" unbind="unsetSourceProjectManager"/>
+   <reference bind="setServiceExecutor" cardinality="1..1" interface="no.hal.eclipsky.services.workspace.IServiceExecutor" name="ServiceExecutor" policy="static" target="(services=*RunEditorService*)" unbind="unsetServiceExecutor"/>
+   <reference bind="setServiceFactory" cardinality="1..1" interface="no.hal.eclipsky.services.workspace.model.ModelFactory" name="ServiceFactory" policy="static" unbind="unsetServiceFactory"/>
 </scr:component>

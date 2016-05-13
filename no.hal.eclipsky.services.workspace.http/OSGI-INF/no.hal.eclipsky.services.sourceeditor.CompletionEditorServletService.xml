@@ -4,6 +4,7 @@
    <service>
       <provide interface="no.hal.eclipsky.services.sourceeditor.SourceEditorServletService"/>
    </service>
+   <reference bind="setServiceExecutor" cardinality="1..1" interface="no.hal.eclipsky.services.workspace.IServiceExecutor" name="ServiceExecutor" policy="static" target="(services=*CompletionEditorService*)" unbind="unsetServiceExecutor"/>
+   <reference bind="setServiceFactory" cardinality="1..1" interface="no.hal.eclipsky.services.workspace.model.ModelFactory" name="ServiceFactory" policy="static" unbind="unsetServiceFactory"/>
    <property name="operations" value="completion"/>
-   <reference bind="setSourceProjectManager" cardinality="1..1" interface="no.hal.eclipsky.services.workspace.http.SourceProjectManager" name="SourceProjectManager" policy="static" unbind="unsetSourceProjectManager"/>
 </scr:component>

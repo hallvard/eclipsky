@@ -4,8 +4,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
 
-import no.hal.eclipsky.services.common.SourceFileMarker;
-import no.hal.eclipsky.services.common.Status;
+import no.hal.eclipsky.services.workspace.model.ModelFactory;
+import no.hal.eclipsky.services.workspace.model.SeverityKind;
+import no.hal.eclipsky.services.workspace.model.SourceFileMarker;
 
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.jdt.core.IProblemRequestor;
@@ -52,34 +53,46 @@ public class SourceFileMarkersProvider implements IProblemRequestor {
 		int lineNumber = marker.getAttribute(IMarker.LINE_NUMBER, -1);
 		int start = marker.getAttribute(IMarker.CHAR_START, -1), end = marker.getAttribute(IMarker.CHAR_END, -1);
 		int markerSeverity = marker.getAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
-		return new SourceFileMarker(getSeverity(markerSeverity), message, lineNumber, start, end);
+		SourceFileMarker sourceFileMarker = ModelFactory.eINSTANCE.createSourceFileMarker();
+		sourceFileMarker.setSeverity(getSeverity(markerSeverity));
+		sourceFileMarker.setMessage(message);
+		sourceFileMarker.setStart(start);
+		sourceFileMarker.setEnd(end);
+		sourceFileMarker.setLineNumber(lineNumber);
+		return sourceFileMarker;
 	}
 
 	public static SourceFileMarker createSourceFileMarker(IProblem problem) {
 		String message = problem.getMessage();
 		int lineNumber = problem.getSourceLineNumber();
 		int start = problem.getSourceStart(), end = problem.getSourceEnd();
-		return new SourceFileMarker(getSeverity(problem), message, lineNumber, start, end);
+		SourceFileMarker sourceFileMarker = ModelFactory.eINSTANCE.createSourceFileMarker();
+		sourceFileMarker.setSeverity(getSeverity(problem));
+		sourceFileMarker.setMessage(message);
+		sourceFileMarker.setStart(start);
+		sourceFileMarker.setEnd(end);
+		sourceFileMarker.setLineNumber(lineNumber);
+		return sourceFileMarker;
 	}
 	
-	public static Status.Severity getSeverity(int severity) {
+	public static SeverityKind getSeverity(int severity) {
 		switch (severity) {
 		case IMarker.SEVERITY_WARNING:
-			return Status.Severity.Warning;
+			return SeverityKind.WARNING;
 		case IMarker.SEVERITY_INFO:
-			return Status.Severity.Info;
+			return SeverityKind.INFO;
 		default:
-			return Status.Severity.Error;
+			return SeverityKind.ERROR;
 		}
 	}
 
-	public static Status.Severity getSeverity(IProblem problem) {
+	public static SeverityKind getSeverity(IProblem problem) {
 		if (problem.isError()) {
-			return Status.Severity.Error;
+			return SeverityKind.ERROR;
 		} else if (problem.isWarning()) {
-			return Status.Severity.Warning;
+			return SeverityKind.WARNING;
 		} else {
-			return Status.Severity.Info;
+			return SeverityKind.INFO;
 		}
 	}
 }

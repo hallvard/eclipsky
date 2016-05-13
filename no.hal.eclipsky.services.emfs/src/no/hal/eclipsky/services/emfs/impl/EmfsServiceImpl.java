@@ -36,7 +36,7 @@ public class EmfsServiceImpl implements EmfsService {
 	@Reference(
 		cardinality=ReferenceCardinality.MULTIPLE,
 		policy=ReferencePolicy.DYNAMIC,
-		unbind="removeImportSupport"
+		unbind="removeExportSupport"
 	)
 
 	public synchronized void addExportSupport(ExportSupport importSupport) {

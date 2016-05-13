@@ -23,10 +23,10 @@ import no.hal.eclipsky.services.common.ProjectRef;
 import no.hal.eclipsky.services.common.ResourceRef;
 import no.hal.eclipsky.services.monitoring.CompositeServiceLogger;
 import no.hal.eclipsky.services.monitoring.ServiceLogger;
+import no.hal.eclipsky.services.workspace.SourceProjectManager;
 import no.hal.eclipsky.services.workspace.http.AbstractServiceServlet;
 import no.hal.eclipsky.services.workspace.http.AceEditorHelper;
-import no.hal.eclipsky.services.workspace.http.SourceProjectManager;
-import no.hal.eclipsky.services.workspace.http.util.EmfsUtil;
+import no.hal.eclipsky.services.workspace.impl.EmfsUtil;
 import no.hal.emfs.EmfsResource;
 
 @Component(
@@ -49,16 +49,19 @@ public class SourceEditorServletImpl extends HttpServlet // WebSocketServlet
 
 	private SourceProjectManager sourceProjectManager;
 	
+	public SourceProjectManager getSourceProjectManager() {
+		return sourceProjectManager;
+	}
+	
 	@Reference
 	public synchronized void setSourceProjectManager(SourceProjectManager sourceProjectManager) {
 		this.sourceProjectManager = sourceProjectManager;
 	}
-	@Reference
 	public synchronized void unsetSourceProjectManager(SourceProjectManager sourceProjectManager) {
 		setSourceProjectManager(null);
 	}
 
-	private Map<String, SourceEditorServletService> editorServices = new HashMap<>();
+	private Map<String, SourceEditorServletService> editorServices = new HashMap<String, SourceEditorServletService>();
 	
 	@Reference(
 		cardinality = ReferenceCardinality.MULTIPLE,
@@ -139,18 +142,18 @@ public class SourceEditorServletImpl extends HttpServlet // WebSocketServlet
 		AceEditorHelper.Options options = new AceEditorHelper.Options();
 		options.requestUrl = request.getRequestURI();
 		options.projectId = resourceRef.getProjectName();
-		Collection<ResourceRef> emfsResources = EmfsUtil.collectResources(sourceProjectManager.getEmfsResource(new ProjectRef(resourceRef)), EmfsResource::isWriteable);
+		Collection<ResourceRef> emfsResources = EmfsUtil.collectResources(getSourceProjectManager().getEmfsResource(new ProjectRef(resourceRef)), EmfsResource::isWriteable);
 		ResourceRef[] editables = emfsResources.toArray(new ResourceRef[emfsResources.size()]);
 		options.editorName = (editables != null && editables.length > 0 ? editables[0].getResourceName() : options.projectId);
 		options.resourceRefs = editables;
 		options.embed = embed;
 		
-		String index = request.getParameter("startIndex");
-		if (index == null) {
-			options.startIndex = 0;
-		} else {
-			options.startIndex = Integer.parseInt(index);
+		int index = 0;
+		try {
+			index = Integer.valueOf(request.getParameter("startIndex"));
+		} catch (RuntimeException e) {
 		}
+		options.startIndex = index;
 		aceEditorHelper.writeEditorHtml(writer, options);
 	}
 
@@ -187,7 +190,7 @@ public class SourceEditorServletImpl extends HttpServlet // WebSocketServlet
 				compositeServiceLogger.serviceResponded(request, request.resourceRef.toPath(), -1);
 			} catch (Exception e) {
 				compositeServiceLogger.serviceException(request, e, -1);
-				throw e;
+				throw new RuntimeException(e);
 			}
 		}
 		if (response == null || response.length() == 0) {

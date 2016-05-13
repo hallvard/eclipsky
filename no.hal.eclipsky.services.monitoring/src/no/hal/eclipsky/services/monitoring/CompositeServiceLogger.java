@@ -34,15 +34,6 @@ public class CompositeServiceLogger implements ServiceLogger {
 	//
 
 	@Override
-	public void setServiceUri(String serviceUri) {
-		if (serviceLoggers != null) {
-			for (ServiceLogger serviceLogger : serviceLoggers) {
-				serviceLogger.setServiceUri(serviceUri);
-			}
-		}
-	}
-
-	@Override
 	public void serviceRequested(Object requestKey, String logKey, long timestamp) {
 		if (serviceLoggers != null) {
 			for (ServiceLogger serviceLogger : serviceLoggers) {

@@ -1,28 +1,38 @@
 package no.hal.eclipsky.services.sourceeditor;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintWriter;
 import java.util.Dictionary;
-
-import no.hal.eclipsky.services.editor.SourceEditor;
-import no.hal.eclipsky.services.editor.SourceProject;
-import no.hal.eclipsky.services.workspace.http.SourceProjectManager;
-import no.hal.eclipsky.services.workspace.http.util.EmfsUtil;
-import no.hal.emfs.AbstractStringContentProvider;
-import no.hal.emfs.AbstractStringContents;
-import no.hal.emfs.EmfsFile;
-import no.hal.emfs.EmfsResource;
 
 import org.osgi.service.component.ComponentContext;
 
-public abstract class AbstractSourceEditorServletService implements SourceEditorServletService {
+import no.hal.eclipsky.services.sourceeditor.SourceEditorServlet.EditorServiceRequest;
+import no.hal.eclipsky.services.workspace.IServiceExecutor;
+import no.hal.eclipsky.services.workspace.http.util.ResponseOptions;
+import no.hal.eclipsky.services.workspace.model.AbstractService;
+import no.hal.eclipsky.services.workspace.model.ModelFactory;
+import no.hal.eclipsky.services.workspace.model.ResultKind;
 
-	private SourceProjectManager sourceProjectManager;
+public abstract class AbstractSourceEditorServletService<S extends AbstractService> implements SourceEditorServletService {
 
-	public SourceProjectManager getSourceProjectManager() {
-		return sourceProjectManager;
+	private IServiceExecutor serviceExecutor;
+	
+	public IServiceExecutor getServiceExecutor() {
+		return serviceExecutor;
+	}
+	
+	protected synchronized void setServiceExecutor(IServiceExecutor serviceExecutor) {
+		this.serviceExecutor = serviceExecutor;
 	}
 
-	public synchronized void setSourceProjectManager(SourceProjectManager sourceProjectManager) {
-		this.sourceProjectManager = sourceProjectManager;
+	private ModelFactory serviceFactory;
+
+	public ModelFactory getServiceFactory() {
+		return serviceFactory;
+	}
+	
+	protected synchronized void setServiceFactory(ModelFactory serviceFactory) {
+		this.serviceFactory = serviceFactory;
 	}
 
 	public final static String OPERATION_KEY = "operations";
@@ -42,26 +52,44 @@ public abstract class AbstractSourceEditorServletService implements SourceEditor
 		return supportedOperations;
 	}
 	
-	protected SourceProject getSourceProject(SourceEditorServlet.EditorServiceRequest request) {
-		return getSourceProjectManager().getSourceProject(request.resourceRef);
-	}
-
-	protected SourceEditor getSourceEditor(SourceEditorServlet.EditorServiceRequest request) {
-		return getSourceProject(request).getSourceEditor(request.resourceRef);
-	}
-	
 	//
 	
-	protected CharacterPosition computeResourceOffset(EmfsResource emfsResource) {
-		CharacterPosition offset = null;
-		if (emfsResource instanceof EmfsFile) {
-			EmfsFile emfsFile = (EmfsFile) emfsResource;
-			AbstractStringContents editableStringContents = EmfsUtil.findStringContents(emfsFile, AbstractStringContents::isWriteable);
-			if (editableStringContents != null && emfsFile.getContentProvider() instanceof AbstractStringContentProvider) {
-				offset = new CharacterPosition();
-				((AbstractStringContentProvider) emfsFile.getContentProvider()).accumulate(new CharacterPosition.Accumulator(editableStringContents), offset);
-			}
+	@Override
+	public String doSourceEditorServletService(EditorServiceRequest request, String requestBody) {
+		S service = createService(request, requestBody);
+		ResultKind result = getServiceExecutor().performService(service);
+		ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+		PrintWriter output = new PrintWriter(buffer);
+		servicePerformed(service, result, request.responseOptions, output);
+		output.close();
+		String responseString = buffer.toString();
+		return responseString != null && responseString.length() > 0 ? responseString : null;
+	}
+
+	protected abstract S createService(EditorServiceRequest request, String requestBody);
+
+	protected void servicePerformed(S service, ResultKind result, ResponseOptions responseOptions, PrintWriter output) {
+		switch (result) {
+		case SUCCESS:
+			servicePerformedWithSuccess(service, responseOptions, output);
+			break;
+		case FAILURE:
+			servicePerformedWithFailure(service, responseOptions, output);
+			break;
+		case ERROR:
+			servicePerformedWithError(service, responseOptions, output);
+			break;
+		default:
+			break;
 		}
-		return offset;
+	}
+
+	protected void servicePerformedWithSuccess(S service, ResponseOptions responseOptions, PrintWriter writer) {
+	}
+
+	protected void servicePerformedWithFailure(S service, ResponseOptions responseOptions, PrintWriter writer) {
+	}
+
+	protected void servicePerformedWithError(S service, ResponseOptions responseOptions, PrintWriter writer) {
 	}
 }

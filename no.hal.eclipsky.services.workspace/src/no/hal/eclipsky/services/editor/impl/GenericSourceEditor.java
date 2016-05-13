@@ -3,14 +3,14 @@ package no.hal.eclipsky.services.editor.impl;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import no.hal.eclipsky.services.common.Proposal;
-import no.hal.eclipsky.services.common.ResourceHelper;
-import no.hal.eclipsky.services.common.ResourceRef;
-import no.hal.eclipsky.services.common.SourceFileMarker;
-import no.hal.eclipsky.services.editor.SourceEditor;
-
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.IProgressMonitor;
+
+import no.hal.eclipsky.services.common.ResourceHelper;
+import no.hal.eclipsky.services.common.ResourceRef;
+import no.hal.eclipsky.services.editor.SourceEditor;
+import no.hal.eclipsky.services.workspace.model.CompletionProposal;
+import no.hal.eclipsky.services.workspace.model.SourceFileMarker;
 
 public class GenericSourceEditor implements SourceEditor {
 
@@ -57,13 +57,13 @@ public class GenericSourceEditor implements SourceEditor {
 	}
 
 	@Override
-	public Proposal[] complete(int pos) {
-		final Collection<Proposal> completions = new ArrayList<>();
+	public CompletionProposal[] complete(int pos) {
+		final Collection<CompletionProposal> completions = new ArrayList<>();
 		addCompletionProposals(pos, completions);
-		return completions.toArray(new Proposal[completions.size()]);
+		return completions.toArray(new CompletionProposal[completions.size()]);
 	}
 
-	protected void addCompletionProposals(int pos, Collection<Proposal> completions) throws NullPointerException{
+	protected void addCompletionProposals(int pos, Collection<CompletionProposal> completions) throws NullPointerException{
 	}
 	@Override
 	public void close(IProgressMonitor monitor) {

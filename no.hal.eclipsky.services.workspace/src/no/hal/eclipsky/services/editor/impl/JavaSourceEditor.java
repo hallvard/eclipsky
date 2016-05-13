@@ -2,10 +2,6 @@ package no.hal.eclipsky.services.editor.impl;
 
 import java.util.Collection;
 
-import no.hal.eclipsky.services.common.Proposal;
-import no.hal.eclipsky.services.common.ResourceRef;
-import no.hal.eclipsky.services.common.SourceFileMarker;
-
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.core.CompletionProposal;
@@ -15,6 +11,10 @@ import org.eclipse.jdt.core.IProblemRequestor;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.WorkingCopyOwner;
+
+import no.hal.eclipsky.services.common.ResourceRef;
+import no.hal.eclipsky.services.workspace.model.ModelFactory;
+import no.hal.eclipsky.services.workspace.model.SourceFileMarker;
 
 public class JavaSourceEditor extends GenericSourceEditor {
 
@@ -80,15 +80,14 @@ public class JavaSourceEditor extends GenericSourceEditor {
 	}
 
 	@Override
-	protected void addCompletionProposals(int pos, Collection<Proposal> completions) throws NullPointerException {
+	protected void addCompletionProposals(int pos, Collection<no.hal.eclipsky.services.workspace.model.CompletionProposal> completions) throws NullPointerException {
 		ensureWorkingCopy();
 		if (workingCopy != null) {
 			try {
 				workingCopy.codeComplete(pos, new CompletionRequestor() {
 					@Override
 					public void accept(CompletionProposal proposal) {
-						Proposal p = Proposal.getProposal(proposal);
-						completions.add(p);					
+						completions.add(getProposal(proposal));
 					}
 				});		
 			} catch (JavaModelException e1) {
@@ -98,6 +97,27 @@ public class JavaSourceEditor extends GenericSourceEditor {
 		}
 	}
 	
+	private static no.hal.eclipsky.services.workspace.model.CompletionProposal getProposal(CompletionProposal prop) {
+		if (prop == null) {
+			System.out.println("Prop is null");
+			return null;
+		}
+		no.hal.eclipsky.services.workspace.model.CompletionProposal completion = ModelFactory.eINSTANCE.createCompletionProposal();
+		String output = prop.toString();
+		completion.setName(getValueFromProp(output, "name:", ','));
+		completion.setValue(getValueFromProp(output, "completion:", ','));
+		completion.setScore(Integer.parseInt(getValueFromProp(output, "relevance:", '}')));
+		return completion;
+	}
+	
+	private static String getValueFromProp(String prop, String key, char delimeter) {
+		int startVal, endVal;
+		// Extract value
+		startVal = prop.indexOf(key) + key.length();
+		endVal = prop.indexOf(delimeter, startVal);
+		return prop.substring(startVal, endVal);
+	}
+
 	@Override
 	public void close(IProgressMonitor monitor) {
 		if (workingCopy != null) {

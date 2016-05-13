@@ -1,32 +1,43 @@
 package no.hal.eclipsky.services.sourceeditor;
 
-import java.io.ByteArrayOutputStream;
 import java.io.PrintWriter;
-
-import no.hal.eclipsky.services.common.SourceFileMarker;
-import no.hal.eclipsky.services.sourceeditor.SourceEditorServlet.EditorServiceRequest;
-import no.hal.eclipsky.services.workspace.http.AbstractServiceServlet;
-import no.hal.eclipsky.services.workspace.http.SourceProjectManager;
-import no.hal.eclipsky.services.workspace.http.util.ResponseFormatter;
+import java.util.Collection;
 
 import org.osgi.service.component.ComponentContext;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
+import no.hal.eclipsky.services.sourceeditor.SourceEditorServlet.EditorServiceRequest;
+import no.hal.eclipsky.services.workspace.IServiceExecutor;
+import no.hal.eclipsky.services.workspace.http.AbstractServiceServlet;
+import no.hal.eclipsky.services.workspace.http.util.ResponseFormatter;
+import no.hal.eclipsky.services.workspace.http.util.ResponseOptions;
+import no.hal.eclipsky.services.workspace.model.MarkersEditorService;
+import no.hal.eclipsky.services.workspace.model.ModelFactory;
+import no.hal.eclipsky.services.workspace.model.SourceFileMarker;
+
 @Component(
 	immediate = true,
 	property = AbstractSourceEditorServletService.OPERATION_KEY + "=markers"
 )
-public class MarkersEditorServletService extends AbstractSourceEditorServletService implements SourceEditorServletService {
+public class MarkersEditorServletService extends AbstractSourceEditorServletService<MarkersEditorService> implements SourceEditorServletService {
+
+	@Reference(target="(services=*MarkersEditorService*)")
+	@Override
+	public synchronized void setServiceExecutor(IServiceExecutor serviceExecutor) {
+		super.setServiceExecutor(serviceExecutor);
+	}
+	public synchronized void unsetServiceExecutor(IServiceExecutor serviceExecutor) {
+		super.setServiceExecutor(null);
+	}
 
 	@Reference
-	@Override
-	public synchronized void setSourceProjectManager(SourceProjectManager sourceProjectManager) {
-		super.setSourceProjectManager(sourceProjectManager);
+	public synchronized void setServiceFactory(ModelFactory serviceFactory) {
+		super.setServiceFactory(serviceFactory);
 	}
-	public synchronized void unsetSourceProjectManager(SourceProjectManager sourceProjectManager) {
-		super.setSourceProjectManager(null);
+	public synchronized void unsetServiceFactory(ModelFactory serviceFactory) {
+		super.setServiceFactory(null);
 	}
 
 	@Activate
@@ -35,23 +46,19 @@ public class MarkersEditorServletService extends AbstractSourceEditorServletServ
 		super.activate(context);
 	}
 	
+	protected MarkersEditorService createService(EditorServiceRequest request, String requestBody) {
+		MarkersEditorService service = getServiceFactory().createMarkersEditorService();
+		service.setResourceRef(request.resourceRef);
+		return service;
+	}
+
 	@Override
-	public String doSourceEditorServletService(EditorServiceRequest request, String requestBody) {
-		SourceFileMarker[] sourceFileMarkers = getSourceEditor(request).update(null, true, null);
-		CharacterPosition offset = computeResourceOffset(getSourceProjectManager().getEmfsResource(request.resourceRef));
-		return markersResponse(sourceFileMarkers, request.responseFormat, offset);
+	protected void servicePerformedWithSuccess(MarkersEditorService service, ResponseOptions responseOptions, PrintWriter writer) {
+		writeMarkersResponse(service.getMarkers().getMarkers(), responseOptions, writer);
 	}
 
-	public static String markersResponse(SourceFileMarker[] sourceFileMarkers, String protocol, CharacterPosition offset) {
-		ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-		PrintWriter output = new PrintWriter(buffer);
-		writeMarkersResponse(protocol, output, sourceFileMarkers, offset);
-		output.close();
-		return buffer.toString();
-	}
-
-	private static void writeMarkersResponse(String responseFormat, PrintWriter writer, SourceFileMarker[] sourceFileMarkers, CharacterPosition offset) {
-		ResponseFormatter formatter = AbstractServiceServlet.getResponseFormatter(responseFormat, writer);
+	static void writeMarkersResponse(Collection<SourceFileMarker> markers, ResponseOptions responseOptions, PrintWriter writer) {
+		ResponseFormatter formatter = AbstractServiceServlet.getResponseFormatter(responseOptions.responseFormat, writer);
 		if (formatter != null) {
 			formatter.startEntities("problems", true);
 		} else {
@@ -60,26 +67,18 @@ public class MarkersEditorServletService extends AbstractSourceEditorServletServ
 					+ "\t<body>");
 			writer.println("\t\t<h1>Problems</h1>\n\t\t<ul>");
 		}
-		int count = (sourceFileMarkers != null ? sourceFileMarkers.length : 0);
-		System.out.println("Offset: " + offset);
-		for (int i = 0; i < count; i++) {
-			SourceFileMarker problem = sourceFileMarkers[i];
+		for (SourceFileMarker problem : markers) {
 			if (formatter != null) {
-				int lineNumber = problem.lineNumber, start = problem.start, end = problem.end;
-				if (offset != null) {
-					lineNumber -= offset.getLine();
-					start -= offset.getPosition();
-					end -= offset.getPosition();
-				}
+				int lineNumber = problem.getLineNumber(), start = problem.getStart(), end = problem.getEnd();
 				formatter.entity("problem",
-						"severity", problem.severity,
-						"message", problem.message,
+						"severity", problem.getSeverity(),
+						"message", problem.getMessage(),
 						"lineNumber", lineNumber,
 						"start", start,
 						"end", end)
 				.endEntity();
 			} else {
-				writer.println("\t\t\t<li>" + problem.message + "</li>");
+				writer.println("\t\t\t<li>" + problem.getMessage() + "</li>");
 			}
 		}
 		if (formatter != null) {

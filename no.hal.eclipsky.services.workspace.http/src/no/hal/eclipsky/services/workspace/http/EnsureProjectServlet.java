@@ -10,14 +10,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import no.hal.eclipsky.services.common.ProjectRef;
-import no.hal.eclipsky.services.common.ResourceRef;
-import no.hal.eclipsky.services.monitoring.ServiceLogger;
-import no.hal.eclipsky.services.workspace.WorkspaceService;
-import no.hal.eclipsky.services.workspace.http.util.EmfsUtil;
-import no.hal.emfs.EmfsPackage;
-import no.hal.emfs.EmfsResource;
-
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.util.EcoreUtil;
@@ -26,22 +18,41 @@ import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
+import no.hal.eclipsky.services.common.ResourceRef;
+import no.hal.eclipsky.services.monitoring.ServiceLogger;
+import no.hal.eclipsky.services.workspace.IServiceExecutor;
+import no.hal.eclipsky.services.workspace.WorkspaceService;
+import no.hal.eclipsky.services.workspace.impl.EmfsUtil;
+import no.hal.eclipsky.services.workspace.model.EnsureProjectService;
+import no.hal.eclipsky.services.workspace.model.ModelFactory;
+import no.hal.emfs.EmfsPackage;
+import no.hal.emfs.EmfsResource;
+
 @Component(
 	property = {
 		AbstractServiceServlet.SERVLET_ALIAS_KEY + "=ensureProject",
-		AbstractServiceServlet.RESOURCE_ALIAS_KEY_PREFIX + "ensureProjectForm.html=/html/ensureProjectForm.html"
+		AbstractServiceServlet.RESOURCE_ALIAS_KEY_PREFIX + "ensureProjectForm.html=/web/html/ensureProjectForm.html"
 	}
 )
 @SuppressWarnings("serial")
 public class EnsureProjectServlet extends ProjectListServlet implements ServiceServlet {
 
-	@Reference
+	@Reference(target="(services=*EnsureProjectService*)")
 	@Override
-	public synchronized void setWorkspaceService(WorkspaceService workspaceService) {
-		super.setWorkspaceService(workspaceService);
+	public synchronized void setServiceExecutor(IServiceExecutor serviceExecutor) {
+		super.setServiceExecutor(serviceExecutor);
 	}
-	public synchronized void unsetWorkspaceService(WorkspaceService workspaceService) {
-		super.unsetWorkspaceService(workspaceService);
+	@Override
+	public synchronized void unsetServiceExecutor(IServiceExecutor serviceExecutor) {
+		super.unsetServiceExecutor(serviceExecutor);
+	}
+
+	@Reference
+	public synchronized void setServiceFactory(ModelFactory serviceFactory) {
+		super.setServiceFactory(serviceFactory);
+	}
+	public synchronized void unsetServiceFactory(ModelFactory serviceFactory) {
+		super.unsetServiceFactory(serviceFactory);
 	}
 
 	@Activate
@@ -50,16 +61,6 @@ public class EnsureProjectServlet extends ProjectListServlet implements ServiceS
 		super.activate(context);
 	}
 
-	private SourceProjectManager sourceProjectManager;
-	
-	@Reference
-	public synchronized void setSourceProjectManager(SourceProjectManager sourceProjectManager) {
-		this.sourceProjectManager = sourceProjectManager;
-	}
-	public synchronized void unsetSourceProjectManager(SourceProjectManager sourceProjectManager) {
-		setSourceProjectManager(null);
-	}
-	
 	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		response.sendRedirect("ensureProjectForm.html");
@@ -70,11 +71,13 @@ public class EnsureProjectServlet extends ProjectListServlet implements ServiceS
 		String ext = (body.startsWith("<?xml") ? defaultExt : "xemfs");
 		Resource resource = EmfsUtil.createEmfsResource(URI.createURI(name), ext);
 		byte[] bytes = body.getBytes(StandardCharsets.UTF_8);
-		try (InputStream stream = new ByteArrayInputStream(bytes);) {
+		InputStream stream = new ByteArrayInputStream(bytes);
+		try {
 			resource.load(stream, null);
-			Object emfsResource = EcoreUtil.getObjectByType(resource.getContents(), EmfsPackage.eINSTANCE.getEmfsContainer());
-			return (EmfsResource) emfsResource;
+		} catch (IOException ioe) {
 		}
+		Object emfsResource = EcoreUtil.getObjectByType(resource.getContents(), EmfsPackage.eINSTANCE.getEmfsContainer());
+		return (EmfsResource) emfsResource;
 	}
 
 	@Override
@@ -87,20 +90,38 @@ public class EnsureProjectServlet extends ProjectListServlet implements ServiceS
 		handleRequest(request, response);
 	}
 	
+	private WorkspaceService workspaceService;
+	
+	@Reference
+	public synchronized void setWorkspaceService(WorkspaceService workspaceService) {
+		this.workspaceService = workspaceService;
+	}
+	public synchronized void unsetWorkspaceService(WorkspaceService workspaceService) {
+		this.workspaceService = null;
+	}
+
 	private void handleRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		ServiceLogger serviceLogger = getServiceLogger();
 		serviceLogger.serviceRequested(request, getClass().getSimpleName(), -1);
-		ProjectRef projectRef = getProjectRef(request);
+		EnsureProjectService service = getServiceFactory().createEnsureProjectService();
+		service.setProjectRef(getProjectRef(request));
 		String emfsContent = request.getParameter("emfs"); // getRequestBodyContent(request);
 		Exception ex = null;
 		try {
 			EmfsResource emfsResource = getEmfsResource("temp", emfsContent);
-			sourceProjectManager.ensureSourceProject(projectRef, emfsResource);
+			service.setEmfs(emfsResource);
+			switch (getServiceExecutor().performService(service)) {
+				case SUCCESS:
+					break;
+				default:
+					break;
+			}
 		} catch (Exception resourceException) {
 			ex = resourceException;
 		}
 		String responseFormat = getResponseFormat(request);
 		String forward = request.getParameter("forward");
+		String projectName = service.getProjectRef().getProjectName();
 		if (ex != null) {
 			PrintWriter writer = response.getWriter();
 			writeExceptionResponse(responseFormat, writer, ex);
@@ -109,13 +130,12 @@ public class EnsureProjectServlet extends ProjectListServlet implements ServiceS
 				forward += "?";
 			} else {
 				forward += "&";
-			}  
-			forward += "projectName=" + projectRef.getProjectName();
+			}
+			forward += "projectName=" + projectName;
 //			request.getRequestDispatcher(forward).forward(request, response);
 			response.sendRedirect(forward);
 		} else {
 			PrintWriter writer = response.getWriter();
-			String projectName = projectRef.getProjectName();
 			if (! "html".equals(responseFormat)) {
 				writeProjectListResponse(responseFormat, writer, projectName);
 			} else {
@@ -124,11 +144,11 @@ public class EnsureProjectServlet extends ProjectListServlet implements ServiceS
 						+ "\t<body>");
 				writer.println("<h1>Project " + projectName + "'s packages and resources</h1>\n"
 						+ "\t<ul>");
-				writerResourcesResponse(responseFormat, writer, getWorkspaceService(), new ResourceRef(projectName, null, null), -1);
+				writerResourcesResponse(responseFormat, writer, workspaceService, new ResourceRef(projectName, null, null), -1);
 				writer.println("\t</ul></body>\n"
 						+ "</html>");
 			}
 		}
-		serviceLogger.serviceResponded(request, projectRef.getProjectName(), -1);
+		serviceLogger.serviceResponded(request, projectName, -1);
 	}
 }

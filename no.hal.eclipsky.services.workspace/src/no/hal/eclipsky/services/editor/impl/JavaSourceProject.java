@@ -16,8 +16,8 @@ import org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants;
 
 import no.hal.eclipsky.services.common.ProjectRef;
 import no.hal.eclipsky.services.common.ResourceRef;
-import no.hal.eclipsky.services.editor.RunResult;
 import no.hal.eclipsky.services.editor.SourceEditor;
+import no.hal.eclipsky.services.workspace.model.ExecutionResult;
 
 public class JavaSourceProject extends GenericSourceProject {
 
@@ -62,7 +62,7 @@ public class JavaSourceProject extends GenericSourceProject {
 	}
 
 	@Override
-	public RunResult run(ResourceRef resourceRef) {
+	public ExecutionResult run(ResourceRef resourceRef) {
 		saveAllSourceEditors();
 		if (ensureBuildComplete(resourceRef)) {
 			return super.run(resourceRef);
@@ -71,7 +71,7 @@ public class JavaSourceProject extends GenericSourceProject {
 	}
 
 	@Override
-	public RunResult test(ResourceRef resourceRef) {
+	public ExecutionResult test(ResourceRef resourceRef) {
 		saveAllSourceEditors();
 		if (ensureBuildComplete(resourceRef)) {
 			return super.test(resourceRef);

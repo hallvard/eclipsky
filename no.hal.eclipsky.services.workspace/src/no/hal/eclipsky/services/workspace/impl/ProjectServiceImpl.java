@@ -8,7 +8,7 @@ import java.util.concurrent.Future;
 import no.hal.eclipsky.services.common.AbstractResourcesServiceImpl;
 import no.hal.eclipsky.services.common.ResourceHelper;
 import no.hal.eclipsky.services.common.ResourceRef;
-import no.hal.eclipsky.services.common.SourceFileMarker;
+import no.hal.eclipsky.services.workspace.model.SourceFileMarker;
 import no.hal.eclipsky.services.workspace.ProjectService;
 
 import org.eclipse.core.resources.IFile;

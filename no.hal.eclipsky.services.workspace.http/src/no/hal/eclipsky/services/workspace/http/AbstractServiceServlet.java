@@ -12,19 +12,22 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 
+import org.osgi.service.component.ComponentContext;
+import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ReferenceCardinality;
+
 import no.hal.eclipsky.services.common.AbstractResourceVisitor;
+import no.hal.eclipsky.services.common.AbstractResourcesServiceImpl;
 import no.hal.eclipsky.services.common.ProjectRef;
 import no.hal.eclipsky.services.common.ResourceRef;
 import no.hal.eclipsky.services.monitoring.CompositeServiceLogger;
 import no.hal.eclipsky.services.monitoring.ServiceLogger;
+import no.hal.eclipsky.services.workspace.IServiceExecutor;
 import no.hal.eclipsky.services.workspace.ResourcesService;
 import no.hal.eclipsky.services.workspace.http.util.JsonResponseFormatter;
 import no.hal.eclipsky.services.workspace.http.util.ResponseFormatter;
 import no.hal.eclipsky.services.workspace.http.util.XmlResponseFormatter;
-
-import org.osgi.service.component.ComponentContext;
-import org.osgi.service.component.annotations.Reference;
-import org.osgi.service.component.annotations.ReferenceCardinality;
+import no.hal.eclipsky.services.workspace.model.ModelFactory;
 
 @SuppressWarnings("serial")
 public abstract class AbstractServiceServlet extends HttpServlet implements ServiceServlet {
@@ -62,6 +65,28 @@ public abstract class AbstractServiceServlet extends HttpServlet implements Serv
 	}
 	
 	//
+	
+	private IServiceExecutor serviceExecutor;
+	
+	public IServiceExecutor getServiceExecutor() {
+		return serviceExecutor;
+	}
+	
+	protected synchronized void setServiceExecutor(IServiceExecutor serviceExecutor) {
+		this.serviceExecutor = serviceExecutor;
+	}
+
+	private ModelFactory serviceFactory;
+
+	public ModelFactory getServiceFactory() {
+		return serviceFactory;
+	}
+	
+	protected synchronized void setServiceFactory(ModelFactory serviceFactory) {
+		this.serviceFactory = serviceFactory;
+	}
+	
+	//
 
 	private final CompositeServiceLogger compositeServiceLogger = new CompositeServiceLogger();
 	
@@ -96,9 +121,10 @@ public abstract class AbstractServiceServlet extends HttpServlet implements Serv
 	}
 	
 	public static ResponseFormatter getResponseFormatter(String responseFormat, PrintWriter writer) {
-		switch (responseFormat) {
-		case "xml": return new XmlResponseFormatter(writer);
-		case "json": return new JsonResponseFormatter(writer);
+		if ("xml".equals(responseFormat)) {
+			return new XmlResponseFormatter(writer);
+		} else if ("json".equals(responseFormat)) {
+			return new JsonResponseFormatter(writer);
 		}
 		return null;
 	}
@@ -118,25 +144,23 @@ public abstract class AbstractServiceServlet extends HttpServlet implements Serv
 	}
 	
 	public static void writeExceptionResponse(String responseFormat, PrintWriter writer, Exception ex) {
-		switch (responseFormat) {
-		case "xml" : writer.println("<exception>"); break;
-		case "json" : writer.println("["); break;
-		case "html" : {
+		if ("xml".equals(responseFormat)) {
+			writer.println("<exception>");
+		} else if ("json".equals(responseFormat)) {
+			writer.println("[");
+		} else if ("html".equals(responseFormat)) {
 			writer.println("<html>\n"
 					+ "\t<head><title>Exception</title></head>\n"
 					+ "\t<body>");
-			break;
-		}
 		}
 		ex.printStackTrace(writer);
-		switch (responseFormat) {
-		case "xml" : writer.println("</exception>"); break;
-		case "json" : writer.println("]"); break;
-		case "html" : {
+		if ("xml".equals(responseFormat)) {
+			writer.println("</exception>");
+		} else if ("json".equals(responseFormat)) {
+			writer.println("]");
+		} else if ("html".equals(responseFormat)) {
 			writer.println("\t</body>\n"
 					+ "</html>");
-			break;
-		}
 		}
 	}
 
@@ -220,7 +244,7 @@ public abstract class AbstractServiceServlet extends HttpServlet implements Serv
 				request.getParameter(RESOURCE_NAME_REQUEST_PARAMETER)
 				);
 	}
-	
+
 	protected void writerResourcesResponse(String responseFormat, PrintWriter writer, ResourcesService resourcesService, ResourceRef resourceRef, int depth) throws ServletException, IOException {
 		ResourceResponseWriter visitor = new ResourceResponseWriter(responseFormat, writer);
 		resourcesService.visitResources(visitor, depth, resourceRef);

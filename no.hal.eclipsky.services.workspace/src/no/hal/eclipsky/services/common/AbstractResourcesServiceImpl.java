@@ -1,6 +1,7 @@
 package no.hal.eclipsky.services.common;
 
 import no.hal.eclipsky.services.workspace.ResourcesService;
+import no.hal.eclipsky.services.workspace.model.SourceFileMarker;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;

@@ -1,7 +1,7 @@
 package no.hal.eclipsky.services.workspace;
 
 import no.hal.eclipsky.services.common.ResourceRef;
-import no.hal.eclipsky.services.common.SourceFileMarker;
+import no.hal.eclipsky.services.workspace.model.SourceFileMarker;
 
 /**
  * Project level methods, i.e. mainly covering resources and related info

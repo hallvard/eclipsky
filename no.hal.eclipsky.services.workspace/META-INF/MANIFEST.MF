@@ -1,9 +1,11 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: Eclipse in the Sky Workspace Service
+Bundle-Name: %pluginName
 Bundle-SymbolicName: no.hal.eclipsky.services.workspace;singleton:=true
 Bundle-Version: 0.1.0.qualifier
 Require-Bundle: org.eclipse.core.runtime,
+ org.eclipse.emf.ecore;visibility:=reexport,
+ no.hal.emfs;visibility:=reexport,
  org.eclipse.core.resources;bundle-version="3.9.0",
  org.eclipse.jdt.core;bundle-version="3.9.50",
  org.eclipse.jdt.launching;bundle-version="3.7.100",
@@ -12,11 +14,22 @@ Require-Bundle: org.eclipse.core.runtime,
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
 Bundle-ClassPath: .
+Bundle-Vendor: %providerName
+Bundle-Localization: plugin
 Export-Package: no.hal.eclipsky.services.common,
  no.hal.eclipsky.services.editor,
  no.hal.eclipsky.services.editor.impl,
  no.hal.eclipsky.services.workspace,
- no.hal.eclipsky.services.workspace.impl
+ no.hal.eclipsky.services.workspace.impl,
+ no.hal.eclipsky.services.workspace.model,
+ no.hal.eclipsky.services.workspace.model.impl,
+ no.hal.eclipsky.services.workspace.model.util
 Service-Component: OSGI-INF/no.hal.eclipsky.services.workspace.impl.ProjectServiceImpl.xml,
- OSGI-INF/no.hal.eclipsky.services.workspace.impl.WorkspaceServiceImpl.xml
-Import-Package: org.osgi.service.component.annotations;version="1.2.0"
+ OSGI-INF/no.hal.eclipsky.services.workspace.impl.WorkspaceServiceImpl.xml,
+ OSGI-INF/no.hal.eclipsky.services.workspace.impl.SourceProjectManagerImpl.xml,
+ OSGI-INF/no.hal.eclipsky.services.workspace.impl.WorkspaceServiceExecutor.xml,
+ OSGI-INF/no.hal.eclipsky.services.workspace.impl.SourceEditorServiceExecutor.xml,
+ OSGI-INF/no.hal.eclipsky.services.workspace.impl.ExecutionServiceExecutor.xml
+Import-Package: no.hal.eclipsky.services.emfs,
+ org.osgi.service.component;version="1.2.2",
+ org.osgi.service.component.annotations;version="1.2.0"

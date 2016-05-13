@@ -96,9 +96,11 @@ public class WorkspaceServiceImpl extends AbstractResourcesServiceImpl implement
 		IProject[] projects = getWorkspaceRoot().getProjects(IProject.NONE);
 		Collection<String> projectNames = new ArrayList<String>();
 		Pattern pattern = null;
-		try {
-			pattern = Pattern.compile(namePattern);
-		} catch (Exception e) {
+		if (namePattern != null) {
+			try {
+				pattern = Pattern.compile(namePattern);
+			} catch (Exception e) {
+			}
 		}
 		for (IProject project : projects) {
 			String name = project.getName();

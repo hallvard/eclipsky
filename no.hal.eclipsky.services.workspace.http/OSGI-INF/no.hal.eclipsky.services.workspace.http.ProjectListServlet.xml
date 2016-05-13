@@ -5,5 +5,6 @@
       <provide interface="no.hal.eclipsky.services.workspace.http.ServiceServlet"/>
    </service>
    <property name="servlet.alias" value="projects"/>
-   <reference bind="setWorkspaceService" cardinality="1..1" interface="no.hal.eclipsky.services.workspace.WorkspaceService" name="WorkspaceService" policy="static" unbind="unsetWorkspaceService"/>
+   <reference bind="setServiceExecutor" cardinality="1..1" interface="no.hal.eclipsky.services.workspace.IServiceExecutor" name="ServiceExecutor" policy="static" target="(services=*ProjectListService*)" unbind="unsetServiceExecutor"/>
+   <reference bind="setServiceFactory" cardinality="1..1" interface="no.hal.eclipsky.services.workspace.model.ModelFactory" name="ServiceFactory" policy="static" unbind="unsetServiceFactory"/>
 </scr:component>

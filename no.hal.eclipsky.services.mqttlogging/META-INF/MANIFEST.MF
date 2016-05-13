@@ -5,7 +5,8 @@ Bundle-SymbolicName: no.hal.eclipsky.services.mqttlogging;singleton:=true
 Bundle-Version: 0.1.0.qualifier
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Import-Package: no.hal.eclipsky.services.monitoring,
- org.eclipse.paho.client.mqttv3;version="1.0.2",
+ no.hal.eclipsky.services.mqttlogging,
+ org.eclipse.paho.client.mqttv3;version="1.0.0",
  org.osgi.service.component;version="1.2.0",
  org.osgi.service.component.annotations;version="1.2.0"
 Service-Component: OSGI-INF/no.hal.eclipsky.services.mqttlogging.MqttLogger.xml

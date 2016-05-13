@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" activate="activate" immediate="true" name="no.hal.eclipsky.services.sourceeditor.TestEditorServletService">
    <implementation class="no.hal.eclipsky.services.sourceeditor.TestEditorServletService"/>
+   <property name="operations" value="test"/>
    <service>
       <provide interface="no.hal.eclipsky.services.sourceeditor.SourceEditorServletService"/>
    </service>
-   <property name="operations" value="test"/>
-   <reference bind="setSourceProjectManager" cardinality="1..1" interface="no.hal.eclipsky.services.workspace.http.SourceProjectManager" name="SourceProjectManager" policy="static" unbind="unsetSourceProjectManager"/>
+   <reference bind="setServiceExecutor" cardinality="1..1" interface="no.hal.eclipsky.services.workspace.IServiceExecutor" name="ServiceExecutor" policy="static" target="(services=*TestEditorService*)" unbind="unsetServiceExecutor"/>
+   <reference bind="setServiceFactory" cardinality="1..1" interface="no.hal.eclipsky.services.workspace.model.ModelFactory" name="ServiceFactory" policy="static" unbind="unsetServiceFactory"/>
 </scr:component>

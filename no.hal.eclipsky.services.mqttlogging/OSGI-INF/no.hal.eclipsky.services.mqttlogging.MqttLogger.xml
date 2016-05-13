@@ -4,5 +4,6 @@
    <service>
       <provide interface="no.hal.eclipsky.services.monitoring.ServiceLogger"/>
    </service>
+   <reference bind="setEclipskyInstance" cardinality="1..1" interface="no.hal.eclipsky.services.monitoring.EclipskyInstance" name="EclipskyInstance" policy="static" unbind="unsetEclipskyInstance"/>
    <property name="mqttServerUri" value="tcp://iot.eclipse.org:1883"/>
 </scr:component>

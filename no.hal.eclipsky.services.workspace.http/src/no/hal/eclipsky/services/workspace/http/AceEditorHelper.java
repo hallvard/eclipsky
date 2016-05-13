@@ -130,10 +130,11 @@ public class AceEditorHelper {
 	public String getEditorMode(String resourceName) {
 		int pos = resourceName.lastIndexOf('.');
 		String ext = (pos < 0 ? resourceName : resourceName.substring(pos + 1));
-		switch (ext) {
-		case "py": return "python";
-		case "js": return "javascript";
-		default: return ext;
+		if ("py".equals(ext)) {
+			return "python";
+		} else if ("js".equals(ext)) {
+			return "javascript";
 		}
+		return ext;
 	}
 }

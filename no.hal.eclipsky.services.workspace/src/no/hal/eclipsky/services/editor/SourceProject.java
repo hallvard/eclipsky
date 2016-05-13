@@ -2,6 +2,7 @@ package no.hal.eclipsky.services.editor;
 
 import no.hal.eclipsky.services.common.ProjectRef;
 import no.hal.eclipsky.services.common.ResourceRef;
+import no.hal.eclipsky.services.workspace.model.ExecutionResult;
 
 public interface SourceProject {
 	/**
@@ -22,12 +23,12 @@ public interface SourceProject {
 	 * @param resourceRef the ResourceRef to run
 	 * @return
 	 */
-	public RunResult run(ResourceRef resourceRef);
+	public ExecutionResult run(ResourceRef resourceRef);
 
 	/**
 	 * Execute the provided ResourceRef as a test
 	 * @param resourceRef the ResourceRef to run
 	 * @return
 	 */
-	public RunResult test(ResourceRef resourceRef);
+	public ExecutionResult test(ResourceRef resourceRef);
 }

@@ -5,9 +5,9 @@
   
   <parent>
   	<groupId>no.hal.eclipsky</groupId>
-  	<artifactId>no.hal.eclipsky</artifactId>
+  	<artifactId>no.hal.eclipsky.headless</artifactId>
   	<version>0.1.0-SNAPSHOT</version>
-  	<relativePath>../no.hal.eclipsky</relativePath>
+  	<relativePath>../no.hal.eclipsky.headless</relativePath>
   </parent>
 
   <build>

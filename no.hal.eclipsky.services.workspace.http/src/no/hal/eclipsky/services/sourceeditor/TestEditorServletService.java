@@ -1,6 +1,5 @@
 package no.hal.eclipsky.services.sourceeditor;
 
-import java.io.ByteArrayOutputStream;
 import java.io.PrintWriter;
 
 import org.osgi.service.component.ComponentContext;
@@ -8,31 +7,38 @@ import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
-import no.hal.eclipsky.services.common.ProjectRef;
-import no.hal.eclipsky.services.common.ResourceRef;
-import no.hal.eclipsky.services.common.Test;
-import no.hal.eclipsky.services.editor.RunResult;
-import no.hal.eclipsky.services.editor.TestResult;
 import no.hal.eclipsky.services.sourceeditor.SourceEditorServlet.EditorServiceRequest;
+import no.hal.eclipsky.services.workspace.IServiceExecutor;
 import no.hal.eclipsky.services.workspace.http.AbstractServiceServlet;
-import no.hal.eclipsky.services.workspace.http.SourceProjectManager;
-import no.hal.eclipsky.services.workspace.http.util.EmfsUtil;
 import no.hal.eclipsky.services.workspace.http.util.ResponseFormatter;
-import no.hal.emfs.EmfsResource;
+import no.hal.eclipsky.services.workspace.http.util.ResponseOptions;
+import no.hal.eclipsky.services.workspace.model.ExecutionResult;
+import no.hal.eclipsky.services.workspace.model.ModelFactory;
+import no.hal.eclipsky.services.workspace.model.TestCaseResult;
+import no.hal.eclipsky.services.workspace.model.TestEditorService;
+import no.hal.eclipsky.services.workspace.model.TestResult;
 
 @Component(
 	immediate = true,
 	property = AbstractSourceEditorServletService.OPERATION_KEY + "=test"
 )
-public class TestEditorServletService extends RunEditorServletService implements SourceEditorServletService {
+public class TestEditorServletService extends AbstractSourceEditorServletService<TestEditorService> implements SourceEditorServletService {
+
+	@Reference(target="(services=*TestEditorService*)")
+	@Override
+	public synchronized void setServiceExecutor(IServiceExecutor serviceExecutor) {
+		super.setServiceExecutor(serviceExecutor);
+	}
+	public synchronized void unsetServiceExecutor(IServiceExecutor serviceExecutor) {
+		super.setServiceExecutor(null);
+	}
 
 	@Reference
-	@Override
-	public synchronized void setSourceProjectManager(SourceProjectManager sourceProjectManager) {
-		super.setSourceProjectManager(sourceProjectManager);
+	public synchronized void setServiceFactory(ModelFactory serviceFactory) {
+		super.setServiceFactory(serviceFactory);
 	}
-	public synchronized void unsetSourceProjectManager(SourceProjectManager sourceProjectManager) {
-		super.unsetSourceProjectManager(sourceProjectManager);
+	public synchronized void unsetServiceFactory(ModelFactory serviceFactory) {
+		super.setServiceFactory(null);
 	}
 
 	@Activate
@@ -42,76 +48,45 @@ public class TestEditorServletService extends RunEditorServletService implements
 	}
 
 	@Override
-	public String doSourceEditorServletService(EditorServiceRequest request, String requestBody) {
-		EmfsResource emfsResource = EmfsUtil.findEmfsResource(getSourceProjectManager().getEmfsResource(new ProjectRef(request.resourceRef)), EmfsUtil::isTestable);
-		if (emfsResource != null) {	
-			CloseEditorServletService.closeEditorResponse("saved", request.responseFormat);
-			ResourceRef resourceRef = request.resourceRef;
-			ResourceRef combinedRef = new ResourceRef(
-					request.resourceRef.getProjectName(),
-					resourceRef.getPackageName(),
-					resourceRef.getResourceName()
-			);
-			RunResult result = getSourceProject(request).test(combinedRef);
-			// Return a test result of the project when compiled, otherwise return a run response with the error message
-			if (result instanceof TestResult) {
-				TestResult testResult = (TestResult)result;
-				return testResponse(testResult, request.responseFormat);
-			} else {
-				return RunEditorServletService.runResponse(result, request.responseFormat);
-			}
-		}
-		return null;
-	}
-	
-	protected String testResponse(TestResult result, String protocol) {
-		ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-		PrintWriter output = new PrintWriter(buffer);
-		writeTestResponse(protocol, output, result);
-		output.close();
-		return buffer.toString();
+	protected TestEditorService createService(EditorServiceRequest request, String requestBody) {
+		TestEditorService service = getServiceFactory().createTestEditorService();
+		service.setResourceRef(request.resourceRef);
+		return service;
 	}
 
-	private static void writeTestResponse(String responseFormat, PrintWriter output, TestResult result) {
-		ResponseFormatter formatter = AbstractServiceServlet.getResponseFormatter(responseFormat, output);
-		if (formatter != null) {
-			formatter.startEntities("test", true);
-		} else {
-			output.println("<html>\n"
-					+ "\t<head><title>Test</title></head>\n"
-					+ "\t<body>");
-			output.println("\t\t<h1>Test</h1>\n\t\t<ul>");
-		}
-		
-		
-		for (Test t : result.getAllTests()) {
+	@Override
+	protected void servicePerformedWithSuccess(TestEditorService service, ResponseOptions responseOptions, PrintWriter writer) {
+		ExecutionResult result = service.getResult();
+		if (result instanceof TestResult) {
+			TestResult testResult = (TestResult) result;
+			ResponseFormatter formatter = AbstractServiceServlet.getResponseFormatter(responseOptions.responseFormat, writer);
 			if (formatter != null) {
-				formatter.entity("test", 
-						"name", t.getTestName(),
-						"status", t.getStatus(),
-						"exception", t.getException()).endEntity();
+				formatter.startEntities("test", true);
 			} else {
-				output.println("\t\t\t<li>" + t.getTestName() + ":" + t.getStatus() + "=" + t.getException() + "</li>");
+				writer.println("<html>\n"
+						+ "\t<head><title>Test</title></head>\n"
+						+ "\t<body>");
+				writer.println("\t\t<h1>Test</h1>\n\t\t<ul>");
 			}
-		}
-		
-		/*
-		if (formatter != null) {
-			formatter.entity("test", 
-					"console", result.getConsoleOutput(),
-					"error", result.getErrorOutput(),
-					"exLocation", result.getExceptionLocation()).endEntity();
+			for (TestCaseResult testCaseResult : testResult.getResults()) {
+				if (formatter != null) {
+					formatter.entity("test", 
+							"name", testCaseResult.getTestName(),
+							"status", testCaseResult.getKind(),
+							"exception", testCaseResult.getException()).endEntity();
+				} else {
+					writer.println("\t\t\t<li>" + testCaseResult.getTestName() + ":" + testCaseResult.getKind() + "=" + testCaseResult.getException() + "</li>");
+				}
+			}
+			if (formatter != null) {
+				formatter.endEntities();
+			} else {
+				writer.println("\t\t</ul>");
+				writer.println("\t</body>\n"
+						+ "</html>");
+			}
 		} else {
-			// TODO: Write a proper result display
-			output.println("\t\t\t<li>" + result + "</li>");
-		}
-		*/
-		if (formatter != null) {
-			formatter.endEntities();
-		} else {
-			output.println("\t\t</ul>");
-			output.println("\t</body>\n"
-					+ "</html>");
+			RunEditorServletService.writeRunResultResponse(result, responseOptions, writer);
 		}
 	}
 }

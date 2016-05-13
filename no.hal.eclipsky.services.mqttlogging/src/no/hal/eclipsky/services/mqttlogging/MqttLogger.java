@@ -10,8 +10,11 @@ import org.osgi.service.component.ComponentContext;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
+import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ReferenceCardinality;
 
 import no.hal.eclipsky.services.monitoring.AbstractServiceLogger;
+import no.hal.eclipsky.services.monitoring.EclipskyInstance;
 import no.hal.eclipsky.services.monitoring.ServiceLogger;
 
 @Component(
@@ -21,7 +24,19 @@ public class MqttLogger extends AbstractServiceLogger implements ServiceLogger {
 
 	public final static String MQTT_SERVER_URI_KEY = "mqttServerUri";
 	public final static String DEFAULT_MQTT_SERVER_URI = "tcp://iot.eclipse.org:1883";
+
+	@Reference(
+		cardinality = ReferenceCardinality.MANDATORY,
+		unbind="unsetEclipskyInstance"
+	)
+	public synchronized void setEclipskyInstance(EclipskyInstance eclipskyInstance) {
+		super.setEclipskyInstance(eclipskyInstance);
+	}
 	
+	public synchronized void unsetEclipskyInstance(EclipskyInstance eclipskyInstance) {
+		super.unsetEclipskyInstance(eclipskyInstance);
+	}
+
 	private String serverUri = null;
 	
 	@Activate
@@ -31,6 +46,7 @@ public class MqttLogger extends AbstractServiceLogger implements ServiceLogger {
 		if (serverUriValue != null) {
 			serverUri = String.valueOf(serverUriValue);
 		}
+		publishServiceUri(getEclipskyInstance().getServiceUri());
 	}
 
 	@Deactivate
@@ -38,18 +54,18 @@ public class MqttLogger extends AbstractServiceLogger implements ServiceLogger {
 		publishServiceUri(null);
 	}
 
-	private MqttAsyncClient mqttClient;
-
 	private String clientId;
 	
 	protected String getClientId() {
-		String serviceUri = getServiceUri();
+		String serviceUri = getEclipskyInstance().getServiceUri();
 		if (clientId == null) {
 			clientId = (serviceUri != null ? serviceUri : this.getClass().getName())
 						.replaceAll("[^\\w]", "_");
 		}
 		return clientId;
 	}
+
+	private MqttAsyncClient mqttClient;
 	
 	public MqttAsyncClient getMqttClient() {
 		if (mqttClient == null) {
@@ -95,12 +111,6 @@ public class MqttLogger extends AbstractServiceLogger implements ServiceLogger {
 		return builder.toString();
 	}
 
-	@Override
-	public void setServiceUri(String serviceUri) {
-		super.setServiceUri(serviceUri);
-		publishServiceUri(getServiceUri());
-	}
-
 	protected void publishServiceUri(String serviceUri) {
 		try {
 			byte[] payload = null;
@@ -136,10 +146,12 @@ public class MqttLogger extends AbstractServiceLogger implements ServiceLogger {
 
 	private String DEFAULT_LOG_PAYLOAD = "...";
 
+	public final static String LOG_ITEM_TIME_KEY = "time";
+
 	@Override
 	protected void serviceCompleted(String logKey, String payload, long start, long end) {
 		try {
-			log(formatTimestampInterval(start, end).getBytes(), "services", logKey, "time");
+			log(formatTimestampInterval(start, end).getBytes(), "services", logKey, LOG_ITEM_TIME_KEY);
 			log((payload != null ? payload : DEFAULT_LOG_PAYLOAD).getBytes(), "services", logKey, "details");
 		} catch (MqttException e) {
 			e.printStackTrace();

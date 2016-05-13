@@ -1,6 +1,5 @@
 package no.hal.eclipsky.services.sourceeditor;
 
-import java.io.ByteArrayOutputStream;
 import java.io.PrintWriter;
 
 import org.osgi.service.component.ComponentContext;
@@ -8,29 +7,36 @@ import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
-import no.hal.eclipsky.services.common.ProjectRef;
-import no.hal.eclipsky.services.common.ResourceRef;
-import no.hal.eclipsky.services.editor.RunResult;
 import no.hal.eclipsky.services.sourceeditor.SourceEditorServlet.EditorServiceRequest;
+import no.hal.eclipsky.services.workspace.IServiceExecutor;
 import no.hal.eclipsky.services.workspace.http.AbstractServiceServlet;
-import no.hal.eclipsky.services.workspace.http.SourceProjectManager;
-import no.hal.eclipsky.services.workspace.http.util.EmfsUtil;
 import no.hal.eclipsky.services.workspace.http.util.ResponseFormatter;
-import no.hal.emfs.EmfsResource;
+import no.hal.eclipsky.services.workspace.http.util.ResponseOptions;
+import no.hal.eclipsky.services.workspace.model.ExecutionResult;
+import no.hal.eclipsky.services.workspace.model.ModelFactory;
+import no.hal.eclipsky.services.workspace.model.RunEditorService;
 
 @Component(
 	immediate = true,
 	property = AbstractSourceEditorServletService.OPERATION_KEY + "=run"
 )
-public class RunEditorServletService extends AbstractSourceEditorServletService implements SourceEditorServletService {
+public class RunEditorServletService extends AbstractSourceEditorServletService<RunEditorService> implements SourceEditorServletService {
+
+	@Reference(target="(services=*RunEditorService*)")
+	@Override
+	public synchronized void setServiceExecutor(IServiceExecutor serviceExecutor) {
+		super.setServiceExecutor(serviceExecutor);
+	}
+	public synchronized void unsetServiceExecutor(IServiceExecutor serviceExecutor) {
+		super.setServiceExecutor(null);
+	}
 
 	@Reference
-	@Override
-	public synchronized void setSourceProjectManager(SourceProjectManager sourceProjectManager) {
-		super.setSourceProjectManager(sourceProjectManager);
+	public synchronized void setServiceFactory(ModelFactory serviceFactory) {
+		super.setServiceFactory(serviceFactory);
 	}
-	public synchronized void unsetSourceProjectManager(SourceProjectManager sourceProjectManager) {
-		super.setSourceProjectManager(null);
+	public synchronized void unsetServiceFactory(ModelFactory serviceFactory) {
+		super.setServiceFactory(null);
 	}
 
 	@Activate
@@ -38,56 +44,43 @@ public class RunEditorServletService extends AbstractSourceEditorServletService 
 	protected void activate(ComponentContext context) {
 		super.activate(context);
 	}
+	
+	@Override
+	protected RunEditorService createService(EditorServiceRequest request, String requestBody) {
+		RunEditorService service = getServiceFactory().createRunEditorService();
+		service.setResourceRef(request.resourceRef);
+		return service;
+	}
 
 	@Override
-	public String doSourceEditorServletService(EditorServiceRequest request, String requestBody) {
-		EmfsResource emfsResource = EmfsUtil.findEmfsResource(getSourceProjectManager().getEmfsResource(new ProjectRef(request.resourceRef)), EmfsUtil::isRunnable);
-		if (emfsResource != null) {	
-			CloseEditorServletService.closeEditorResponse("saved", request.responseFormat);			
-			ResourceRef resourceRef = request.resourceRef;
-			ResourceRef combinedRef = new ResourceRef(
-					request.resourceRef.getProjectName(),
-					resourceRef.getPackageName(),
-					resourceRef.getResourceName()
-			);
-			RunResult result = getSourceProject(request).run(combinedRef);
-			return runResponse(result, request.responseFormat);
-		}
-		return null;
-	}
-	
-	public static String runResponse(RunResult result, String protocol) {
-		ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-		PrintWriter output = new PrintWriter(buffer);
-		writeRunResponse(protocol, output, result);
-		output.close();
-		return buffer.toString();
+	protected void servicePerformedWithSuccess(RunEditorService service, ResponseOptions responseOptions, PrintWriter writer) {
+		writeRunResultResponse(service.getResult(), responseOptions, writer);
 	}
 
-	private static void writeRunResponse(String responseFormat, PrintWriter output, RunResult result) {
-		ResponseFormatter formatter = AbstractServiceServlet.getResponseFormatter(responseFormat, output);
+	static void writeRunResultResponse(ExecutionResult result, ResponseOptions responseOptions, PrintWriter writer) {
+			ResponseFormatter formatter = AbstractServiceServlet.getResponseFormatter(responseOptions.responseFormat, writer);
 		if (formatter != null) {
 			formatter.startEntities("run", false);
 		} else {
-			output.println("<html>\n"
+			writer.println("<html>\n"
 					+ "\t<head><title>Run</title></head>\n"
 					+ "\t<body>");
-			output.println("\t\t<h1>Run</h1>\n\t\t<ul>");
+			writer.println("\t\t<h1>Run</h1>\n\t\t<ul>");
 		}
 
 		if (formatter != null) {
 			formatter.entity("run", 
-					"console", result.getConsoleOutput(),
-					"error", result.getErrorOutput(),
+					"console", result.getSysout().getStringContent(),
+					"error", result.getSyserr().getStringContent(),
 					"exLocation", result.getExceptionLocation()).endEntity();
 		} else {
 			// TODO: Write a proper result display
-			output.println("\t\t\t<li>" + result + "</li>");
+			writer.println("\t\t\t<li>" + result + "</li>");
 		}
 		
 		if (formatter == null) {
-			output.println("\t\t</ul>");
-			output.println("\t</body>\n"
+			writer.println("\t\t</ul>");
+			writer.println("\t</body>\n"
 					+ "</html>");
 		}
 	}
